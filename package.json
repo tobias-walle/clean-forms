@@ -7,9 +7,10 @@
   "author": "Tobias Walle",
   "license": "MIT",
   "scripts": {
-    "start": "run-s build storybook-watch",
-    "storybook-watch": "run-p watch storybook",
-    "storybook": "start-storybook -p 9001 -c .storybook",
+    "start": "run-s clear storybook",
+    "storybook": "run-p watch-storybook start-storybook",
+    "start-storybook": "start-storybook -p 9001 -c .storybook",
+    "watch-storybook": "tsc --watch --project tsconfig.storybook.json",
     "test": "jest",
     "lint": "tslint --project tsconfig.json -c tslint.json",
     "build": "run-s clear tsc",
