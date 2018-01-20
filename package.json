@@ -11,6 +11,7 @@
     "storybook-watch": "run-p watch storybook",
     "storybook": "start-storybook -p 9001 -c .storybook",
     "test": "jest",
+    "lint": "tslint --project tsconfig.json -c tslint.json",
     "build": "run-s clear tsc",
     "clear": "rimraf dist",
     "watch": "tsc --watch",
@@ -36,6 +37,7 @@
     "react-dom": "^16.2.0",
     "rimraf": "^2.6.2",
     "ts-jest": "^22.0.1",
+    "tslint": "^5.9.1",
     "typescript": "^2.6.2"
   },
   "peerDependencies": {
