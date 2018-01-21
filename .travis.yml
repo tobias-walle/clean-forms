@@ -1,0 +1,18 @@
+sudo: required
+
+language: node_js
+
+node_js:
+  - "node"
+
+before_install:
+  - npm install -g yarn@latest
+
+install:
+  - yarn install
+
+script:
+  - yarn lint
+  - yarn test -- --coverage
+  - yarn build
+  - yarn coveralls
