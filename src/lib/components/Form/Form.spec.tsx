@@ -1,5 +1,6 @@
 import { mount, ReactWrapper, shallow } from 'enzyme';
 import * as React from 'react';
+import { ValidationDefinition } from '../../validation';
 import { InputField } from '../InputField/InputField';
 import { Form } from './Form';
 
@@ -58,6 +59,49 @@ describe('Form', () => {
     expect(onChange).toHaveBeenCalledWith({
       ...model,
       a: expectedNewValue
+    }, expect.anything());
+  });
+
+  it('should validate model', () => {
+    const onChange = jest.fn();
+    const model = {
+      a: 'hello',
+      b: 124
+    };
+    type Model = typeof model;
+    const ERROR_A = 'Has to be greater than 10 characters';
+    const ERROR_B = 'Has to be smaller than 100';
+    const validationDefinition: ValidationDefinition<Model> = {
+      a: ({value}) => value.length >= 10 ? null : ERROR_A,
+      b: ({value}) => value < 100 ? null : ERROR_B,
+    };
+    const element = mount(
+      <Form model={model} validation={validationDefinition} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'} inner={{
+          type: 'number'
+        }}/>
+      </Form>
+    );
+    const inputs = element.find('input');
+    const firstInput = inputs.first();
+    firstInput.simulate('change', { target: { value: '0123456789' } });
+
+    expect(onChange).toHaveBeenCalledWith(expect.anything(), {
+      errors: {
+        a: null,
+        b: ERROR_B
+      }
     });
+
+    firstInput.simulate('change', { target: { value: '012345678' } });
+
+    expect(onChange).toHaveBeenCalledWith(expect.anything(), {
+      errors: {
+        a: ERROR_A,
+        b: ERROR_B
+      }
+    });
+
   });
 });

@@ -1,5 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import { Errors, ValidationDefinition, Validator } from '../../validation';
 
 export type OnValueChange<Model> = <K extends keyof Model>(name: K, value: Model[K]) => void;
 
@@ -13,12 +14,17 @@ export const formContextTypes = {
   onValueChange: PropTypes.func,
 };
 
-export interface FormProps<Model> {
-  model: Model;
-  onChange?: (model: Model) => void;
+export interface FormMeta<Model> {
+  errors: Errors<Model>;
 }
 
-export class Form<Model = any> extends React.Component<FormProps<Model>, {}> {
+export interface FormProps<Model, FormValidation extends ValidationDefinition<Model> = ValidationDefinition<Model>> {
+  model: Model;
+  validation?: FormValidation;
+  onChange?: (model: Model, meta: FormMeta<Model>) => void;
+}
+
+export class Form<Model = any, FormValidation extends ValidationDefinition<Model> = any> extends React.Component<FormProps<Model, FormValidation>, {}> {
   static childContextTypes = formContextTypes;
 
   public render() {
@@ -37,10 +43,31 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, {}> {
   }
 
   private onValueChange: OnValueChange<Model> = (name, value) => {
+    this.updateModel(name, value);
+  }
+
+  private updateModel: OnValueChange<Model> = (name, value) => {
     const { onChange, model } = this.props;
-    onChange && onChange({
+    const newModel: Model = {
       ...(model as any),
       [name]: value
-    });
-  };
+    };
+
+    const meta = this.getMetaData(newModel);
+    onChange && onChange(newModel, meta);
+  }
+
+  private getMetaData(model: Model): FormMeta<Model> {
+    return {
+      errors: this.validate(model)
+    }
+  }
+
+  private validate(model: Model): Errors<Model> {
+    const {
+      validation = {}
+    } = this.props;
+    const validator = new Validator<Model>();
+    return validator.validate(model, validation);
+  }
 }

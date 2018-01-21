@@ -2,8 +2,8 @@ import { action } from '@storybook/addon-actions';
 import { storiesOf } from '@storybook/react';
 import * as React from 'react';
 import { Form } from '../lib';
-import { Field } from '../lib/components/Field/Field';
-import { renderInput } from '../lib/components/InputField/InputField';
+import { InputField } from '../lib/components';
+import { ValidationDefinition } from '../lib/validation';
 import { StateWrapper } from './StateWrapper/StateWrapper';
 
 storiesOf('Form', module)
@@ -19,15 +19,47 @@ storiesOf('Form', module)
       render={({ state, setState }) => (
         <Form
           model={state.model}
-          onChange={(model) => {
-            action('onChange')(model);
-            setState({ model });
+          onChange={(...args: any[]) => {
+            action('onChange')(...args);
+            setState({ model: args[0] });
           }}
         >
-          <Field name={'value1'} render={renderInput}/>
-          <Field name={'value2'} render={renderInput}/>
-          <Field name={'value3'} render={renderInput} inner={{type: 'number'}}/>
+          <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
+          <InputField name={'value2'} inner={{ label: 'Value 2' }}/>
+          <InputField name={'value3'} inner={{ label: 'Value 3', type: 'number' }}/>
         </Form>
       )}
     />
-  ));
+  ))
+  .add('with Validation', () => {
+    const model = {
+      value1: 'First Value',
+      value2: 'Second Value',
+      value3: Math.PI,
+      value4: {
+        a: 123
+      }
+    };
+    type Model = typeof model;
+    const validation: ValidationDefinition<Model> = {
+      value3: ({ value }) => value > 100 ? null : 'Value has to be greater than 100',
+    };
+    return <StateWrapper
+      initialState={{ model }}
+      render={({ state, setState }) => (
+        <Form
+          model={state.model}
+          validation={validation}
+          onChange={(...args: any[]) => {
+            action('onChange')(...args);
+            setState({ model: args[0] });
+          }}
+        >
+          <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
+          <InputField name={'value2'} inner={{ label: 'Value 2' }}/>
+          <InputField name={'value3'} inner={{ label: 'Value 3', type: 'number' }}/>
+        </Form>
+      )}
+    />;
+  })
+;

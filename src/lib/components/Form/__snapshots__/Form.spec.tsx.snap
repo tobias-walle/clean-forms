@@ -2,4 +2,4 @@
 
 exports[`Form should render 1`] = `<form />`;
 
-exports[`Form should render model in inputs 1`] = `"<form><input name=\\"a\\" value=\\"hello\\"><input type=\\"number\\" name=\\"b\\" value=\\"124\\"></form>"`;
+exports[`Form should render model in inputs 1`] = `"<form><label><input name=\\"a\\" value=\\"hello\\"></label><label><input type=\\"number\\" name=\\"b\\" value=\\"124\\"></label></form>"`;
