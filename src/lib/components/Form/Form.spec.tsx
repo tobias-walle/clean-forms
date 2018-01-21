@@ -89,7 +89,6 @@ describe('Form', () => {
 
     expect(onChange).toHaveBeenCalledWith(expect.anything(), {
       errors: {
-        a: null,
         b: ERROR_B
       }
     });

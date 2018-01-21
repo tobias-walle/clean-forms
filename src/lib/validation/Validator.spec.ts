@@ -17,7 +17,6 @@ describe('Validator', () => {
     };
     const expectedResult: Errors<Model> = {
       a: errorMessageForA,
-      b: null
     };
     const validator = new Validator();
 
@@ -33,10 +32,7 @@ describe('Validator', () => {
     };
     type Model = typeof model;
     const validationDefinition: ValidationDefinition<Model> = {};
-    const expectedResult: Errors<Model> = {
-      a: null,
-      b: null
-    };
+    const expectedResult = undefined;
     const validator = new Validator();
 
     const actualResult = validator.validate(model, validationDefinition);
@@ -51,6 +47,9 @@ describe('Validator', () => {
       c: {
         c1: 2,
         c2: 3,
+      },
+      d: {
+        d1: 1
       }
     };
     type Model = typeof model;
@@ -61,12 +60,9 @@ describe('Validator', () => {
       }
     };
     const expectedResult: Errors<Model> = {
-      a: null,
-      b: null,
       c: {
         c1: errorMessageForC1,
-        c2: null
-      }
+      },
     };
     const validator = new Validator();
 
@@ -74,5 +70,4 @@ describe('Validator', () => {
 
     expect(actualResult).toEqual(expectedResult);
   });
-
 });
