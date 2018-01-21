@@ -20,13 +20,16 @@
     "tsc": "tsc"
   },
   "devDependencies": {
+    "@storybook/addon-actions": "^3.3.10",
     "@storybook/cli": "^3.3.10",
     "@storybook/react": "^3.3.10",
     "@types/enzyme": "^3.1.7",
     "@types/jest": "^22.0.1",
     "@types/node": "^9.3.0",
+    "@types/prop-types": "^15.5.2",
     "@types/react": "^16.0.34",
     "@types/react-dom": "^16.0.3",
+    "@types/storybook__addon-actions": "^3.0.1",
     "@types/storybook__react": "^3.0.6",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
@@ -63,5 +66,8 @@
     "setupFiles": [
       "./jest.setup.js"
     ]
+  },
+  "dependencies": {
+    "prop-types": "^15.6.0"
   }
 }
