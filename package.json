@@ -7,17 +7,21 @@
   "author": "Tobias Walle",
   "license": "MIT",
   "scripts": {
-    "start": "run-s clear storybook",
+    "start": "run-s clear-storybook storybook",
     "storybook": "run-p watch-storybook start-storybook",
     "start-storybook": "start-storybook -p 9001 -c .storybook",
     "watch-storybook": "tsc --watch --project tsconfig.storybook.json",
     "test": "jest",
+    "test-coverage": "jest --coverage",
     "lint": "tslint --project tsconfig.json -c tslint.json",
     "build": "run-s clear tsc",
-    "clear": "rimraf dist",
+    "clear": "rimraf out",
+    "clear-dist": "rimraf out/dist",
+    "clear-storybook": "rimraf out/storybook",
+    "clear-test": "rimraf out/test",
     "watch": "tsc --watch",
     "p": "plop",
-    "tsc": "tsc",
+    "tsc": "tsc --project tsconfig.lib.json",
     "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
   },
   "devDependencies": {
@@ -50,6 +54,9 @@
     "react": "^16.2.0"
   },
   "jest": {
+    "globals": {
+      "tsConfigFile": "tsconfig.test.json"
+    },
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
