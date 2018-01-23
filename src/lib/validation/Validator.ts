@@ -22,9 +22,9 @@ export class Validator<Model> {
 
   private validateModel<O>(args: { model: O, validation: ValidationDefinition<O> }): Errors<O> | undefined {
     const { model, validation } = args;
-    const objectKeys: (keyof O)[] = Object.keys(model) as any[];
+    const objectKeys: Array<keyof O> = Object.keys(model) as any[];
 
-    let errors: Errors<O> | undefined = undefined;
+    let errors: Errors<O> | undefined;
     objectKeys.forEach(key => {
       const error = this.getError(model[key], validation[key]) as any;
       if (error != null) {
@@ -42,7 +42,7 @@ export class Validator<Model> {
       } else if (validation instanceof Function) {
         return validation({ value, formValue: this.model }) as any;
       } else {
-        return this.validateModel({ model: value, validation: validation }) as any;
+        return this.validateModel({ model: value, validation }) as any;
       }
   }
 }

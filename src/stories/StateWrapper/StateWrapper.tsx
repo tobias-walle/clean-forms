@@ -12,11 +12,10 @@ export interface StateWrapperProps<State> {
 
 export class StateWrapper<State = any> extends React.Component<StateWrapperProps<State>, State> {
   public state: State = this.props.initialState;
+  private bindedSetState = this.setState.bind(this);
 
   public render() {
     const {render: Component} = this.props;
-    return <Component state={this.state} setState={this.bindedSetState}/>
+    return <Component state={this.state} setState={this.bindedSetState}/>;
   }
-
-  private bindedSetState = this.setState.bind(this);
 }

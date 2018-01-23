@@ -15,7 +15,7 @@ export const formContextTypes = {
 };
 
 export interface FormMeta<Model> {
-  errors: Errors<Model>;
+  errors: Errors<Model> | undefined;
 }
 
 export interface FormProps<Model, FormValidation extends ValidationDefinition<Model> = ValidationDefinition<Model>> {
@@ -25,7 +25,7 @@ export interface FormProps<Model, FormValidation extends ValidationDefinition<Mo
 }
 
 export class Form<Model = any, FormValidation extends ValidationDefinition<Model> = any> extends React.Component<FormProps<Model, FormValidation>, {}> {
-  static childContextTypes = formContextTypes;
+  public static childContextTypes = formContextTypes;
 
   public render() {
     return (
@@ -60,10 +60,10 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   private getMetaData(model: Model): FormMeta<Model> {
     return {
       errors: this.validate(model)
-    }
+    };
   }
 
-  private validate(model: Model): Errors<Model> {
+  private validate(model: Model): Errors<Model> | undefined {
     const {
       validation = {}
     } = this.props;

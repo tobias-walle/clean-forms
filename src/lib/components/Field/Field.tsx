@@ -1,5 +1,5 @@
-import * as React from 'react';
 import * as PropTypes from 'prop-types';
+import * as React from 'react';
 import { FormContext, formContextTypes } from '../Form/Form';
 
 export interface InputProps<Value> {
@@ -43,5 +43,5 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
 
   private onChange = (value: any) => {
     this.context.onValueChange(this.props.name, value);
-  };
+  }
 }

@@ -1,20 +1,39 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "quotemark": [
+      true,
+      "single",
+      "jsx-double"
     ],
-    "jsRules": {},
-    "rules": {
-      "quotemark": [true, "single", "jsx-double"],
-      "interface-name": false,
-      "no-empty-interface": false,
-      "arrow-parens": false,
-      "no-empty": false,
-      "object-literal-sort-keys": false,
-      "trailing-comma": false,
-      "no-console": [true, "log"],
-      "max-line-length": [false],
-      "no-unused-expression": [true, "allow-tagged-template"]
-    },
-    "rulesDirectory": []
+    "interface-name": false,
+    "no-empty-interface": false,
+    "arrow-parens": false,
+    "no-empty": false,
+    "object-literal-sort-keys": false,
+    "trailing-comma": false,
+    "no-console": [
+      true,
+      "log"
+    ],
+    "max-line-length": [
+      false
+    ],
+    "no-unused-expression": [
+      true,
+      "allow-tagged-template",
+      "allow-fast-null-checks"
+    ],
+    "member-ordering": [
+      true,
+      {
+        "order": "fields-first"
+      }
+    ]
+  },
+  "rulesDirectory": []
 }
