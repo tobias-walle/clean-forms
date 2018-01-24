@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`updateDeep should throw an error if the path is 0 1`] = `"The path cannot be empty"`;
+
+exports[`updateDeep should throw an error if the path is invalid 1`] = `"The key \\"b\\" does not exits on item {\\"a\\":{\\"b\\":{\\"c\\":1}}}."`;

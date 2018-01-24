@@ -1,6 +1,7 @@
 import { mount, ReactWrapper, shallow } from 'enzyme';
 import * as React from 'react';
 import { ValidationDefinition } from '../../validation';
+import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
 import { Form } from './Form';
 
@@ -59,6 +60,42 @@ describe('Form', () => {
     expect(onChange).toHaveBeenCalledWith({
       ...model,
       a: expectedNewValue
+    }, expect.anything());
+  });
+
+  it('should emit model changes in groups', () => {
+    const onChange = jest.fn();
+    const model = {
+      a: 'hello',
+      b: 124,
+      c: {
+        c1: 'old'
+      }
+    };
+    const element = mount(
+      <Form model={model} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'} inner={{
+          type: 'number'
+        }}/>
+        <FieldGroup name={'c'}>
+          <InputField name={'c1'}/>
+        </FieldGroup>
+      </Form>
+    );
+    const expectedNewValue = 'new';
+    const inputs = element.find('input');
+    const thirdInput = inputs.at(2);
+
+    expect(onChange).not.toHaveBeenCalled();
+
+    thirdInput.simulate('change', { target: { value: expectedNewValue } });
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...model,
+      c: {
+        c1: expectedNewValue
+      }
     }, expect.anything());
   });
 

@@ -1,8 +1,9 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import { updateDeep } from '../../utils';
 import { Errors, ValidationDefinition, Validator } from '../../validation';
 
-export type OnValueChange<Model> = <K extends keyof Model>(name: K, value: Model[K]) => void;
+export type OnValueChange<Model> = (path: string[], value: any) => void;
 
 export interface FormContext<Model> {
   model: Model;
@@ -46,12 +47,9 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     this.updateModel(name, value);
   }
 
-  private updateModel: OnValueChange<Model> = (name, value) => {
+  private updateModel: OnValueChange<Model> = (path, value) => {
     const { onChange, model } = this.props;
-    const newModel: Model = {
-      ...(model as any),
-      [name]: value
-    };
+    const newModel: Model = updateDeep(model, path, value);
 
     const meta = this.getMetaData(newModel);
     onChange && onChange(newModel, meta);
@@ -69,5 +67,35 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     } = this.props;
     const validator = new Validator<Model>();
     return validator.validate(model, validation);
+  }
+}
+
+function deepUpdate<T>(object: T, path: string[], value: any): T {
+  if (path.length <= 0) {
+    throw new Error('The path cannot be empty');
+  }
+  const lastIndex = path.length - 1;
+  const tail = path.slice(0, lastIndex);
+  const keyToUpdate = path[lastIndex];
+
+  const result = copyArrayOrObject(object);
+
+  let objectToUpdate: any = result;
+  while (tail.length > 0) {
+    const key = tail.splice(0, 1)[0];
+    const lastObject = objectToUpdate;
+    objectToUpdate = copyArrayOrObject(objectToUpdate[key]);
+    lastObject[key] = objectToUpdate;
+  }
+  objectToUpdate[keyToUpdate] = value;
+
+  return result;
+}
+
+function copyArrayOrObject<T>(object: T): T {
+  if (object instanceof Array) {
+    return object.slice() as any;
+  } else {
+    return Object.assign({}, object);
   }
 }
