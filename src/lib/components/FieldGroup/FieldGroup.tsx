@@ -1,5 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import { createPath } from '../../utils/createPath';
 
 export const fieldGroupContextTypes = {
   groups: PropTypes.arrayOf(PropTypes.string),
@@ -26,9 +27,8 @@ export class FieldGroup extends React.Component<FieldGroupProps, FieldGroupState
   }
 
   public getChildContext(): FieldGroupContext {
-    const groups = this.context.groups || [];
     return {
-      groups: [...groups, this.props.name]
+      groups: createPath(this.context.groups, this.props.name)
     };
   }
 }

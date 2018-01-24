@@ -57,6 +57,36 @@ describe('Field', () => {
     expect(onValueChange).toHaveBeenCalledWith([name], newValue);
   });
 
+  it('should support grouping', () => {
+    const context: FormContext<any> & FieldGroupContext = {
+      model: { testGroup1: { testGroup2: { name: 'value' } } },
+      onValueChange: () => {
+      },
+      groups: ['testGroup1', 'testGroup2']
+    };
+    const element = mount(
+      <Field name={'name'} render={renderInput}/>
+    , { context });
+
+    const input = element.find('input');
+    expect(input.props().value).toBe('value');
+  });
+
+  it('should support null as name', () => {
+    const context: FormContext<any> & FieldGroupContext = {
+      model: { testGroup1: { testGroup2: 'value' } },
+      onValueChange: () => {
+      },
+      groups: ['testGroup1', 'testGroup2']
+    };
+    const element = mount(
+      <Field name={null} render={renderInput}/>
+    , { context });
+
+    const input = element.find('input');
+    expect(input.props().value).toBe('value');
+  });
+
   it('should trigger callback in group', () => {
     const name = 'name';
     const value = 'value';
@@ -77,20 +107,5 @@ describe('Field', () => {
     onChange(newValue);
 
     expect(onValueChange).toHaveBeenCalledWith(['group1', 'group2', name], newValue);
-  });
-
-  it('should support grouping', () => {
-    const context: FormContext<any> & FieldGroupContext = {
-      model: { testGroup1: { testGroup2: { name: 'value' } } },
-      onValueChange: () => {
-      },
-      groups: ['testGroup1', 'testGroup2']
-    };
-    const element = mount(
-      <Field name={'name'} render={renderInput}/>
-    , { context });
-
-    const input = element.find('input');
-    expect(input.props().value).toBe('value');
   });
 });

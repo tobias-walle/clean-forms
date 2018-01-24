@@ -2,7 +2,7 @@ import { action } from '@storybook/addon-actions';
 import { storiesOf } from '@storybook/react';
 import * as React from 'react';
 import { Form } from '../lib';
-import { InputField } from '../lib/components';
+import { FieldArray, FieldArrayItems, InputField } from '../lib/components';
 import { FieldGroup } from '../lib/components/FieldGroup/FieldGroup';
 import { ValidationDefinition } from '../lib/validation';
 import { StateWrapper } from './StateWrapper/StateWrapper';
@@ -57,6 +57,40 @@ storiesOf('Form', module)
           <FieldGroup name={'value4'}>
             <InputField name={'a'} inner={{ label: 'value4 => a' }}/>
           </FieldGroup>
+        </Form>
+      )}
+    />;
+  })
+  .add('with Arrays', () => {
+    const model = {
+      value1: '123',
+      array1: [
+        { item1: 'item1', item2: 'item2' }
+      ],
+    };
+    return <StateWrapper
+      initialState={{ model }}
+      render={({ state, setState }) => (
+        <Form
+          model={state.model}
+          onChange={(...args: any[]) => {
+            action('onChange')(...args);
+            setState({ model: args[0] });
+          }}
+        >
+          <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
+          <FieldArray name={'array1'} render={({ addItem }) => (
+            <>
+            <FieldArrayItems render={({ remove }) => (
+              <div>
+                <InputField name={'item1'} inner={{ label: 'Item 1' }}/>
+                <InputField name={'item2'} inner={{ label: 'Item 2' }}/>
+                <button type="button" onClick={remove}>Remove</button>
+              </div>
+            )}/>
+            <button type="button" onClick={() => addItem({ item1: 'new', item2: 'new' })}>Add</button>
+            </>
+          )}/>
         </Form>
       )}
     />;

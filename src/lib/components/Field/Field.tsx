@@ -1,11 +1,12 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { selectDeep } from '../../utils';
+import { createPath } from '../../utils/createPath';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
 
 export interface InputProps<Value> {
-  name: string;
+  name?: string;
   value: Value;
   onChange: (value: Value) => void;
 }
@@ -18,7 +19,7 @@ export interface InnerFieldProps<Value, CustomProps> {
 export type FieldRenderFunction<Value, RenderProps> = React.StatelessComponent<InnerFieldProps<Value, RenderProps>>;
 
 export interface FieldPropsWithoutRender<CustomProps> {
-  name: string;
+  name: string | null;
   inner?: CustomProps;
 }
 
@@ -38,7 +39,8 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     const { model } = this.context;
     const value = selectDeep(model, this.getPath());
     const input: InputProps<Value> = {
-      name, value,
+      name: name || undefined,
+      value,
       onChange: this.onChange
     };
     return (
@@ -51,8 +53,6 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
   }
 
   private getPath(): string[] {
-    const { name } = this.props;
-    const { groups = [] } = this.context;
-    return [...groups, name];
+    return createPath(this.context.groups, this.props.name);
   }
 }

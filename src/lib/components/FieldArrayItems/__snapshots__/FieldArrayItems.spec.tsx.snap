@@ -1,0 +1,108 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FieldArrayItems should render items 1`] = `
+<FieldArrayItems
+  getKey={[Function]}
+  render={[Function]}
+>
+  <FieldGroup
+    key="0"
+    name="0"
+  >
+    <Component
+      name="a"
+    >
+      <Field
+        name="a"
+        render={[Function]}
+      >
+        <Component
+          custom={null}
+          input={
+            Object {
+              "name": "a",
+              "onChange": [Function],
+              "value": 0,
+            }
+          }
+        >
+          <label>
+            <div />
+            <input
+              name="a"
+              onChange={[Function]}
+              value={0}
+            />
+          </label>
+        </Component>
+      </Field>
+    </Component>
+  </FieldGroup>
+  <FieldGroup
+    key="1"
+    name="1"
+  >
+    <Component
+      name="a"
+    >
+      <Field
+        name="a"
+        render={[Function]}
+      >
+        <Component
+          custom={null}
+          input={
+            Object {
+              "name": "a",
+              "onChange": [Function],
+              "value": 1,
+            }
+          }
+        >
+          <label>
+            <div />
+            <input
+              name="a"
+              onChange={[Function]}
+              value={1}
+            />
+          </label>
+        </Component>
+      </Field>
+    </Component>
+  </FieldGroup>
+  <FieldGroup
+    key="2"
+    name="2"
+  >
+    <Component
+      name="a"
+    >
+      <Field
+        name="a"
+        render={[Function]}
+      >
+        <Component
+          custom={null}
+          input={
+            Object {
+              "name": "a",
+              "onChange": [Function],
+              "value": 2,
+            }
+          }
+        >
+          <label>
+            <div />
+            <input
+              name="a"
+              onChange={[Function]}
+              value={2}
+            />
+          </label>
+        </Component>
+      </Field>
+    </Component>
+  </FieldGroup>
+</FieldArrayItems>
+`;

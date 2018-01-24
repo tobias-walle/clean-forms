@@ -69,33 +69,3 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     return validator.validate(model, validation);
   }
 }
-
-function deepUpdate<T>(object: T, path: string[], value: any): T {
-  if (path.length <= 0) {
-    throw new Error('The path cannot be empty');
-  }
-  const lastIndex = path.length - 1;
-  const tail = path.slice(0, lastIndex);
-  const keyToUpdate = path[lastIndex];
-
-  const result = copyArrayOrObject(object);
-
-  let objectToUpdate: any = result;
-  while (tail.length > 0) {
-    const key = tail.splice(0, 1)[0];
-    const lastObject = objectToUpdate;
-    objectToUpdate = copyArrayOrObject(objectToUpdate[key]);
-    lastObject[key] = objectToUpdate;
-  }
-  objectToUpdate[keyToUpdate] = value;
-
-  return result;
-}
-
-function copyArrayOrObject<T>(object: T): T {
-  if (object instanceof Array) {
-    return object.slice() as any;
-  } else {
-    return Object.assign({}, object);
-  }
-}
