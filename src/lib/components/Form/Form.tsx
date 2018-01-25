@@ -97,6 +97,12 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   }
 
   private onFieldFocus: OnFieldFocus = (path) => {
+    const status = this.updateFieldStatus(this.getStatus(), path, {
+      touched: true,
+      untouched: false
+    });
+    const state = this.createState(this.getModel(), status);
+    this.triggerChange({state});
   }
 
   private onFieldBlur: OnFieldBlur = (path) => {
@@ -105,10 +111,10 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   private onFieldChange: OnFieldChange<Model> = (path, value) => {
     const model = this.updateModel(path, value);
 
-    const status = this.updateFieldStatusBasedOnValue(this.props.state.status || {}, path, value);
+    const status = this.updateFieldStatusBasedOnValue(this.getStatus(), path, value);
     const state = this.createState(model, status);
-    this.meta = this.createMetaData(model);
-    this.triggerChange(state, this.meta);
+    const meta = this.createMetaData(model);
+    this.triggerChange({state, meta});
   }
 
   private updateFieldStatusBasedOnValue(status: FieldStatusMapping<Model>, path: string[], value: any): FieldStatusMapping<Model> {
@@ -129,12 +135,12 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
       status = this.removeFieldStatus(status, removedPath);
     });
     const state = this.createState(this.props.state.model, status);
-    this.triggerChange(state, this.meta);
+    this.triggerChange({state});
   }
 
   private updateFieldStatus(status: FieldStatusMapping<Model>, path: string[], statusUpdate: Partial<FieldStatus>): FieldStatusMapping<Model> {
     if (!this.fieldsRegister.includesPath(path)) {
-      console.warn(`Path not found "${JSON.stringify(path)}" in "${JSON.stringify(this.fieldsRegister.paths)}"`);
+      console.warn(`Path not found "${JSON.stringify(path)}" in "${JSON.stringify(this.fieldsRegister.paths)}"`, statusUpdate);
       return status;
     }
     const currentFieldStatus = selectDeep({object: status, path, assert: false}) || DEFAULT_FIELD_STATUS;
@@ -151,9 +157,10 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     return updateDeep({ object: this.props.state.model, path, value });
   }
 
-  private triggerChange(state: FormState<Model>, meta: FormMeta<Model>): void {
+  private triggerChange({state, meta}: { state?: FormState<Model>, meta?: FormMeta<Model> }): void {
     const { onChange } = this.props;
-    onChange && onChange(state, meta);
+    this.meta = meta || this.meta;
+    onChange && onChange(state || this.props.state, meta || this.meta);
   }
 
   private createState(model: Model, status: FieldStatusMapping<Model> | undefined): FormState<Model> {
@@ -177,5 +184,13 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
       state: this.props.state,
       meta: this.meta
     };
+  }
+
+  private getStatus(): FieldStatusMapping<Model> {
+    return this.props.state.status || {};
+  }
+
+  private getModel(): Model {
+    return this.props.state.model;
   }
 }

@@ -208,6 +208,35 @@ describe('Form', () => {
     });
   });
 
+  it('should update touched/untouched status', async () => {
+    const onChange = jest.fn();
+    const model = { a: 'hello', b: 124 };
+    const expectFieldStatus = createFieldStatusExpectFunction(onChange);
+    const element = mount(
+      <Form state={{ model }} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'} inner={{
+          type: 'number'
+        }}/>
+      </Form>
+    );
+    const inputs = element.find('input');
+    const firstInput = inputs.first();
+
+    firstInput.simulate('focus', {});
+
+    expectFieldStatus({
+      a: {
+        valid: true,
+        inValid: false,
+        pristine: true,
+        dirty: false,
+        untouched: false,
+        touched: true
+      }
+    });
+  });
+
   it('should not the set status for fields that are not registered', () => {
     const onChange = jest.fn();
     const model = { a: [] };
