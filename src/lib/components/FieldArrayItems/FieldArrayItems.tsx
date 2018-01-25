@@ -47,7 +47,7 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   private defaultGetKey: GetKey<Item> = (item, index) => `item_${index}`;
 
   private getArray(): Item[] {
-    const { model, groups = [] } = this.context;
+    const { form: { state: { model }}, groups = [] } = this.context;
     return selectDeep(model, groups);
   }
 
@@ -60,7 +60,7 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   }
 
   private setArray(newArray: Item[]): void {
-    const { groups = [], onValueChange } = this.context;
-    onValueChange(groups, newArray);
+    const { groups = [], onFieldChange } = this.context;
+    onFieldChange(groups, newArray);
   }
 }

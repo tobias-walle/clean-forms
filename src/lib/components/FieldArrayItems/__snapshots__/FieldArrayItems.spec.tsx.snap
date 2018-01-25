@@ -16,25 +16,16 @@ exports[`FieldArrayItems should render items 1`] = `
         name="a"
         render={[Function]}
       >
-        <Component
-          custom={null}
-          input={
-            Object {
-              "name": "a",
-              "onChange": [Function],
-              "value": 0,
-            }
-          }
-        >
-          <label>
-            <div />
-            <input
-              name="a"
-              onChange={[Function]}
-              value={0}
-            />
-          </label>
-        </Component>
+        <label>
+          <div />
+          <input
+            name="a"
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            value={0}
+          />
+        </label>
       </Field>
     </Component>
   </FieldGroup>
@@ -49,25 +40,16 @@ exports[`FieldArrayItems should render items 1`] = `
         name="a"
         render={[Function]}
       >
-        <Component
-          custom={null}
-          input={
-            Object {
-              "name": "a",
-              "onChange": [Function],
-              "value": 1,
-            }
-          }
-        >
-          <label>
-            <div />
-            <input
-              name="a"
-              onChange={[Function]}
-              value={1}
-            />
-          </label>
-        </Component>
+        <label>
+          <div />
+          <input
+            name="a"
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            value={1}
+          />
+        </label>
       </Field>
     </Component>
   </FieldGroup>
@@ -82,25 +64,16 @@ exports[`FieldArrayItems should render items 1`] = `
         name="a"
         render={[Function]}
       >
-        <Component
-          custom={null}
-          input={
-            Object {
-              "name": "a",
-              "onChange": [Function],
-              "value": 2,
-            }
-          }
-        >
-          <label>
-            <div />
-            <input
-              name="a"
-              onChange={[Function]}
-              value={2}
-            />
-          </label>
-        </Component>
+        <label>
+          <div />
+          <input
+            name="a"
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            value={2}
+          />
+        </label>
       </Field>
     </Component>
   </FieldGroup>

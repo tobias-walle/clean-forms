@@ -1,23 +1,22 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { InputField } from '../';
+import { mockFormContext } from '../../../testUtils/mockFormContext';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
-import { FormContext, OnValueChange } from '../Form/Form';
+import { FormContext, OnFieldChange } from '../Form/Form';
 import { FieldArrayItems } from './FieldArrayItems';
 
 describe('FieldArrayItems', () => {
   it('should render items', () => {
-    const data = {
+    const model = {
       array: [
         { a: 0 },
         { a: 1 },
         { a: 2 },
       ]
     };
-    const context: FormContext<typeof data> & FieldGroupContext = {
-      model: data,
-      onValueChange: () => {
-      },
+    const context: FormContext<typeof model> & FieldGroupContext = {
+      ...mockFormContext(model),
       groups: ['array']
     };
     const element = mount(
@@ -34,18 +33,17 @@ describe('FieldArrayItems', () => {
   });
 
   it('should pass remove callback to render function', () => {
-    const data = {
+    const model = {
       array: [
         { a: 0 },
         { a: 1 },
         { a: 2 },
       ]
     };
-    type Model = typeof data;
-    const onValueChange: OnValueChange<Model> = jest.fn();
+    type Model = typeof model;
+    const onFieldChange: OnFieldChange<Model> = jest.fn();
     const context: FormContext<Model> & FieldGroupContext = {
-      model: data,
-      onValueChange,
+      ...mockFormContext(model, { onFieldChange }),
       groups: ['array']
     };
     const element = mount(
@@ -62,6 +60,6 @@ describe('FieldArrayItems', () => {
 
     element.find('button').first().simulate('click');
 
-    expect(onValueChange).toHaveBeenCalledWith(['array'], [{a: 1}, {a: 2}]);
+    expect(onFieldChange).toHaveBeenCalledWith(['array'], [{a: 1}, {a: 2}]);
   });
 });

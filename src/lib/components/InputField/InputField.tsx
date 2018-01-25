@@ -8,11 +8,20 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   label?: string;
 }
 
-export const renderInput: FieldRenderFunction<InputValue, InputProps> = ({ input: { name, value, onChange }, custom }) => {
+export const renderInput: FieldRenderFunction<InputValue, InputProps> = ({ input: {
+  name, value, onChange, onBlur, onFocus
+}, custom }) => {
   const label = custom && custom.label;
   return <label>
     <div>{label}</div>
-    <input {...custom} name={name} value={value} onChange={event => onChange(event.target.value)}/>
+    <input
+      {...custom}
+      name={name}
+      value={value}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onChange={event => onChange(event.target.value)}
+    />
   </label>;
 };
 

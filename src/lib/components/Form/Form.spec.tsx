@@ -3,11 +3,11 @@ import * as React from 'react';
 import { ValidationDefinition } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
-import { Form } from './Form';
+import { Form, FormState } from './Form';
 
 describe('Form', () => {
   it('should render', () => {
-    expect(shallow(<Form model={{}}/>)).toMatchSnapshot();
+    expect(shallow(<Form state={{ model: {}}}/>)).toMatchSnapshot();
   });
 
   it('should render model in inputs', () => {
@@ -16,7 +16,7 @@ describe('Form', () => {
       b: 124
     };
     const element = mount(
-      <Form model={model}>
+      <Form state={{model}}>
         <InputField name={'a'}/>
         <InputField name={'b'} inner={{
           type: 'number'
@@ -42,7 +42,7 @@ describe('Form', () => {
       b: 124
     };
     const element = mount(
-      <Form model={model} onChange={onChange}>
+      <Form state={{ model }} onChange={onChange}>
         <InputField name={'a'}/>
         <InputField name={'b'} inner={{
           type: 'number'
@@ -58,8 +58,10 @@ describe('Form', () => {
     firstInput.simulate('change', { target: { value: expectedNewValue } });
 
     expect(onChange).toHaveBeenCalledWith({
-      ...model,
-      a: expectedNewValue
+      model: {
+        ...model,
+        a: expectedNewValue
+      }
     }, expect.anything());
   });
 
@@ -73,7 +75,7 @@ describe('Form', () => {
       }
     };
     const element = mount(
-      <Form model={model} onChange={onChange}>
+      <Form state={{ model }} onChange={onChange}>
         <InputField name={'a'}/>
         <InputField name={'b'} inner={{
           type: 'number'
@@ -92,9 +94,9 @@ describe('Form', () => {
     thirdInput.simulate('change', { target: { value: expectedNewValue } });
 
     expect(onChange).toHaveBeenCalledWith({
-      ...model,
-      c: {
-        c1: expectedNewValue
+      model: {
+        ...model,
+        c: { c1: expectedNewValue }
       }
     }, expect.anything());
   });
@@ -109,11 +111,11 @@ describe('Form', () => {
     const ERROR_A = 'Has to be greater than 10 characters';
     const ERROR_B = 'Has to be smaller than 100';
     const validationDefinition: ValidationDefinition<Model> = {
-      a: ({value}) => value.length >= 10 ? null : ERROR_A,
-      b: ({value}) => value < 100 ? null : ERROR_B,
+      a: ({ value }) => value.length >= 10 ? null : ERROR_A,
+      b: ({ value }) => value < 100 ? null : ERROR_B,
     };
     const element = mount(
-      <Form model={model} validation={validationDefinition} onChange={onChange}>
+      <Form state={{ model }} validation={validationDefinition} onChange={onChange}>
         <InputField name={'a'}/>
         <InputField name={'b'} inner={{
           type: 'number'
@@ -140,4 +142,5 @@ describe('Form', () => {
     });
 
   });
-});
+})
+;
