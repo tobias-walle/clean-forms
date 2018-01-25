@@ -29,7 +29,8 @@
       "allow-fast-null-checks"
     ],
     "member-ordering": [false],
-    "variable-name": false
+    "variable-name": false,
+    "ban-types": false
   },
   "rulesDirectory": []
 }

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Form } from '../lib';
 import { FieldArray, FieldArrayItems, InputField } from '../lib/components';
 import { FieldGroup } from '../lib/components/FieldGroup/FieldGroup';
-import { ValidationDefinition } from '../lib/utils/validation';
+import { ArrayValidation, ValidationDefinition, ValidationFunction } from '../lib/utils/validation';
 import { StateFullForm } from './StateFullForm/StateFullForm';
 
 storiesOf('Form', module)
@@ -49,8 +49,22 @@ storiesOf('Form', module)
         { item1: 'item1', item2: 'item2' }
       ],
     };
+    type Model = typeof model;
+    type Item = Model['array1'][0];
+    const errorMessage = 'Length has to be greater than limit';
+    const maxLengthValidator: (maxLength: number) => ValidationFunction<string> =
+      (maxLength) => ({value}) => value.length > maxLength ? null : errorMessage;
+    const validation: ValidationDefinition<Model> = {
+      value1: maxLengthValidator(1),
+      array1: new ArrayValidation<Model, Item>({
+        item1: maxLengthValidator(2),
+        item2: maxLengthValidator(2),
+      }, ({value}) => value.length > 1 ? null : 'The array needs at least one item')
+    };
     return <StateFullForm
-      initialState={{ model }}>
+      initialState={{ model }}
+      validation={validation as any}
+    >
       <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
       <FieldArray name={'array1'} render={({ addItem }) => (
         <>
