@@ -1,6 +1,6 @@
 import { mount, ReactWrapper, shallow } from 'enzyme';
 import * as React from 'react';
-import { ValidationDefinition } from '../../validation';
+import { ValidationDefinition } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
 import { Form } from './Form';

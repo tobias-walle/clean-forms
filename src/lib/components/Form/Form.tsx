@@ -1,7 +1,7 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { updateDeep } from '../../utils';
-import { Errors, ValidationDefinition, Validator } from '../../validation';
+import { Errors, ValidationDefinition, Validator } from '../../utils/validation';
 
 export type OnValueChange<Model> = (path: string[], value: any) => void;
 

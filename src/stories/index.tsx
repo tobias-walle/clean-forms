@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Form } from '../lib';
 import { FieldArray, FieldArrayItems, InputField } from '../lib/components';
 import { FieldGroup } from '../lib/components/FieldGroup/FieldGroup';
-import { ValidationDefinition } from '../lib/validation';
+import { ValidationDefinition } from '../lib/utils/validation';
 import { StateWrapper } from './StateWrapper/StateWrapper';
 
 storiesOf('Form', module)
