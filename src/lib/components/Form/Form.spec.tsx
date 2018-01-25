@@ -1,6 +1,7 @@
 import { mount, ReactWrapper, shallow } from 'enzyme';
 import * as React from 'react';
 import { Field, FieldArray, FieldArrayItems } from '../';
+import { mockEvent } from '../../../testUtils/mockEvent';
 import { wait } from '../../../testUtils/wait';
 import { DEFAULT_FIELD_STATUS } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
@@ -104,48 +105,6 @@ describe('Form', () => {
     }, expect.anything());
   });
 
-  it('should validate model', () => {
-    const onChange = jest.fn();
-    const model = {
-      a: 'hello',
-      b: 124
-    };
-    type Model = typeof model;
-    const ERROR_A = 'Has to be greater than 10 characters';
-    const ERROR_B = 'Has to be smaller than 100';
-    const validationDefinition: ValidationDefinition<Model> = {
-      a: ({ value }) => value.length >= 10 ? null : ERROR_A,
-      b: ({ value }) => value < 100 ? null : ERROR_B,
-    };
-    const element = mount(
-      <Form state={{ model }} validation={validationDefinition} onChange={onChange}>
-        <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
-      </Form>
-    );
-    const inputs = element.find('input');
-    const firstInput = inputs.first();
-    firstInput.simulate('change', { target: { value: '0123456789' } });
-
-    expect(onChange).toHaveBeenCalledWith(expect.anything(), {
-      errors: {
-        b: ERROR_B
-      }
-    });
-
-    firstInput.simulate('change', { target: { value: '012345678' } });
-
-    expect(onChange).toHaveBeenCalledWith(expect.anything(), {
-      errors: {
-        a: ERROR_A,
-        b: ERROR_B
-      }
-    });
-
-  });
-
   it('should initialize status', () => {
     const onChange = jest.fn();
     const model = { a: 'hello', b: 124 };
@@ -234,6 +193,59 @@ describe('Form', () => {
         untouched: false,
         touched: true
       }
+    });
+  });
+
+  it('should update valid/invalid/error status', async () => {
+    const onChange = jest.fn();
+    const model = { a: 'hello', b: 124 };
+    const error = 'The value has to have a greater length than 10';
+    const validators: ValidationDefinition<typeof model> = {
+      a: ({ value }) => value.length > 10 ? null : error
+    };
+    const expectFieldStatusUpdate = createFieldStatusExpectFunction(onChange);
+    const element = mount(
+      <Form state={{ model }} validation={validators} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'} inner={{
+          type: 'number'
+        }}/>
+      </Form>
+    );
+    const inputs = element.find('input');
+    const firstInput = inputs.first();
+
+    expectFieldStatusUpdate({
+      a: {
+        valid: false,
+        inValid: true,
+        pristine: true,
+        dirty: false,
+        untouched: true,
+        touched: false,
+        error
+      },
+      b: {
+        valid: true,
+        inValid: false,
+        pristine: true,
+        dirty: false,
+        untouched: true,
+        touched: false
+      },
+    });
+
+    firstInput.simulate('change', mockEvent('01234567890'));
+
+    expectFieldStatusUpdate({
+      a: {
+        valid: true,
+        inValid: false,
+        pristine: false,
+        dirty: true,
+        untouched: true,
+        touched: false
+      },
     });
   });
 

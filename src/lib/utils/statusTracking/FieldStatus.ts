@@ -5,6 +5,7 @@ export interface FieldStatus {
   dirty: boolean;
   untouched: boolean;
   touched: boolean;
+  error?: string;
 }
 
 export const DEFAULT_FIELD_STATUS: FieldStatus = {

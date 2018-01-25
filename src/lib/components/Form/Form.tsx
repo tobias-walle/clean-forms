@@ -1,10 +1,10 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { DELETE, selectDeep, updateDeep } from '../../utils';
-import { FieldRegister, FieldRegisterChanges } from '../../utils/FieldRegister';
+import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
-import { Errors, ValidationDefinition, Validator } from '../../utils/validation';
+import { FieldValidator, ValidationDefinition } from '../../utils/validation';
 
 export type OnFieldMount = (path: string[]) => void;
 
@@ -40,7 +40,6 @@ export interface FormState<Model> {
 }
 
 export interface FormMeta<Model> {
-  errors: Errors<Model> | undefined;
 }
 
 export interface FormInfo<Model> {
@@ -102,7 +101,7 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
       untouched: false
     });
     const state = this.createState(this.getModel(), status);
-    this.triggerChange({state});
+    this.triggerChange({ state });
   }
 
   private onFieldBlur: OnFieldBlur = (path) => {
@@ -111,72 +110,88 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   private onFieldChange: OnFieldChange<Model> = (path, value) => {
     const model = this.updateModel(path, value);
 
-    const status = this.updateFieldStatusBasedOnValue(this.getStatus(), path, value);
+    const status = this.updateFieldStatusBasedOnValue(this.getStatus(), path, value, model);
     const state = this.createState(model, status);
     const meta = this.createMetaData(model);
-    this.triggerChange({state, meta});
+
+    this.triggerChange({ state, meta });
   }
 
-  private updateFieldStatusBasedOnValue(status: FieldStatusMapping<Model>, path: string[], value: any): FieldStatusMapping<Model> {
+  private updateFieldStatusBasedOnValue(
+    status: FieldStatusMapping<Model>, path: string[], value: any, model: Model
+  ): FieldStatusMapping<Model> {
     if (value === DELETE) {
-      return this.removeFieldStatus(status || {}, path);
+      return this.removeFieldStatus(status, path);
     } else {
-      status =  this.updateFieldStatus(status || {}, path, { pristine: false, dirty: true });
+      const fieldStatusUpdate = this.applyValidationToFieldStatusUpdate({ pristine: false, dirty: true }, path, model);
+      status = this.updateFieldStatus(status, path, fieldStatusUpdate);
       return status;
     }
   }
 
   private onFieldRegisterChanges = (changes: FieldRegisterChanges): void => {
     let status = this.props.state.status || {};
+    const model = this.getModel();
     changes.registered.forEach((newPath) => {
-      status = this.updateFieldStatus(status, newPath, DEFAULT_FIELD_STATUS);
+      const fieldStatusUpdate = this.applyValidationToFieldStatusUpdate(DEFAULT_FIELD_STATUS, newPath, model);
+      status = this.updateFieldStatus(status, newPath, fieldStatusUpdate);
     });
     changes.unregistered.forEach((removedPath) => {
       status = this.removeFieldStatus(status, removedPath);
     });
-    const state = this.createState(this.props.state.model, status);
-    this.triggerChange({state});
+    const state = this.createState(model, status);
+    this.triggerChange({ state });
   }
 
-  private updateFieldStatus(status: FieldStatusMapping<Model>, path: string[], statusUpdate: Partial<FieldStatus>): FieldStatusMapping<Model> {
+  private applyValidationToFieldStatusUpdate(baseFieldStatus: Partial<FieldStatus>, path: Path, model: Model): Partial<FieldStatus> {
+    const validationStatus = this.getValidationStatus(path, model);
+    return {
+      ...baseFieldStatus,
+      ...validationStatus
+    };
+  }
+
+  private getValidationStatus(path: Path, model: Model): Partial<FieldStatus> {
+    const validationDefinition = this.props.validation;
+    if (!validationDefinition) {
+      return {};
+    }
+    return FieldValidator.getValidationStatus<Model>({path, model, validationDefinition });
+  }
+
+  private updateFieldStatus(
+    status: FieldStatusMapping<Model>, path: string[], statusUpdate: Partial<FieldStatus>): FieldStatusMapping<Model> {
     if (!this.fieldsRegister.includesPath(path)) {
-      console.warn(`Path not found "${JSON.stringify(path)}" in "${JSON.stringify(this.fieldsRegister.paths)}"`, statusUpdate);
+      console.warn(`Path not found "${JSON.stringify(path)}" in "${JSON.stringify(this.fieldsRegister.paths)}"`);
       return status;
     }
-    const currentFieldStatus = selectDeep({object: status, path, assert: false}) || DEFAULT_FIELD_STATUS;
+    const currentFieldStatus = selectDeep({ object: status, path, assert: false }) || DEFAULT_FIELD_STATUS;
     const newFieldStatus = { ...currentFieldStatus, ...statusUpdate };
 
-    return updateDeep({object: status, path, value: newFieldStatus, assert: false});
+    return updateDeep({ object: status, path, value: newFieldStatus, assert: false });
   }
 
   private removeFieldStatus(status: FieldStatusMapping<Model>, path: string[]): FieldStatusMapping<Model> {
-    return updateDeep({object: status, path, value: DELETE, assert: false});
+    return updateDeep({ object: status, path, value: DELETE, assert: false });
   }
 
   private updateModel(path: string[], value: any): Model {
     return updateDeep({ object: this.props.state.model, path, value });
   }
 
-  private triggerChange({state, meta}: { state?: FormState<Model>, meta?: FormMeta<Model> }): void {
+  private triggerChange({ state, meta }: { state?: FormState<Model>, meta?: FormMeta<Model> }): void {
     const { onChange } = this.props;
     this.meta = meta || this.meta;
     onChange && onChange(state || this.props.state, meta || this.meta);
   }
 
   private createState(model: Model, status: FieldStatusMapping<Model> | undefined): FormState<Model> {
-    return {model, status};
+    return { model, status };
   }
 
   private createMetaData(model: Model): FormMeta<Model> {
     return {
-      errors: this.validate(model)
     };
-  }
-
-  private validate(model: Model): Errors<Model> | undefined {
-    const { validation = {} } = this.props;
-    const validator = new Validator<Model>();
-    return validator.validate(model, validation);
   }
 
   private getFormInfo(): FormInfo<Model> {

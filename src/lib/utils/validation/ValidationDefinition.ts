@@ -6,7 +6,7 @@ export interface ValidationFunctionArgs<Value = any, Model = any> {
 }
 
 export type ValidationFunction<Value = any, Model = any> =
-  (args: ValidationFunctionArgs<Value, Model>) => string | Errors<Model> | null;
+  (args: ValidationFunctionArgs<Value, Model>) => string | null;
 
 export type ValidationDefinition<Model> = {
   [key in keyof Model]?: ValidationFunction<Model[key], Model> | ValidationDefinition<Model[key]>
