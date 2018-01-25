@@ -20,6 +20,8 @@ export class FieldRegister {
     return this._paths;
   }
 
+  private pathsAsString: string[] = [];
+
   private triggerListeners = createDebouncedFunction(() => {
     this.listeners.forEach(listener => listener(this.changes));
     this.resetChanges();
@@ -30,17 +32,23 @@ export class FieldRegister {
   }
 
   public includesPath(path: Path): boolean {
-    return this.paths.includes(path);
+    return this.pathsAsString.includes(pathToString(path));
   }
 
   public register(path: Path): void {
     this._paths.push(path);
+    this.pathsAsString.push(pathToString(path));
+
     this.changes.registered.push(path);
     this.triggerListeners();
   }
 
   public unregister(path: Path): void {
-    removeItemFromArray(this.paths, path);
+    const index = this.pathsAsString.indexOf(pathToString(path));
+
+    this._paths.splice(index, 1);
+    this.pathsAsString.splice(index, 1);
+
     this.changes.unregistered.push(path);
     this.triggerListeners();
   }
@@ -63,4 +71,8 @@ export class FieldRegister {
   private resetChanges() {
     this.changes = { registered: [], unregistered: [] };
   }
+}
+
+function pathToString(path: Path): string {
+  return path.join('.');
 }

@@ -115,7 +115,8 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     if (value === DELETE) {
       return this.removeFieldStatus(status || {}, path);
     } else {
-      return this.updateFieldStatus(this.props.state.status || {}, path, { pristine: false, dirty: true });
+      status =  this.updateFieldStatus(status || {}, path, { pristine: false, dirty: true });
+      return status;
     }
   }
 
@@ -133,6 +134,7 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
 
   private updateFieldStatus(status: FieldStatusMapping<Model>, path: string[], statusUpdate: Partial<FieldStatus>): FieldStatusMapping<Model> {
     if (!this.fieldsRegister.includesPath(path)) {
+      console.warn(`Path not found "${JSON.stringify(path)}" in "${JSON.stringify(this.fieldsRegister.paths)}"`);
       return status;
     }
     const currentFieldStatus = selectDeep({object: status, path, assert: false}) || DEFAULT_FIELD_STATUS;

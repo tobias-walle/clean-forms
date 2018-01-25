@@ -9,19 +9,15 @@ describe('FieldRegister', () => {
   });
 
   it('should register and unregister new paths', () => {
-    const path1 = ['path1'];
-    const path2 = ['path2'];
-    const path3 = ['path3'];
+    fieldRegister.register(['path1']);
+    fieldRegister.register(['path2']);
+    fieldRegister.register(['path3']);
 
-    fieldRegister.register(path1);
-    fieldRegister.register(path2);
-    fieldRegister.register(path3);
+    expect(fieldRegister.paths).toEqual([['path1'], ['path2'], ['path3']]);
 
-    expect(fieldRegister.paths).toEqual([path1, path2, path3]);
+    fieldRegister.unregister(['path2']);
 
-    fieldRegister.unregister(path2);
-
-    expect(fieldRegister.paths).toEqual([path1, path3]);
+    expect(fieldRegister.paths).toEqual([['path1'], ['path3']]);
   });
 
   it('should trigger callback on changes', async () => {
@@ -69,10 +65,9 @@ describe('FieldRegister', () => {
   });
 
   it('should check if it includes a path', () => {
-    const myPath = ['myPath'];
-    fieldRegister.register(myPath);
+    fieldRegister.register(['myPath']);
 
-    expect(fieldRegister.includesPath(myPath)).toBe(true);
+    expect(fieldRegister.includesPath(['myPath'])).toBe(true);
     expect(fieldRegister.includesPath([])).toBe(false);
   });
 });
