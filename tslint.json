@@ -28,12 +28,8 @@
       "allow-tagged-template",
       "allow-fast-null-checks"
     ],
-    "member-ordering": [
-      true,
-      {
-        "order": "fields-first"
-      }
-    ]
+    "member-ordering": [false],
+    "variable-name": false
   },
   "rulesDirectory": []
 }

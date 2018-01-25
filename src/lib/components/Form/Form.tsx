@@ -1,6 +1,8 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { updateDeep } from '../../utils';
+import { selectDeep, updateDeep } from '../../utils';
+import { FieldRegister, FieldRegisterChanges } from '../../utils/FieldRegister';
+import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import { Errors, ValidationDefinition, Validator } from '../../utils/validation';
 
@@ -56,6 +58,7 @@ export interface FormProps<Model, FormValidation extends ValidationDefinition<Mo
 
 export class Form<Model = any, FormValidation extends ValidationDefinition<Model> = any> extends React.Component<FormProps<Model, FormValidation>, {}> {
   public static childContextTypes = formContextTypes;
+  private fieldsRegister: FieldRegister;
   private meta: FormMeta<Model>;
 
   public render() {
@@ -77,10 +80,20 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     };
   }
 
+  public componentWillMount() {
+    this.fieldsRegister = new FieldRegister();
+  }
+
+  public componentDidMount() {
+    this.fieldsRegister.addListener(this.onFieldRegisterChanges);
+  }
+
   private onFieldMount: OnFieldMount = (path) => {
+    this.fieldsRegister.register(path);
   }
 
   private onFieldUnmount: OnFieldMount = (path) => {
+    this.fieldsRegister.unregister(path);
   }
 
   private onFieldFocus: OnFieldFocus = (path) => {
@@ -90,16 +103,49 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   }
 
   private onFieldChange: OnFieldChange<Model> = (path, value) => {
-    this.updateModel(path, value);
+    const model = this.updateModel(path, value);
+    const status = this.updateFieldStatus(this.props.state.status || {}, path, {
+      pristine: false,
+      dirty: true
+    });
+    const state = this.createState(model, status);
+    this.meta = this.createMetaData(model);
+    this.triggerChange(state, this.meta);
   }
 
-  private updateModel: OnFieldChange<Model> = (path, value) => {
-    const { onChange, state } = this.props;
-    const newModel: Model = updateDeep(state.model, path, value);
+  private onFieldRegisterChanges = (changes: FieldRegisterChanges): void => {
+    let status = this.props.state.status || {};
+    changes.registered.forEach((newPath) => {
+      status = this.updateFieldStatus(status, newPath, DEFAULT_FIELD_STATUS);
+    });
+    changes.unregistered.forEach((removedPath) => {
+      status = this.removeFieldStatus(status, removedPath);
+    });
+    const state = this.createState(this.props.state.model, status);
+    this.triggerChange(state, this.meta);
+  }
 
-    const newState = this.createState(newModel, state.status);
-    this.meta = this.createMetaData(newModel);
-    onChange && onChange(newState, this.meta);
+  private updateFieldStatus(status: FieldStatusMapping<Model>, path: string[], statusUpdate: Partial<FieldStatus>): FieldStatusMapping<Model> {
+    if (!this.fieldsRegister.includesPath(path)) {
+      return status;
+    }
+    const currentFieldStatus = selectDeep({object: status, path, assert: false}) || DEFAULT_FIELD_STATUS;
+    const newFieldStatus = { ...currentFieldStatus, ...statusUpdate };
+
+    return updateDeep({object: status, path, value: newFieldStatus, assert: false});
+  }
+
+  private removeFieldStatus(status: FieldStatusMapping<Model>, path: string[]): FieldStatusMapping<Model> {
+    return updateDeep({object: status, path, value: undefined, assert: false});
+  }
+
+  private updateModel(path: string[], value: any): Model {
+    return updateDeep({ object: this.props.state.model, path, value });
+  }
+
+  private triggerChange(state: FormState<Model>, meta: FormMeta<Model>): void {
+    const { onChange } = this.props;
+    onChange && onChange(state, meta);
   }
 
   private createState(model: Model, status: FieldStatusMapping<Model> | undefined): FormState<Model> {

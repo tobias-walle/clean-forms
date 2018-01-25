@@ -1,13 +1,18 @@
 import { mount, ReactWrapper, shallow } from 'enzyme';
 import * as React from 'react';
+import { Field, FieldArray, FieldArrayItems } from '../';
+import { wait } from '../../../testUtils/wait';
+import { DEFAULT_FIELD_STATUS } from '../../utils/statusTracking/FieldStatus';
+import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import { ValidationDefinition } from '../../utils/validation';
+import { AddItem } from '../FieldArray/FieldArray';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
-import { Form, FormState } from './Form';
+import { Form, FormContext, FormState } from './Form';
 
 describe('Form', () => {
   it('should render', () => {
-    expect(shallow(<Form state={{ model: {}}}/>)).toMatchSnapshot();
+    expect(shallow(<Form state={{ model: {} }}/>)).toMatchSnapshot();
   });
 
   it('should render model in inputs', () => {
@@ -16,7 +21,7 @@ describe('Form', () => {
       b: 124
     };
     const element = mount(
-      <Form state={{model}}>
+      <Form state={{ model }}>
         <InputField name={'a'}/>
         <InputField name={'b'} inner={{
           type: 'number'
@@ -53,15 +58,14 @@ describe('Form', () => {
     const inputs = element.find('input');
     const firstInput = inputs.first();
 
-    expect(onChange).not.toHaveBeenCalled();
-
     firstInput.simulate('change', { target: { value: expectedNewValue } });
 
     expect(onChange).toHaveBeenCalledWith({
       model: {
         ...model,
         a: expectedNewValue
-      }
+      },
+      status: expect.anything()
     }, expect.anything());
   });
 
@@ -89,15 +93,14 @@ describe('Form', () => {
     const inputs = element.find('input');
     const thirdInput = inputs.at(2);
 
-    expect(onChange).not.toHaveBeenCalled();
-
     thirdInput.simulate('change', { target: { value: expectedNewValue } });
 
     expect(onChange).toHaveBeenCalledWith({
       model: {
         ...model,
         c: { c1: expectedNewValue }
-      }
+      },
+      status: expect.anything()
     }, expect.anything());
   });
 
@@ -142,5 +145,110 @@ describe('Form', () => {
     });
 
   });
-})
-;
+
+  it('should initialize status', () => {
+    const onChange = jest.fn();
+    const model = { a: 'hello', b: 124 };
+    const expectFieldStatus = createFieldStatusExpectFunction(onChange);
+
+    mount(
+      <Form state={{ model }} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'} inner={{
+          type: 'number'
+        }}/>
+      </Form>
+    );
+    expectFieldStatus({
+      a: {
+        valid: true,
+        inValid: false,
+        pristine: true,
+        dirty: false,
+        untouched: true,
+        touched: false
+      },
+      b: {
+        valid: true,
+        inValid: false,
+        pristine: true,
+        dirty: false,
+        untouched: true,
+        touched: false
+      }
+    });
+  });
+
+  it('should update dirty/pristine status', async () => {
+    const onChange = jest.fn();
+    const model = { a: 'hello', b: 124 };
+    const expectFieldStatus = createFieldStatusExpectFunction(onChange);
+    const element = mount(
+      <Form state={{ model }} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'} inner={{
+          type: 'number'
+        }}/>
+      </Form>
+    );
+    const inputs = element.find('input');
+    const firstInput = inputs.first();
+
+    firstInput.simulate('change', { target: { value: '0123456789' } });
+
+    expectFieldStatus({
+      a: {
+        valid: true,
+        inValid: false,
+        pristine: false,
+        dirty: true,
+        untouched: true,
+        touched: false
+      }
+    });
+  });
+
+  it('should not the set status for fields that are not registered', () => {
+    const onChange = jest.fn();
+    const model = { a: [] };
+    const expectFieldStatus = createFieldStatusExpectFunction(onChange);
+    let arrayAddItem: AddItem<any> | null = null;
+    mount(
+      <Form state={{ model }} onChange={onChange}>
+        <FieldArray name={'a'} render={({ addItem }) => {
+          arrayAddItem = addItem;
+          return <FieldArrayItems render={() => <InputField name={null}/>}/>;
+        }}/>
+      </Form>
+    );
+
+    arrayAddItem!('test');
+
+    expectFieldStatus({});
+  });
+
+  it('should remove status if field unmounts', async () => {
+    const onChange = jest.fn();
+    const model = { a: 'test' };
+    const expectFieldStatus = createFieldStatusExpectFunction(onChange);
+    const element = mount(
+      <Form state={{ model, status: { a: DEFAULT_FIELD_STATUS } }} onChange={onChange}>
+        <InputField name={'a'}/>
+      </Form>
+    );
+    const context: FormContext<any> = element.find(Field).instance().context;
+
+    context.onFieldUnmount(['a']);
+
+    await wait(10);
+
+    expectFieldStatus({});
+  });
+});
+
+function createFieldStatusExpectFunction(onChange: jest.Mock<any>) {
+  return (fieldStatusMapping: FieldStatusMapping<any>) => {
+    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1];
+    expect(lastCall[0].status).toEqual(fieldStatusMapping);
+  };
+}

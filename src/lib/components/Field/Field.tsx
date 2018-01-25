@@ -44,7 +44,7 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     const { form } = this.context;
 
     this.path = createPath(this.context.groups, this.props.name);
-    const value = selectDeep(form.state.model, this.getPath());
+    const value = selectDeep({ object: form.state.model, path: this.getPath() });
     const input: InputProps<Value> = {
       name: name || undefined,
       value,
@@ -56,7 +56,7 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     return render({input, custom, form});
   }
 
-  public componentWillMount() {
+  public componentDidMount() {
     this.context.onFieldMount(this.getPath());
   }
 

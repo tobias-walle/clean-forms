@@ -46,7 +46,7 @@ export class FieldArray<Item = any> extends React.Component<FieldArrayProps<Item
 
   private getArray(): Item[] {
     const { form: { state: { model }} } = this.context;
-    return selectDeep(model, this.getPath());
+    return selectDeep({ object: model, path: this.getPath() });
   }
 
   private setArray(newArray: Item[]): void {

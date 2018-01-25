@@ -48,7 +48,7 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
 
   private getArray(): Item[] {
     const { form: { state: { model }}, groups = [] } = this.context;
-    return selectDeep(model, groups);
+    return selectDeep({ object: model, path: groups });
   }
 
   private removeItem(index: number): void {

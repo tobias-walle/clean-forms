@@ -105,7 +105,6 @@ describe('Field', () => {
     expect(onFieldUnmount).toHaveBeenCalled();
   });
 
-
   it('should support grouping', () => {
     const model = { testGroup1: { testGroup2: { name: 'value' } } };
     const context: FormContext<any> & FieldGroupContext = {

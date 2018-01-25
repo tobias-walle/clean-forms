@@ -1,8 +1,17 @@
 import { assertPropertyInObject } from './assertPropertyInObject';
 
-export function selectDeep(object: any, path: string[]): any {
+export interface SelectDeepArgs {
+  object: any;
+  path: string[];
+  assert?: boolean;
+}
+
+export function selectDeep({object, path, assert = true}: SelectDeepArgs): any {
   return path.reduce((item, key: string) => {
-    assertPropertyInObject(item, key);
+    assert && assertPropertyInObject(item, key);
+    if (item === undefined) {
+      return;
+    }
     return item[key];
   }, object);
 }
