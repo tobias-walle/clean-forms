@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`assertPropertyInObject should throw an error if an object does not have an property 1`] = `"The key \\"b\\" does not exits on item {\\"a\\":123}."`;
+
+exports[`assertPropertyInObject should throw an error if object is undefined 1`] = `"Cannot find key \\"b\\" in undefined"`;

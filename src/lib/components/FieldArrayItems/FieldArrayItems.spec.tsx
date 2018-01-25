@@ -2,6 +2,7 @@ import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { InputField } from '../';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
+import { DELETE } from '../../utils';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
 import { FormContext, OnFieldChange } from '../Form/Form';
 import { FieldArrayItems } from './FieldArrayItems';
@@ -60,6 +61,6 @@ describe('FieldArrayItems', () => {
 
     element.find('button').first().simulate('click');
 
-    expect(onFieldChange).toHaveBeenCalledWith(['array'], [{a: 1}, {a: 2}]);
+    expect(onFieldChange).toHaveBeenCalledWith(['array', '0'], DELETE);
   });
 });

@@ -1,9 +1,13 @@
 import { assertPropertyInObject } from './assertPropertyInObject';
+import { removeItemFromArray } from './removeItemFromArray';
+
+export const DELETE = Symbol('DELETE');
+export type DELETE = typeof DELETE;
 
 export interface UpdateDeepArgs<T> {
   object: T;
   path: string[];
-  value: any;
+  value: any | DELETE;
   assert?: boolean;
 }
 
@@ -15,9 +19,18 @@ export function updateDeep<T>({object, path, value, assert = true}: UpdateDeepAr
   const tail = path.slice(0, lastIndex);
   const keyToUpdate = path[lastIndex];
 
-  const { copy: result, selectedObject: objectToUpdate } = selectDeepAndCopy({ object, path: tail, assert });
+  const { copy: result, selectedObject: objectToUpdate } = selectDeepAndCopy({
+    object,
+    path: tail,
+    assert,
+    createPropertyIfNotExists: value !== DELETE
+  });
   assert && assertPropertyInObject(objectToUpdate, keyToUpdate);
-  objectToUpdate[keyToUpdate] = value;
+  if (value === DELETE) {
+    deleteProperty(objectToUpdate, keyToUpdate);
+  } else {
+    objectToUpdate[keyToUpdate] = value;
+  }
 
   return result;
 }
@@ -26,9 +39,10 @@ interface SelectDeepAndCopyArgs<T> {
   object: T;
   path: string[];
   assert?: boolean;
+  createPropertyIfNotExists?: boolean;
 }
 
-function selectDeepAndCopy<T>({object, path, assert = true}: SelectDeepAndCopyArgs<T>): { copy: T, selectedObject: any } {
+function selectDeepAndCopy<T>({object, path, assert = true, createPropertyIfNotExists = true}: SelectDeepAndCopyArgs<T>): { copy: T, selectedObject: any } {
   path = path.slice(); // Copy the path
   const copy = copyArrayOrObject(object);
 
@@ -37,8 +51,10 @@ function selectDeepAndCopy<T>({object, path, assert = true}: SelectDeepAndCopyAr
     const key = path.splice(0, 1)[0];
     if (assert) {
       assertPropertyInObject(selectedObject, key);
-    } else {
+    } else if (createPropertyIfNotExists) {
       ensurePropertyInObject(selectedObject, key);
+    } else if (!(key in selectedObject)) {
+      return { copy, selectedObject: {} };
     }
 
     const lastObject = selectedObject;
@@ -61,5 +77,13 @@ function ensurePropertyInObject(object: any, key: string): void {
   const objectHasKey = key in object;
   if (!objectHasKey) {
     object[key] = {};
+  }
+}
+
+function deleteProperty(object: any, key: string): void {
+  if (object instanceof Array) {
+    object.splice(Number(key), 1);
+  } else {
+    delete object[key];
   }
 }

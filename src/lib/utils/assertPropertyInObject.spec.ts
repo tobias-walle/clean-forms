@@ -14,4 +14,11 @@ describe('assertPropertyInObject', () => {
 
     expect(() => assertPropertyInObject(object, property)).not.toThrowError();
   });
+
+  it('should throw an error if object is undefined', () => {
+    const object = undefined;
+    const property = 'b';
+
+    expect(() => assertPropertyInObject(object, property)).toThrowErrorMatchingSnapshot();
+  });
 });

@@ -1,7 +1,7 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { FieldGroup } from '../';
-import { selectDeep } from '../../utils';
+import { DELETE, selectDeep } from '../../utils';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
 
@@ -52,11 +52,8 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   }
 
   private removeItem(index: number): void {
-    const newArray = [
-      ...this.array.slice(0, index),
-      ...this.array.slice(index + 1)
-    ];
-    this.setArray(newArray);
+    const { groups = [], onFieldChange } = this.context;
+    onFieldChange([...groups, String(index)], DELETE);
   }
 
   private setArray(newArray: Item[]): void {

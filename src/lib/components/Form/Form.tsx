@@ -1,6 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { selectDeep, updateDeep } from '../../utils';
+import { DELETE, selectDeep, updateDeep } from '../../utils';
 import { FieldRegister, FieldRegisterChanges } from '../../utils/FieldRegister';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
@@ -104,13 +104,19 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
 
   private onFieldChange: OnFieldChange<Model> = (path, value) => {
     const model = this.updateModel(path, value);
-    const status = this.updateFieldStatus(this.props.state.status || {}, path, {
-      pristine: false,
-      dirty: true
-    });
+
+    const status = this.updateFieldStatusBasedOnValue(this.props.state.status || {}, path, value);
     const state = this.createState(model, status);
     this.meta = this.createMetaData(model);
     this.triggerChange(state, this.meta);
+  }
+
+  private updateFieldStatusBasedOnValue(status: FieldStatusMapping<Model>, path: string[], value: any): FieldStatusMapping<Model> {
+    if (value === DELETE) {
+      return this.removeFieldStatus(status || {}, path);
+    } else {
+      return this.updateFieldStatus(this.props.state.status || {}, path, { pristine: false, dirty: true });
+    }
   }
 
   private onFieldRegisterChanges = (changes: FieldRegisterChanges): void => {
@@ -136,7 +142,7 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   }
 
   private removeFieldStatus(status: FieldStatusMapping<Model>, path: string[]): FieldStatusMapping<Model> {
-    return updateDeep({object: status, path, value: undefined, assert: false});
+    return updateDeep({object: status, path, value: DELETE, assert: false});
   }
 
   private updateModel(path: string[], value: any): Model {
