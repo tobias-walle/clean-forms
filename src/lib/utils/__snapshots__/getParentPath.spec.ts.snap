@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getParentPath should throw error if path has a size of 1 1`] = `"Path does not have a parent"`;
+
+exports[`getParentPath should throw error if path is empty 1`] = `"Path does not have a parent"`;

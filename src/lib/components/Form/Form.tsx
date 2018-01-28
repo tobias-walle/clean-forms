@@ -1,7 +1,9 @@
+import { instanceOf } from 'prop-types';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { DELETE, selectDeep, updateDeep } from '../../utils';
 import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
+import { getParentPath } from '../../utils/getParentPath';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import { FieldValidator, ValidationDefinition } from '../../utils/validation';
@@ -110,11 +112,32 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   private onFieldChange: OnFieldChange<Model> = (path, value) => {
     const model = this.updateModel(path, value);
 
-    const status = this.updateFieldStatusBasedOnValue(this.getStatus(), path, value, model);
+    let status = this.updateStatusIfParentIsArray(this.getStatus(), path, model);
+    status = this.updateFieldStatusBasedOnValue(status, path, value, model);
+
     const state = this.createState(model, status);
     const meta = this.createMetaData(model);
 
     this.triggerChange({ state, meta });
+  }
+
+  private updateStatusIfParentIsArray(status: FieldStatusMapping<Model>, itemPath: Path, model: Model): FieldStatusMapping<Model> {
+    if (!this.isArrayItem(model, itemPath)) {
+      return status;
+    }
+    const arrayPath = getParentPath(itemPath);
+    const arrayValue = selectDeep({object: model, path: arrayPath });
+    return this.updateFieldStatusBasedOnValue(status, arrayPath, arrayValue, model);
+  }
+
+  private isArrayItem(model: Model, path: Path): boolean {
+    const length = path.length;
+    if (length <= 1) {
+      return false;
+    }
+    const parentPath = getParentPath(path);
+    const parent = selectDeep({ object: model, path: parentPath });
+    return parent instanceof Array;
   }
 
   private updateFieldStatusBasedOnValue(

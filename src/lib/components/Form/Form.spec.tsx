@@ -5,7 +5,7 @@ import { mockEvent } from '../../../testUtils/mockEvent';
 import { wait } from '../../../testUtils/wait';
 import { DEFAULT_FIELD_STATUS } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
-import { ValidationDefinition } from '../../utils/validation';
+import { ArrayValidation, ValidationDefinition } from '../../utils/validation';
 import { AddItem } from '../FieldArray/FieldArray';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
@@ -245,6 +245,60 @@ describe('Form', () => {
         dirty: true,
         untouched: true,
         touched: false
+      },
+    });
+  });
+
+  it('should update valid/invalid/error status for array', async () => {
+    const onChange = jest.fn();
+    const model = { array: ['hello'] };
+    const error = 'The array needs at least 1 item';
+    const validators: ValidationDefinition<typeof model> = {
+      array: new ArrayValidation(null, ({ value }) => value.length >= 1 ? null : error)
+    };
+    const expectFieldStatusUpdate = createFieldStatusExpectFunction(onChange);
+    let removeItem: (() => void) | null = null;
+    mount(
+      <Form state={{ model }} validation={validators} onChange={onChange}>
+        <FieldArray name={'array'} render={() => (
+          <FieldArrayItems render={(args) => {
+            removeItem = args.remove;
+            return <InputField name={null}/>;
+          }}/>
+        )}/>
+      </Form>
+    );
+
+    expectFieldStatusUpdate({
+      array: {
+        0: {
+          valid: true,
+          inValid: false,
+          pristine: true,
+          dirty: false,
+          untouched: true,
+          touched: false,
+        },
+        valid: true,
+        inValid: false,
+        pristine: true,
+        dirty: false,
+        untouched: true,
+        touched: false,
+      },
+    });
+
+    removeItem!();
+
+    expectFieldStatusUpdate({
+      array: {
+        valid: false,
+        inValid: true,
+        pristine: false,
+        dirty: true,
+        untouched: true,
+        touched: false,
+        error
       },
     });
   });
