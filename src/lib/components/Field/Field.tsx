@@ -44,7 +44,7 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     const { form } = this.context;
 
     this.path = createPath(this.context.groups, this.props.name);
-    const value = selectDeep({ object: form.state.model, path: this.getPath() });
+    const value = selectDeep({ object: form.state.model, path: this.path });
     const input: InputProps<Value> = {
       name: name || undefined,
       value,
@@ -57,26 +57,22 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
   }
 
   public componentDidMount() {
-    this.context.onFieldMount(this.getPath());
+    this.context.onFieldMount(this.path);
   }
 
   public componentWillUnmount() {
-    this.context.onFieldUnmount(this.getPath());
+    this.context.onFieldUnmount(this.path);
   }
 
   private onFocus = () => {
-    this.context.onFieldFocus(this.getPath());
+    this.context.onFieldFocus(this.path);
   }
 
   private onBlur = () => {
-    this.context.onFieldBlur(this.getPath());
+    this.context.onFieldBlur(this.path);
   }
 
   private onChange = (value: any) => {
-    this.context.onFieldChange(this.getPath(), value);
-  }
-
-  private getPath(): string[] {
-    return this.path;
+    this.context.onFieldChange(this.path, value);
   }
 }
