@@ -38,37 +38,47 @@ export class FieldValidator<Model> {
       return null;
     } else if (validation instanceof ArrayValidation) {
       return this.runArrayValidation(validation);
-    } else if (validation instanceof Function) {
-      return this.runValidationFunctionInTryCatch(validation);
     } else {
-      const pathAsString = JSON.stringify(path);
-      console.warn(`Invalid validation "${typeof validation}" for path "${pathAsString}"`);
-      return null;
+      return this.runValidationFunctionInTryCatchAndCheckType(validation);
     }
   }
 
   private runArrayValidation(validation: ArrayValidation): string | null {
-    if (this.value instanceof Array && validation.arrayValidation) {
+    if (this.value instanceof Array) {
       return this.runValidationFunctionInTryCatch(validation.arrayValidation);
-    } else if (typeof validation.itemValidation === 'function') {
-      return this.runValidationFunctionInTryCatch(validation.itemValidation);
-    } else if (!(this.value instanceof Array)) {
-      const pathAsString = JSON.stringify(this.path);
-      console.warn(`Invalid array validation type "${typeof validation.itemValidation}" for path "${pathAsString}"`);
+    } else {
+      return this.runValidationFunctionInTryCatchAndCheckType(validation.itemValidation);
     }
-    return null;
   }
 
-  private runValidationFunctionInTryCatch(validationFunction: ValidationFunction): string | null {
+  private runValidationFunctionInTryCatchAndCheckType(validationFunction: any): string | null {
+    if (typeof validationFunction === 'function') {
+      return this.runValidationFunctionInTryCatch(validationFunction);
+    } else {
+      const pathAsString = JSON.stringify(this.path);
+      const errorMessage = `Invalid validation type "${typeof validationFunction}" for path "${pathAsString}"`;
+      console.error(errorMessage);
+      return errorMessage;
+    }
+  }
+
+  private runValidationFunctionInTryCatch(validationFunction: ValidationFunction | undefined | null): string | null {
     try {
-      return validationFunction({ value: this.value, formValue: this.model }) || null;
+      return this.runValidationFunctionIfDefined(validationFunction);
     } catch (e) {
       const value = JSON.stringify(this.value);
       const path = JSON.stringify(this.path);
-      const errorMessage = `Error running validation function for value ${value} in path ${path}:`;
+      const errorMessage = `Error while running validation function for value ${value} in path ${path}:`;
       console.error(errorMessage, e);
+      return errorMessage;
+    }
+  }
+
+  private runValidationFunctionIfDefined(validationFunction: ValidationFunction | undefined | null): string | null {
+    if (validationFunction == null) {
       return null;
     }
+    return validationFunction({ value: this.value, formValue: this.model }) || null;
   }
 }
 

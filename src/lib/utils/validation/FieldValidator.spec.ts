@@ -53,6 +53,59 @@ describe('FieldValidator', () => {
       expect(result).toEqual(expectedResult);
     });
 
+    it('should catch errors in validation function', () => {
+      const model = {
+        a: 50,
+        b: 'test',
+      };
+      type Model = typeof model;
+      const args: ValidateFieldArguments<Model> = {
+        model,
+        validationDefinition: {
+          a: () => {
+            throw new Error('Test');
+          }
+        },
+        path: ['a']
+      };
+      const expectedResult: Partial<FieldStatus> = {
+        inValid: true,
+        valid: false,
+        error: expect.any(String)
+      };
+      console.error = jest.fn();
+
+      const result = FieldValidator.getValidationStatus(args);
+
+      expect(result).toEqual(expectedResult);
+      expect(console.error).toHaveBeenCalledTimes(1);
+      const errorMessage = (console.error as jest.Mock).mock.calls[0][0];
+      expect(errorMessage).toMatchSnapshot();
+    });
+
+    it('should check if validation is invalid for an item', () => {
+      const model = { a: [], };
+      type Model = typeof model;
+      const args: ValidateFieldArguments<Model> = {
+        model,
+        validationDefinition: { a: {} },
+        path: ['a']
+      };
+      const expectedResult: Partial<FieldStatus> = {
+        inValid: true,
+        valid: false,
+        error: expect.any(String)
+      };
+      console.error = jest.fn();
+
+      const result = FieldValidator.getValidationStatus(args);
+
+      expect(result).toEqual(expectedResult);
+      expect(console.error).toHaveBeenCalledTimes(1);
+      const errorMessage = (console.error as jest.Mock).mock.calls[0][0];
+      expect(errorMessage).toMatchSnapshot();
+    });
+
     it('should validate objects in an array', () => {
       interface Item {
         a: number;
@@ -153,6 +206,30 @@ describe('FieldValidator', () => {
         )
       };
       const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['array'] };
+      const expectedResult: Partial<FieldStatus> = {
+        inValid: true,
+        valid: false,
+        error,
+      };
+
+      const result = FieldValidator.getValidationStatus(args);
+
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should run item validation if the value is not an array', () => {
+      interface Model {
+        value: number;
+      }
+
+      const model: Model = { value: 123 };
+      const error = 'The number has to be smaller than 1';
+      const validationDefinition = {
+        value: new ArrayValidation<Model, number, any>(
+          ({ value }) => value < 1 ? null : error
+        )
+      };
+      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['value'] };
       const expectedResult: Partial<FieldStatus> = {
         inValid: true,
         valid: false,

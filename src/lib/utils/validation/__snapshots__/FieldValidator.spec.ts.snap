@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FieldValidator getValidationStatus should catch errors in validation function 1`] = `"Error while running validation function for value 50 in path [\\"a\\"]:"`;
+
+exports[`FieldValidator getValidationStatus should check if validation is invalid for an item 1`] = `"Invalid validation type \\"object\\" for path \\"[\\"a\\"]\\""`;
