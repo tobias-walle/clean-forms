@@ -2,7 +2,7 @@ import { mount } from 'enzyme';
 import * as React from 'react';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
-import { FormContext, OnFieldChange } from '../Form/Form';
+import { FormContext, OnFieldChange, OnFieldMount } from '../Form/Form';
 import { FieldArray } from './FieldArray';
 
 describe('FieldArray', () => {
@@ -15,6 +15,7 @@ describe('FieldArray', () => {
         return <div/>;
       }
     }
+
     const model = { array: ['item'] };
     type Model = typeof model;
     const context: FormContext<Model> = mockFormContext(model);
@@ -41,7 +42,7 @@ describe('FieldArray', () => {
     const context: FormContext<Model> = mockFormContext(model, { onFieldChange });
 
     const element = mount(
-      <FieldArray name={'array'} render={({addItem}) => (
+      <FieldArray name={'array'} render={({ addItem }) => (
         <button onClick={() => addItem('newItem')}>Add</button>
       )}/>
       , { context }
@@ -50,5 +51,16 @@ describe('FieldArray', () => {
     firstButton.simulate('click');
 
     expect(onFieldChange).toHaveBeenCalledWith(['array'], ['item', 'newItem']);
+  });
+
+  it('should register field on mount', () => {
+    const model = { array: ['item'] };
+    type Model = typeof model;
+    const onFieldMount: OnFieldMount = jest.fn();
+    const context: FormContext<Model> = mockFormContext(model, { onFieldMount });
+
+    mount(<FieldArray name={'array'} render={() => (<div/>)}/>, { context });
+
+    expect(onFieldMount).toHaveBeenCalledWith(['array']);
   });
 });

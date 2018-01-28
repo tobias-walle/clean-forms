@@ -249,25 +249,6 @@ describe('Form', () => {
     });
   });
 
-  it('should not the set status for fields that are not registered', () => {
-    const onChange = jest.fn();
-    const model = { a: [] };
-    const expectFieldStatus = createFieldStatusExpectFunction(onChange);
-    let arrayAddItem: AddItem<any> | null = null;
-    mount(
-      <Form state={{ model }} onChange={onChange}>
-        <FieldArray name={'a'} render={({ addItem }) => {
-          arrayAddItem = addItem;
-          return <FieldArrayItems render={() => <InputField name={null}/>}/>;
-        }}/>
-      </Form>
-    );
-
-    arrayAddItem!('test');
-
-    expectFieldStatus({});
-  });
-
   it('should remove status if field unmounts', async () => {
     const onChange = jest.fn();
     const model = { a: 'test' };

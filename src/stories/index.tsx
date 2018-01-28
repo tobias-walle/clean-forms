@@ -59,7 +59,7 @@ storiesOf('Form', module)
       array1: new ArrayValidation<Model, Item>({
         item1: maxLengthValidator(2),
         item2: maxLengthValidator(2),
-      }, ({value}) => value.length > 1 ? null : 'The array needs at least one item')
+      }, ({value}) => value.length > 1 ? null : 'The array needs at least two items')
     };
     return <StateFullForm
       initialState={{ model }}
