@@ -5,14 +5,17 @@ import { DELETE, selectDeep } from '../../utils';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
 
-export interface InnerFieldArrayItemProps {
+export interface InnerFieldArrayItemProps<Item> {
   remove: () => void;
+  setArray: (newArray: Item[]) => void;
 }
 
 export type GetKey<Item> = (item: Item, index: number) => any;
 
+export type FieldArrayItemsRender<Item> = React.StatelessComponent<InnerFieldArrayItemProps<Item>>;
+
 export interface FieldArrayItemsProps<Item> {
-  render: React.StatelessComponent<InnerFieldArrayItemProps>;
+  render: FieldArrayItemsRender<Item>;
   getKey?: GetKey<Item>;
 }
 
@@ -37,7 +40,10 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
           key={getKey(item, index)}
           name={String(index)}
         >
-          {render({remove: () => this.removeItem(index)})}
+          {render({
+            remove: () => this.removeItem(index),
+            setArray: this.setArray
+          })}
         </FieldGroup>
       ))}
       </>
@@ -56,7 +62,7 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
     onFieldChange([...groups, String(index)], DELETE);
   }
 
-  private setArray(newArray: Item[]): void {
+  private setArray = (newArray: Item[]): void => {
     const { groups = [], onFieldChange } = this.context;
     onFieldChange(groups, newArray);
   }

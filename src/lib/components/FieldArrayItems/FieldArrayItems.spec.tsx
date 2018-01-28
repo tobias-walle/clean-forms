@@ -5,7 +5,7 @@ import { mockFormContext } from '../../../testUtils/mockFormContext';
 import { DELETE } from '../../utils';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
 import { FormContext, OnFieldChange } from '../Form/Form';
-import { FieldArrayItems } from './FieldArrayItems';
+import { FieldArrayItems, FieldArrayItemsRender } from './FieldArrayItems';
 
 describe('FieldArrayItems', () => {
   it('should render items', () => {
@@ -62,5 +62,36 @@ describe('FieldArrayItems', () => {
     element.find('button').first().simulate('click');
 
     expect(onFieldChange).toHaveBeenCalledWith(['array', '0'], DELETE);
+  });
+
+  it('should pass setArray callback to render function', () => {
+    const model = {
+      array: [
+        { a: 0 },
+        { a: 1 },
+        { a: 2 },
+      ]
+    };
+    type Model = typeof model;
+    const onFieldChange: OnFieldChange<Model> = jest.fn();
+    const context: FormContext<Model> & FieldGroupContext = {
+      ...mockFormContext(model, { onFieldChange }),
+      groups: ['array']
+    };
+    const element = mount(
+      <FieldArrayItems
+        getKey={(_, i) => i}
+        render={({setArray}) => (
+          <div>
+            <InputField name={'a'}/>
+            <button onClick={() => setArray([])}>Remove</button>
+          </div>
+        )}/>
+      , { context }
+    );
+
+    element.find('button').first().simulate('click');
+
+    expect(onFieldChange).toHaveBeenCalledWith(['array'], []);
   });
 });
