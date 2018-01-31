@@ -1,3 +1,5 @@
+import { Paths } from '../FieldRegister';
+
 export interface ValidationFunctionArgs<Value = any, Model = any> {
   value: Value;
   formValue: Model;

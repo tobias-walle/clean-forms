@@ -31,8 +31,8 @@ export class StateAddon extends React.Component<StateAddonProps, StateAddonState
   }
 
   private setDisplayedState = (state: any) => {
-    this.setState({storyState: state});
-  }
+    this.setState({ storyState: state });
+  };
 }
 
 addons.register('my/state', (api: any) => {

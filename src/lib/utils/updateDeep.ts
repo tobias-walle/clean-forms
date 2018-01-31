@@ -1,23 +1,25 @@
 import { assertPropertyInObject } from './assertPropertyInObject';
 import { removeItemFromArray } from './removeItemFromArray';
+import { transformPathToArray } from './transformPathToArray';
 
 export const DELETE = Symbol('DELETE');
 export type DELETE = typeof DELETE;
 
 export interface UpdateDeepArgs<T> {
   object: T;
-  path: string[];
+  path: string;
   value: any | DELETE;
   assert?: boolean;
 }
 
 export function updateDeep<T>({object, path, value, assert = true}: UpdateDeepArgs<T>): T {
-  if (path.length <= 0) {
+  const pathArray = transformPathToArray(path);
+  if (pathArray.length <= 0) {
     throw new Error('The path cannot be empty');
   }
-  const lastIndex = path.length - 1;
-  const tail = path.slice(0, lastIndex);
-  const keyToUpdate = path[lastIndex];
+  const lastIndex = pathArray.length - 1;
+  const tail = pathArray.slice(0, lastIndex);
+  const keyToUpdate = pathArray[lastIndex];
 
   const { copy: result, selectedObject: objectToUpdate } = selectDeepAndCopy({
     object,

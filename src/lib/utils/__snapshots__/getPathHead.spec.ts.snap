@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getPathHead should throw error if path is empty 1`] = `"Path is empty"`;
+
+exports[`getPathHeadAsNumber should throw error if path cannot be a number 1`] = `"Cannot convert the path head \\"a\\" to a number"`;

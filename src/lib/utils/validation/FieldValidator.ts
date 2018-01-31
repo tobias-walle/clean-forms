@@ -1,6 +1,8 @@
+import { createPath } from '../createPath';
 import { Path } from '../FieldRegister';
-import { selectDeep, SelectDeepArgs } from '../selectDeep';
-import { FieldStatus } from '../statusTracking/FieldStatus';
+import { selectDeep } from '../selectDeep';
+import { getValidationDefinitionPaths } from './getValidationDefinitionPaths';
+import { selectDeepValidator } from './selectDeepValidator';
 import { ArrayValidation, ValidationDefinition, ValidationFunction, ValidationResolver } from './ValidationDefinition';
 
 export interface ValidateFieldArguments<Model> {
@@ -9,33 +11,37 @@ export interface ValidateFieldArguments<Model> {
   path: Path;
 }
 
+export interface ValidateModelArguments<Model> {
+  model: Model;
+  validationDefinition: ValidationDefinition<Model>;
+}
+
+export type ValidationResult = string | undefined;
+
+export interface ValidationResultMapping {
+  [path: string]: ValidationResult;
+}
+
 export class FieldValidator<Model> {
   private path: Path;
   private value: any;
   private model: Model;
 
-  public static getValidationStatus<Model>(args: ValidateFieldArguments<Model>): Partial<FieldStatus> {
-    const validator = new FieldValidator<Model>();
-    return validator.getValidationStatus(args);
+  public validateModel({ model, validationDefinition }: ValidateModelArguments<Model>): ValidationResultMapping {
+    return getValidationDefinitionPaths(validationDefinition, model)
+      .reduce((result, path) => {
+        result[path] = this.validateField({model, validationDefinition, path});
+        return result;
+      }, {} as ValidationResultMapping);
   }
 
-  private getValidationStatus(args: ValidateFieldArguments<Model>): Partial<FieldStatus> {
-    const error = this.validateField(args);
-    const isValid = error === null;
-    return {
-      valid: isValid,
-      inValid: !isValid,
-      error: error || undefined
-    };
-  }
-
-  private validateField({ model, validationDefinition, path }: ValidateFieldArguments<Model>): string | null {
+  public validateField({ model, validationDefinition, path }: ValidateFieldArguments<Model>): ValidationResult {
     this.path = path;
     this.value = selectDeep({ object: model, path, assert: false });
     this.model = model;
     const validation: ValidationResolver = selectDeepValidator({ object: validationDefinition, path, assert: false });
     if (!validation) {
-      return null;
+      return;
     } else if (validation instanceof ArrayValidation) {
       return this.runArrayValidation(validation);
     } else {
@@ -43,7 +49,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runArrayValidation(validation: ArrayValidation): string | null {
+  private runArrayValidation(validation: ArrayValidation): ValidationResult {
     if (this.value instanceof Array) {
       return this.runValidationFunctionInTryCatch(validation.arrayValidation);
     } else {
@@ -51,7 +57,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runValidationFunctionInTryCatchAndCheckType(validationFunction: any): string | null {
+  private runValidationFunctionInTryCatchAndCheckType(validationFunction: any): ValidationResult {
     if (typeof validationFunction === 'function') {
       return this.runValidationFunctionInTryCatch(validationFunction);
     } else {
@@ -62,7 +68,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runValidationFunctionInTryCatch(validationFunction: ValidationFunction | undefined | null): string | null {
+  private runValidationFunctionInTryCatch(validationFunction: ValidationFunction | undefined | null): ValidationResult {
     try {
       return this.runValidationFunctionIfDefined(validationFunction);
     } catch (e) {
@@ -74,22 +80,10 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runValidationFunctionIfDefined(validationFunction: ValidationFunction | undefined | null): string | null {
+  private runValidationFunctionIfDefined(validationFunction: ValidationFunction | undefined | null): ValidationResult {
     if (validationFunction == null) {
-      return null;
-    }
-    return validationFunction({ value: this.value, formValue: this.model }) || null;
-  }
-}
-
-function selectDeepValidator({ object, path }: SelectDeepArgs): any {
-  return path.reduce((item, key: string) => {
-    if (item === undefined) {
       return;
     }
-    if (item instanceof ArrayValidation) {
-      return item.itemValidation;
-    }
-    return item[key];
-  }, object);
+    return validationFunction({ value: this.value, formValue: this.model }) || undefined;
+  }
 }

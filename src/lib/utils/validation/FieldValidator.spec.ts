@@ -1,9 +1,19 @@
-import { FieldStatus } from '../statusTracking/FieldStatus';
+import {
+  cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatus,
+  FieldStatusArguments
+} from '../statusTracking/FieldStatus';
+import { FieldStatusMapping } from '../statusTracking/FieldStatusMapping';
 import { FieldValidator, ValidateFieldArguments } from './FieldValidator';
-import { ArrayValidation } from './ValidationDefinition';
+import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
 
 describe('FieldValidator', () => {
-  describe('getValidationStatus', () => {
+  let fieldValidator: FieldValidator<any>;
+
+  beforeEach(() => {
+    fieldValidator = new FieldValidator<any>();
+  });
+
+  describe('validateField', () => {
     it('should work if invalid', () => {
       const model = {
         a: 123,
@@ -16,17 +26,12 @@ describe('FieldValidator', () => {
         validationDefinition: {
           a: ({ value }) => value < 100 ? null : error
         },
-        path: ['a']
-      };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error
+        path: 'a'
       };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(error);
     });
 
     it('should work if valid', () => {
@@ -41,16 +46,12 @@ describe('FieldValidator', () => {
         validationDefinition: {
           a: ({ value }) => value < 100 ? null : errorMessage
         },
-        path: ['a']
-      };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: false,
-        valid: true
+        path: 'a'
       };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(undefined);
     });
 
     it('should catch errors in validation function', () => {
@@ -66,21 +67,16 @@ describe('FieldValidator', () => {
             throw new Error('Test');
           }
         },
-        path: ['a']
-      };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error: expect.any(String)
+        path: 'a'
       };
       console.error = jest.fn();
 
-      const result = FieldValidator.getValidationStatus(args);
+      const error = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(error).toEqual(expect.any(String));
       expect(console.error).toHaveBeenCalledTimes(1);
-      const errorMessage = (console.error as jest.Mock).mock.calls[0][0];
-      expect(errorMessage).toMatchSnapshot();
+      const consoleErrorMessage = (console.error as jest.Mock).mock.calls[0][0];
+      expect(consoleErrorMessage).toMatchSnapshot();
     });
 
     it('should check if validation is invalid for an item', () => {
@@ -89,21 +85,16 @@ describe('FieldValidator', () => {
       const args: ValidateFieldArguments<Model> = {
         model,
         validationDefinition: { a: {} },
-        path: ['a']
-      };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error: expect.any(String)
+        path: 'a'
       };
       console.error = jest.fn();
 
-      const result = FieldValidator.getValidationStatus(args);
+      const error = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(error).toEqual(expect.any(String));
       expect(console.error).toHaveBeenCalledTimes(1);
-      const errorMessage = (console.error as jest.Mock).mock.calls[0][0];
-      expect(errorMessage).toMatchSnapshot();
+      const consoleErrorMessage = (console.error as jest.Mock).mock.calls[0][0];
+      expect(consoleErrorMessage).toMatchSnapshot();
     });
 
     it('should validate objects in an array', () => {
@@ -123,16 +114,11 @@ describe('FieldValidator', () => {
           { a: ({ value }) => value > 1 ? null : error },
         )
       };
-      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['array', '0', 'a'] };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error,
-      };
+      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: 'array.0.a' };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(error);
     });
 
     it('should validate numbers in an array', () => {
@@ -147,16 +133,11 @@ describe('FieldValidator', () => {
           ({ value }) => value > 0 ? null : error
         )
       };
-      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['array', '0'] };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error,
-      };
+      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: 'array.0' };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(error);
     });
 
     it('should not validate objects in an empty array', () => {
@@ -176,15 +157,11 @@ describe('FieldValidator', () => {
           { a: ({ value }) => value > 1 ? null : error },
         )
       };
-      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['array'] };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: false,
-        valid: true,
-      };
+      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: 'array' };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toBe(undefined);
     });
 
     it('should validate array itself', () => {
@@ -205,40 +182,11 @@ describe('FieldValidator', () => {
           ({ value }) => value.length > 1 ? null : error
         )
       };
-      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['array'] };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error,
-      };
+      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: 'array' };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
-    });
-
-    it('should run item validation if the value is not an array', () => {
-      interface Model {
-        value: number;
-      }
-
-      const model: Model = { value: 123 };
-      const error = 'The number has to be smaller than 1';
-      const validationDefinition = {
-        value: new ArrayValidation<Model, number, any>(
-          ({ value }) => value < 1 ? null : error
-        )
-      };
-      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['value'] };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error,
-      };
-
-      const result = FieldValidator.getValidationStatus(args);
-
-      expect(result).toEqual(expectedResult);
+      expect(result).toBe(error);
     });
 
     it('should validate nested arrays', () => {
@@ -261,16 +209,11 @@ describe('FieldValidator', () => {
             )),
         )
       };
-      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: ['array', '0', '0', '0', 'a'] };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error,
-      };
+      const args: ValidateFieldArguments<Model> = { model, validationDefinition, path: 'array.0.0.0.a' };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
 
-      expect(result).toEqual(expectedResult);
+      expect(result).toEqual(error);
     });
 
     it('should work with nested paths', () => {
@@ -284,15 +227,43 @@ describe('FieldValidator', () => {
         validationDefinition: {
           a: { b: { c: ({ value }) => value < 100 ? null : error } }
         },
-        path: ['a', 'b', 'c']
-      };
-      const expectedResult: Partial<FieldStatus> = {
-        inValid: true,
-        valid: false,
-        error
+        path: 'a.b.c'
       };
 
-      const result = FieldValidator.getValidationStatus(args);
+      const result = fieldValidator.validateField(args);
+
+      expect(result).toEqual(error);
+    });
+  });
+
+  describe('validateModel', () => {
+    it('should get validation status mapping', () => {
+      const model = {
+        a: 0,
+        b: {
+          c: {
+            d: 123,
+            e: 0,
+          }
+        }
+      };
+      type Model = typeof model;
+      const validationDefinition: ValidationDefinition<Model> = {
+        a: ({ value }) => value !== 0 ? null : 'Value cannot be 0',
+        b: {
+          c: {
+            d: ({ value }) => value > 1000 ? null : 'Value has to be greater than 1000',
+            e: ({ value }) => value === 0 ? null : 'Value has to be 0'
+          }
+        }
+      };
+      const expectedResult: FieldStatusMapping<Model> = {
+        a: 'Value cannot be 0',
+        'b.c.d': 'Value has to be greater than 1000',
+        'b.c.e': undefined,
+      };
+
+      const result = fieldValidator.validateModel({ model, validationDefinition });
 
       expect(result).toEqual(expectedResult);
     });

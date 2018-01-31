@@ -1,8 +1,8 @@
 import { createDebouncedFunction } from './createDebouncedFunction';
 import { removeItemFromArray } from './removeItemFromArray';
 
-export type Path = string[];
-export type Paths = Path[];
+export type Path = string;
+export type Paths = string[];
 
 export interface FieldRegisterChanges {
   registered: Paths;
@@ -12,6 +12,7 @@ export interface FieldRegisterChanges {
 export type FieldRegisterListener = (changes: FieldRegisterChanges) => void;
 
 export class FieldRegister {
+  public static DEBOUNCE_IN_MS = 10;
   private listeners: FieldRegisterListener[] = [];
   private changes: FieldRegisterChanges;
 
@@ -20,34 +21,30 @@ export class FieldRegister {
     return this._paths;
   }
 
-  private pathsAsString: string[] = [];
-
   private triggerListeners = createDebouncedFunction(() => {
     this.listeners.forEach(listener => listener(this.changes));
     this.resetChanges();
-  }, 10);
+  }, FieldRegister.DEBOUNCE_IN_MS);
 
   constructor() {
     this.resetChanges();
   }
 
   public includesPath(path: Path): boolean {
-    return this.pathsAsString.includes(pathToString(path));
+    return this.paths.includes(path);
   }
 
   public register(path: Path): void {
     this._paths.push(path);
-    this.pathsAsString.push(pathToString(path));
 
     this.changes.registered.push(path);
     this.triggerListeners();
   }
 
   public unregister(path: Path): void {
-    const index = this.pathsAsString.indexOf(pathToString(path));
+    const index = this.paths.indexOf(path);
 
     this._paths.splice(index, 1);
-    this.pathsAsString.splice(index, 1);
 
     this.changes.unregistered.push(path);
     this.triggerListeners();
@@ -71,8 +68,4 @@ export class FieldRegister {
   private resetChanges() {
     this.changes = { registered: [], unregistered: [] };
   }
-}
-
-function pathToString(path: Path): string {
-  return path.join('.');
 }

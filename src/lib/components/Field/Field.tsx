@@ -2,8 +2,11 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { selectDeep } from '../../utils';
 import { createPath } from '../../utils/createPath';
+import { Path } from '../../utils/FieldRegister';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes, FormInfo } from '../Form/Form';
+
+export type FieldId = string;
 
 export interface InputProps<Value> {
   name?: string;
@@ -37,13 +40,14 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
   };
   public context: FormContext<any> & FieldGroupContext;
 
-  private path: string[];
+  private fieldId: FieldId;
+  private path: Path;
 
   public render() {
     const { name, render, inner: custom = null } = this.props;
     const { form } = this.context;
+    this.updatePathAndId();
 
-    this.path = createPath(this.context.groups, this.props.name);
     const value = selectDeep({ object: form.state.model, path: this.path });
     const input: InputProps<Value> = {
       name: name || undefined,
@@ -53,26 +57,31 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
       onChange: this.onChange
     };
 
-    return render({input, custom, form});
+    return render({ input, custom, form });
+  }
+
+  private updatePathAndId(): void {
+    this.path = createPath(this.context.path, this.props.name);
+    this.fieldId = createPath(this.context.namespace, this.props.name);
   }
 
   public componentDidMount() {
-    this.context.onFieldMount(this.path);
+    this.context.onFieldMount(this.fieldId);
   }
 
   public componentWillUnmount() {
-    this.context.onFieldUnmount(this.path);
+    this.context.onFieldUnmount(this.fieldId);
   }
 
   private onFocus = () => {
-    this.context.onFieldFocus(this.path);
-  }
+    this.context.onFieldFocus(this.fieldId);
+  };
 
   private onBlur = () => {
-    this.context.onFieldBlur(this.path);
-  }
+    this.context.onFieldBlur(this.fieldId);
+  };
 
   private onChange = (value: any) => {
-    this.context.onFieldChange(this.path, value);
-  }
+    this.context.onFieldChange(this.fieldId, this.path, value);
+  };
 }

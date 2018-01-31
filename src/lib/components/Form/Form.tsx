@@ -1,22 +1,27 @@
-import { instanceOf } from 'prop-types';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { DELETE, selectDeep, updateDeep } from '../../utils';
+import { updateDeep } from '../../utils';
 import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
-import { getParentPath } from '../../utils/getParentPath';
-import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
-import { FieldValidator, ValidationDefinition } from '../../utils/validation';
+import { FieldStatusUpdater } from '../../utils/statusTracking/FieldStatusUpdater';
+import {
+  FieldValidator, ValidationDefinition,
+  ValidationResultMapping
+} from '../../utils/validation';
 
-export type OnFieldMount = (path: string[]) => void;
+import { GetKey } from '../FieldArrayItems/FieldArrayItems';
 
-export type OnFieldUnmount = (path: string[]) => void;
+export type OnFieldMount = (id: string) => void;
 
-export type OnFieldFocus = (path: string[]) => void;
+export type OnFieldUnmount = (id: string) => void;
 
-export type OnFieldBlur = (path: string[]) => void;
+export type OnFieldFocus = (id: string) => void;
 
-export type OnFieldChange<Model> = (path: string[], value: any) => void;
+export type OnFieldBlur = (id: string) => void;
+
+export type OnFieldChange<Model> = (id: string, path: Path, value: any) => void;
+
+export type SetArrayGetKey = (id: Path, getKey: GetKey<any>) => void;
 
 export interface FormContext<Model> {
   form: FormInfo<Model>;
@@ -25,23 +30,26 @@ export interface FormContext<Model> {
   onFieldFocus: OnFieldFocus;
   onFieldBlur: OnFieldBlur;
   onFieldChange: OnFieldChange<Model>;
+  setArrayGetKey: SetArrayGetKey;
 }
 
-export const formContextTypes = {
+export const formContextTypes: Record<keyof FormContext<any>, PropTypes.Requireable<any>> = {
   form: PropTypes.object,
   onFieldMount: PropTypes.func,
   onFieldUnmount: PropTypes.func,
   onFieldFocus: PropTypes.func,
   onFieldBlur: PropTypes.func,
   onFieldChange: PropTypes.func,
+  setArrayGetKey: PropTypes.func,
 };
 
 export interface FormState<Model> {
   model: Model;
-  status?: FieldStatusMapping<Model>;
+  status?: FieldStatusMapping;
 }
 
 export interface FormMeta<Model> {
+  validation: ValidationResultMapping;
 }
 
 export interface FormInfo<Model> {
@@ -60,7 +68,9 @@ export interface FormProps<Model, FormValidation extends ValidationDefinition<Mo
 export class Form<Model = any, FormValidation extends ValidationDefinition<Model> = any> extends React.Component<FormProps<Model, FormValidation>, {}> {
   public static childContextTypes = formContextTypes;
   private fieldsRegister: FieldRegister;
-  private meta: FormMeta<Model>;
+  private fieldValidator: FieldValidator<Model>;
+  private fieldStatusUpdater: FieldStatusUpdater;
+  private arrayGetKeyMapping: Map<string, GetKey<any>> = new Map();
 
   public render() {
     return (
@@ -77,12 +87,15 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
       onFieldUnmount: this.onFieldUnmount,
       onFieldFocus: this.onFieldFocus,
       onFieldBlur: this.onFieldBlur,
-      onFieldChange: this.onFieldChange
+      onFieldChange: this.onFieldChange,
+      setArrayGetKey: this.setArrayGetKey,
     };
   }
 
   public componentWillMount() {
     this.fieldsRegister = new FieldRegister();
+    this.fieldValidator = new FieldValidator();
+    this.fieldStatusUpdater = new FieldStatusUpdater(this.fieldsRegister);
   }
 
   public componentDidMount() {
@@ -91,140 +104,101 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
 
   private onFieldMount: OnFieldMount = (path) => {
     this.fieldsRegister.register(path);
-  }
+  };
 
   private onFieldUnmount: OnFieldMount = (path) => {
     this.fieldsRegister.unregister(path);
-  }
+  };
 
   private onFieldFocus: OnFieldFocus = (path) => {
-    const status = this.updateFieldStatus(this.getStatus(), path, {
-      touched: true,
-      untouched: false
-    });
+    const status = this.fieldStatusUpdater.markAsTouched(this.getStatus(), path);
+
     const state = this.createState(this.getModel(), status);
-    this.triggerChange({ state });
-  }
+    this.triggerChange(state);
+  };
 
   private onFieldBlur: OnFieldBlur = (path) => {
-  }
+  };
 
-  private onFieldChange: OnFieldChange<Model> = (path, value) => {
+  private onFieldChange: OnFieldChange<Model> = (id, path, value) => {
     const model = this.updateModel(path, value);
 
-    let status = this.updateStatusIfParentIsArray(this.getStatus(), path, model);
-    status = this.updateFieldStatusBasedOnValue(status, path, value, model);
+    let status: FieldStatusMapping = this.getStatus();
+    status = this.fieldStatusUpdater.markAsDirty(status, id);
 
     const state = this.createState(model, status);
-    const meta = this.createMetaData(model);
 
-    this.triggerChange({ state, meta });
+    this.triggerChange(state);
+  };
+
+  private setArrayGetKey: SetArrayGetKey = (path, getKey) => {
+    this.arrayGetKeyMapping.set(path, getKey);
+  };
+
+  private removeArrayGetKeyFunction(path: Path): void {
+    this.arrayGetKeyMapping.delete(path);
   }
 
-  private updateStatusIfParentIsArray(status: FieldStatusMapping<Model>, itemPath: Path, model: Model): FieldStatusMapping<Model> {
-    if (!this.isArrayItem(model, itemPath)) {
-      return status;
-    }
-    const arrayPath = getParentPath(itemPath);
-    const arrayValue = selectDeep({object: model, path: arrayPath });
-    return this.updateFieldStatusBasedOnValue(status, arrayPath, arrayValue, model);
-  }
-
-  private isArrayItem(model: Model, path: Path): boolean {
-    const length = path.length;
-    if (length <= 1) {
-      return false;
-    }
-    const parentPath = getParentPath(path);
-    const parent = selectDeep({ object: model, path: parentPath });
-    return parent instanceof Array;
-  }
-
-  private updateFieldStatusBasedOnValue(
-    status: FieldStatusMapping<Model>, path: string[], value: any, model: Model
-  ): FieldStatusMapping<Model> {
-    if (value === DELETE) {
-      return this.removeFieldStatus(status, path);
-    } else {
-      const fieldStatusUpdate = this.applyValidationToFieldStatusUpdate({ pristine: false, dirty: true }, path, model);
-      status = this.updateFieldStatus(status, path, fieldStatusUpdate);
-      return status;
-    }
+  private getArrayGetKey(path: Path): GetKey<any> | undefined {
+    return this.arrayGetKeyMapping.get(path);
   }
 
   private onFieldRegisterChanges = (changes: FieldRegisterChanges): void => {
     let status = this.props.state.status || {};
     const model = this.getModel();
+
     changes.registered.forEach((newPath) => {
-      const fieldStatusUpdate = this.applyValidationToFieldStatusUpdate(DEFAULT_FIELD_STATUS, newPath, model);
-      status = this.updateFieldStatus(status, newPath, fieldStatusUpdate);
+      status = this.fieldStatusUpdater.addIfFieldNotExists(status, newPath);
     });
+
     changes.unregistered.forEach((removedPath) => {
-      status = this.removeFieldStatus(status, removedPath);
+      status = this.fieldStatusUpdater.removeIfFieldExists(status, removedPath);
+      this.removeArrayGetKeyFunction(removedPath);
     });
+
     const state = this.createState(model, status);
-    this.triggerChange({ state });
-  }
+    this.triggerChange(state);
+  };
 
-  private applyValidationToFieldStatusUpdate(baseFieldStatus: Partial<FieldStatus>, path: Path, model: Model): Partial<FieldStatus> {
-    const validationStatus = this.getValidationStatus(path, model);
-    return {
-      ...baseFieldStatus,
-      ...validationStatus
-    };
-  }
-
-  private getValidationStatus(path: Path, model: Model): Partial<FieldStatus> {
-    const validationDefinition = this.props.validation;
-    if (!validationDefinition) {
-      return {};
-    }
-    return FieldValidator.getValidationStatus<Model>({path, model, validationDefinition });
-  }
-
-  private updateFieldStatus(
-    status: FieldStatusMapping<Model>, path: string[], statusUpdate: Partial<FieldStatus>): FieldStatusMapping<Model> {
-    if (!this.fieldsRegister.includesPath(path)) {
-      return status;
-    }
-    const currentFieldStatus = selectDeep({ object: status, path, assert: false }) || DEFAULT_FIELD_STATUS;
-    const newFieldStatus = { ...currentFieldStatus, ...statusUpdate };
-
-    return updateDeep({ object: status, path, value: newFieldStatus, assert: false });
-  }
-
-  private removeFieldStatus(status: FieldStatusMapping<Model>, path: string[]): FieldStatusMapping<Model> {
-    return updateDeep({ object: status, path, value: DELETE, assert: false });
-  }
-
-  private updateModel(path: string[], value: any): Model {
+  private updateModel(path: Path, value: any): Model {
     return updateDeep({ object: this.props.state.model, path, value });
   }
 
-  private triggerChange({ state, meta }: { state?: FormState<Model>, meta?: FormMeta<Model> }): void {
+  private triggerChange(state: FormState<Model>): void {
     const { onChange } = this.props;
-    this.meta = meta || this.meta;
-    onChange && onChange(state || this.props.state, meta || this.meta);
+    const meta = this.createMetaData(state.model);
+    onChange && onChange(state || this.props.state, meta);
   }
 
-  private createState(model: Model, status: FieldStatusMapping<Model> | undefined): FormState<Model> {
+  private createState(model: Model, status: FieldStatusMapping | undefined): FormState<Model> {
     return { model, status };
   }
 
   private createMetaData(model: Model): FormMeta<Model> {
+    const validationResult = this.validate(model);
     return {
+      validation: validationResult
     };
+  }
+
+  private validate(model: Model): ValidationResultMapping {
+    const validationDefinition = this.getValidationDefinition();
+    return this.fieldValidator.validateModel({ model, validationDefinition });
   }
 
   private getFormInfo(): FormInfo<Model> {
     return {
       state: this.props.state,
-      meta: this.meta
+      meta: this.createMetaData(this.props.state.model)
     };
   }
 
-  private getStatus(): FieldStatusMapping<Model> {
+  private getStatus(): FieldStatusMapping {
     return this.props.state.status || {};
+  }
+
+  private getValidationDefinition(): ValidationDefinition<Model> {
+    return this.props.validation || {};
   }
 
   private getModel(): Model {

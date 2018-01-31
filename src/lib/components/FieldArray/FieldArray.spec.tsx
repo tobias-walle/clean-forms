@@ -27,7 +27,8 @@ describe('FieldArray', () => {
       , { context }
     );
     const expectedContext: FieldGroupContext = {
-      groups: ['array']
+      namespace: 'array',
+      path: 'array',
     };
 
     const myComponent: MyComponent = element.find(MyComponent).instance() as any;
@@ -50,7 +51,7 @@ describe('FieldArray', () => {
     const firstButton = element.find('button').first();
     firstButton.simulate('click');
 
-    expect(onFieldChange).toHaveBeenCalledWith(['array'], ['item', 'newItem']);
+    expect(onFieldChange).toHaveBeenCalledWith('array', 'array', ['item', 'newItem']);
   });
 
   it('should register field on mount', () => {
@@ -61,6 +62,6 @@ describe('FieldArray', () => {
 
     mount(<FieldArray name={'array'} render={() => (<div/>)}/>, { context });
 
-    expect(onFieldMount).toHaveBeenCalledWith(['array']);
+    expect(onFieldMount).toHaveBeenCalledWith('array');
   });
 });

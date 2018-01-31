@@ -1,7 +1,7 @@
-export function createPath(groups: string[] | undefined, name: string | null) {
-  let result = groups || [];
-  if (name) {
-    result = [...result, name];
+export function createPath(parentPath: string | undefined, name: string | number | null): string {
+  let result = parentPath ? [parentPath] : [];
+  if (name != null) {
+    result = [...result, String(name)];
   }
-  return result;
+  return result.join('.');
 }

@@ -1,17 +1,21 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { createPath } from '../../utils/createPath';
+import { Path } from '../../utils/FieldRegister';
 
 export const fieldGroupContextTypes = {
-  groups: PropTypes.arrayOf(PropTypes.string),
+  namespace: PropTypes.string,
+  path: PropTypes.string,
 };
 
 export interface FieldGroupContext {
-  groups?: string[];
+  namespace?: Path;
+  path?: Path;
 }
 
 export interface FieldGroupProps {
   name: string;
+  accessor?: string;
 }
 
 export interface FieldGroupState {
@@ -27,8 +31,10 @@ export class FieldGroup extends React.Component<FieldGroupProps, FieldGroupState
   }
 
   public getChildContext(): FieldGroupContext {
+    const { name, accessor } = this.props;
     return {
-      groups: createPath(this.context.groups, this.props.name)
+      path: createPath(this.context.path, accessor || name),
+      namespace: createPath(this.context.namespace, name)
     };
   }
 }

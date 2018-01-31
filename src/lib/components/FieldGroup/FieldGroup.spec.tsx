@@ -18,9 +18,11 @@ describe('FieldGroup', () => {
 
     const child: Child = element.find(Child).instance() as any;
 
-    expect(child.context).toEqual({
-      groups: ['group']
-    });
+    const expected: FieldGroupContext = {
+      namespace: 'group',
+      path: 'group'
+    };
+    expect(child.context).toEqual(expected);
   });
 
   it('should work with nested groups', () => {
@@ -36,8 +38,10 @@ describe('FieldGroup', () => {
 
     const child: Child = element.find(Child).instance() as any;
 
-    expect(child.context).toEqual({
-      groups: ['group1', 'group2', 'group3']
-    });
+    const expected: FieldGroupContext = {
+      namespace: 'group1.group2.group3',
+      path: 'group1.group2.group3'
+    };
+    expect(child.context).toEqual(expected);
   });
 });

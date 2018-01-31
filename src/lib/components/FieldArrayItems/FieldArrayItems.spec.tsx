@@ -18,7 +18,8 @@ describe('FieldArrayItems', () => {
     };
     const context: FormContext<typeof model> & FieldGroupContext = {
       ...mockFormContext(model),
-      groups: ['array']
+      namespace: 'array',
+      path: 'array',
     };
     const element = mount(
       <FieldArrayItems
@@ -45,11 +46,12 @@ describe('FieldArrayItems', () => {
     const onFieldChange: OnFieldChange<Model> = jest.fn();
     const context: FormContext<Model> & FieldGroupContext = {
       ...mockFormContext(model, { onFieldChange }),
-      groups: ['array']
+      namespace: 'array',
+      path: 'array',
     };
     const element = mount(
       <FieldArrayItems
-        getKey={(_, i) => i}
+        getKey={(_, i) => `key_${i}`}
         render={({remove}) => (
           <div>
             <InputField name={'a'}/>
@@ -61,7 +63,7 @@ describe('FieldArrayItems', () => {
 
     element.find('button').first().simulate('click');
 
-    expect(onFieldChange).toHaveBeenCalledWith(['array', '0'], DELETE);
+    expect(onFieldChange).toHaveBeenCalledWith('array.key_0', 'array.0', DELETE);
   });
 
   it('should pass setArray callback to render function', () => {
@@ -76,7 +78,8 @@ describe('FieldArrayItems', () => {
     const onFieldChange: OnFieldChange<Model> = jest.fn();
     const context: FormContext<Model> & FieldGroupContext = {
       ...mockFormContext(model, { onFieldChange }),
-      groups: ['array']
+      namespace: 'array',
+      path: 'array',
     };
     const element = mount(
       <FieldArrayItems
@@ -92,6 +95,6 @@ describe('FieldArrayItems', () => {
 
     element.find('button').first().simulate('click');
 
-    expect(onFieldChange).toHaveBeenCalledWith(['array'], []);
+    expect(onFieldChange).toHaveBeenCalledWith('array', 'array', []);
   });
 });

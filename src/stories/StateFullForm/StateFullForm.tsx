@@ -14,7 +14,7 @@ export class StateFullForm<Model = any> extends React.Component<StateFullFormPro
     return (
       <StateWrapper
         initialState={initialState}
-        render={({state, setState}) =>
+        render={({ state, setState }) =>
           <Form state={state} onChange={(newState, meta) => this.onChange(newState, meta, setState)} {...other}>
             {children}
           </Form>
@@ -26,5 +26,5 @@ export class StateFullForm<Model = any> extends React.Component<StateFullFormPro
   private onChange = (state: FormState<Model>, meta: FormMeta<Model>, setState: (state: FormState<Model>) => void) => {
     action('onChange')(state, meta);
     setState(state);
-  }
+  };
 }

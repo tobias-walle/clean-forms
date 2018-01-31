@@ -29,39 +29,41 @@ export class FieldArray<Item = any> extends React.Component<FieldArrayProps<Item
   public context: FormContext<any> & FieldGroupContext;
   private array: Item[];
   private path: Path;
+  private identifier: string;
 
   public render() {
     const { name, render } = this.props;
-    this.updatePath();
+    this.updatePathAndIdentifier();
     this.array = this.getArray();
 
     return (
       <FieldGroup name={name}>
-        {render({addItem: this.addItem})}
+        {render({ addItem: this.addItem })}
       </FieldGroup>
     );
   }
 
-  private updatePath(): void {
-    this.path = createPath(this.context.groups, this.props.name);
+  private updatePathAndIdentifier(): void {
+    this.path = createPath(this.context.path, this.props.name);
+    this.identifier = createPath(this.context.namespace, this.props.name);
   }
 
   public componentDidMount() {
-    this.context.onFieldMount(this.path);
+    this.context.onFieldMount(this.identifier);
   }
 
   private addItem: AddItem<Item> = (item) => {
     const newArray = [...this.array, item];
     this.setArray(newArray);
-  }
+  };
 
   private getArray(): Item[] {
-    const { form: { state: { model }} } = this.context;
+    const { form: { state: { model } } } = this.context;
     return selectDeep({ object: model, path: this.path });
   }
 
   private setArray(newArray: Item[]): void {
     const { onFieldChange } = this.context;
-    onFieldChange(this.path, newArray);
+    onFieldChange(this.identifier, this.path, newArray);
   }
 }

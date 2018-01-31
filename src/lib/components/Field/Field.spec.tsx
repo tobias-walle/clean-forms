@@ -56,7 +56,7 @@ describe('Field', () => {
     const newValue = 'newValue';
     onChange!(mockEvent(newValue));
 
-    expect(onFieldChange).toHaveBeenCalledWith([name], newValue);
+    expect(onFieldChange).toHaveBeenCalledWith(name, name, newValue);
   });
 
   it('should trigger onFocus and onBlur', () => {
@@ -78,12 +78,12 @@ describe('Field', () => {
 
     onFocus!({} as any);
 
-    expect(onFieldFocus).toHaveBeenCalled();
+    expect(onFieldFocus).toHaveBeenCalledWith(name);
     expect(onFieldBlur).not.toHaveBeenCalled();
 
     onBlur!({} as any);
 
-    expect(onFieldBlur).toHaveBeenCalled();
+    expect(onFieldBlur).toHaveBeenCalledWith(name);
   });
 
   it('should trigger onMount and onUnmount', () => {
@@ -97,19 +97,20 @@ describe('Field', () => {
 
     const element = mount(field, { context });
 
-    expect(onFieldMount).toHaveBeenCalled();
+    expect(onFieldMount).toHaveBeenCalledWith(name);
     expect(onFieldUnmount).not.toHaveBeenCalled();
 
     element.unmount();
 
-    expect(onFieldUnmount).toHaveBeenCalled();
+    expect(onFieldUnmount).toHaveBeenCalledWith(name);
   });
 
-  it('should support grouping', () => {
+  it('should support namespace and path', () => {
     const model = { testGroup1: { testGroup2: { name: 'value' } } };
     const context: FormContext<any> & FieldGroupContext = {
       ...mockFormContext(model),
-      groups: ['testGroup1', 'testGroup2']
+      namespace: 'testGroup1.testGroup2',
+      path: 'testGroup1.testGroup2',
     };
 
     const element = mount(
@@ -124,7 +125,8 @@ describe('Field', () => {
     const model = { testGroup1: { testGroup2: 'value' } };
     const context: FormContext<any> & FieldGroupContext = {
       ...mockFormContext(model),
-      groups: ['testGroup1', 'testGroup2']
+      namespace: 'testGroup1.testGroup2',
+      path: 'testGroup1.testGroup2'
     };
 
     const element = mount(
@@ -143,7 +145,8 @@ describe('Field', () => {
     const model = { group1: { group2: { [name]: value } } };
     const context: FormContext<any> & FieldGroupContext = {
       ...mockFormContext(model, { onFieldChange }),
-      groups: ['group1', 'group2']
+      namespace: 'group1.group2',
+      path: 'group1.group2',
     };
     const element = mount(field, { context });
     const wrapper = element.find('input');
@@ -154,6 +157,6 @@ describe('Field', () => {
     const newValue = 'newValue';
     onChange!(mockEvent(newValue));
 
-    expect(onFieldChange).toHaveBeenCalledWith(['group1', 'group2', name], newValue);
+    expect(onFieldChange).toHaveBeenCalledWith('group1.group2.name', 'group1.group2.name', newValue);
   });
 });
