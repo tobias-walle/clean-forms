@@ -21,10 +21,6 @@ export class FieldStatus<T = any> {
 
 export const DEFAULT_FIELD_STATUS: FieldStatus = new FieldStatus({ dirty: false, touched: false });
 
-export function isFieldStatus(item: any): item is FieldStatus {
-  return item != null && (item as FieldStatus).hasOwnProperty('dirty');
-}
-
 export function cloneFieldStatus<Children = any>(statusToClone: FieldStatus, overrideArgs: Partial<FieldStatusArguments<Children>>): FieldStatus {
   return new FieldStatus({
     ...(statusToClone as any),

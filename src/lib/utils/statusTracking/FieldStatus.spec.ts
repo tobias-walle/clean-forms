@@ -29,12 +29,3 @@ describe('FieldStatus', () => {
   });
 });
 
-describe('isFieldStatus', () => {
-  it('should check if an item is an field status', () => {
-    expect(
-      isFieldStatus(new FieldStatus({ dirty: false, touched: false }))
-    ).toBe(true);
-
-    expect(isFieldStatus({})).toBe(false);
-  });
-});
