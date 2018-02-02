@@ -1,4 +1,4 @@
-export function createDebouncedFunction<Args>(func: (...args: Args[]) => any, debounceTime: number): (...args: Args[]) => void {
+export function createDebouncedFunction(func: (...args: any[]) => any, debounceTime: number): (...args: any[]) => void {
   let timeout: number | null = null;
   return (...args) => {
     const toCall = () => {

@@ -8,7 +8,7 @@ export interface StateFullFormProps<Model> extends Partial<FormProps<Model>> {
   initialState: FormState<Model>;
 }
 
-export class StateFullForm<Model = any> extends React.Component<StateFullFormProps<Model>, {}> {
+export class StateFullForm extends React.Component<StateFullFormProps<any>, {}> {
   public render() {
     const { initialState, children, ...other } = this.props;
     return (
@@ -23,7 +23,7 @@ export class StateFullForm<Model = any> extends React.Component<StateFullFormPro
     );
   }
 
-  private onChange = (state: FormState<Model>, meta: FormMeta<Model>, setState: (state: FormState<Model>) => void) => {
+  private onChange = (state: FormState<any>, meta: FormMeta<any>, setState: (state: FormState<any>) => void) => {
     action('onChange')(state, meta);
     setState(state);
   };

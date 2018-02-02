@@ -13,17 +13,17 @@ export interface StateWrapperProps<State> {
   render: React.StatelessComponent<StateWrapperInnerProps<State>>;
 }
 
-export class StateWrapper<State = any> extends React.Component<StateWrapperProps<State>, State> {
-  public state: State = this.props.initialState;
+export class StateWrapper extends React.Component<StateWrapperProps<any>, any> {
+  public state: any = this.props.initialState;
   private bindedSetState = this.setState.bind(this);
 
   public render() {
-    const { render: Component } = this.props;
+    const { render } = this.props;
 
     const channel = addons.getChannel();
     // send the notes to the channel.
     channel.emit(SET_STATE, this.state);
 
-    return <Component state={this.state} setState={this.bindedSetState}/>;
+    return render({state: this.state, setState: this.bindedSetState});
   }
 }

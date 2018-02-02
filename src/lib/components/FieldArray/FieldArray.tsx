@@ -21,13 +21,13 @@ export interface FieldArrayProps<Item> {
 export interface FieldArrayState {
 }
 
-export class FieldArray<Item = any> extends React.Component<FieldArrayProps<Item>, FieldArrayState> {
+export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArrayState> {
   public static contextTypes = {
     ...formContextTypes,
     ...fieldGroupContextTypes
   };
   public context: FormContext<any> & FieldGroupContext;
-  private array: Item[];
+  private array: any[];
   private path: Path;
   private identifier: string;
 
@@ -52,17 +52,17 @@ export class FieldArray<Item = any> extends React.Component<FieldArrayProps<Item
     this.context.onFieldMount(this.identifier);
   }
 
-  private addItem: AddItem<Item> = (item) => {
+  private addItem: AddItem<any> = (item) => {
     const newArray = [...this.array, item];
     this.setArray(newArray);
   };
 
-  private getArray(): Item[] {
+  private getArray(): any[] {
     const { form: { state: { model } } } = this.context;
     return selectDeep({ object: model, path: this.path });
   }
 
-  private setArray(newArray: Item[]): void {
+  private setArray(newArray: any[]): void {
     const { onFieldChange } = this.context;
     onFieldChange(this.identifier, this.path, newArray);
   }

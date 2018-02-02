@@ -22,6 +22,7 @@
     "watch": "tsc --watch",
     "p": "plop",
     "tsc": "tsc --project tsconfig.lib.json",
+    "check-types": "tsc --project tsconfig.json --noEmit",
     "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
   },
   "devDependencies": {
