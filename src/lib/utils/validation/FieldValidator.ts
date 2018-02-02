@@ -39,11 +39,9 @@ export class FieldValidator<Model> {
     this.path = path;
     this.value = selectDeep({ object: model, path, assert: false });
     this.model = model;
-    const validation: ValidationResolver = selectDeepValidator({ object: validationDefinition, path, assert: false });
+    const validation = selectDeepValidator({ object: validationDefinition, path, assert: false });
     if (!validation) {
       return;
-    } else if (validation instanceof ArrayValidation) {
-      return this.runArrayValidation(validation);
     } else {
       return this.runValidationFunctionInTryCatchAndCheckType(validation);
     }

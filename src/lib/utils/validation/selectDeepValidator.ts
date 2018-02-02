@@ -1,8 +1,8 @@
 import { SelectDeepArgs } from '../selectDeep';
 import { transformPathToArray } from '../transformPathToArray';
-import { ArrayValidation } from './ValidationDefinition';
+import { ArrayValidation, ValidationFunction } from './ValidationDefinition';
 
-export function selectDeepValidator({ object, path }: SelectDeepArgs): any {
+export function selectDeepValidator({ object, path }: SelectDeepArgs): ValidationFunction | undefined {
   const pathAsArray = transformPathToArray(path);
   object = pathAsArray.reduce((item, key: string) => {
     if (item === undefined) {

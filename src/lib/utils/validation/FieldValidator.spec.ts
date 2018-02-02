@@ -84,7 +84,7 @@ describe('FieldValidator', () => {
       type Model = typeof model;
       const args: ValidateFieldArguments<Model> = {
         model,
-        validationDefinition: { a: {} },
+        validationDefinition: { a: {} as any },
         path: 'a'
       };
       console.error = jest.fn();
@@ -201,7 +201,7 @@ describe('FieldValidator', () => {
 
       const model: Model = { array: [[[{ a: 1, b: 'hello' }]]] };
       const error = 'Value has to be bigger than 1';
-      const validationDefinition = {
+      const validationDefinition: ValidationDefinition<Model> = {
         array: new ArrayValidation(
           new ArrayValidation(
             new ArrayValidation<Model, Item>(
@@ -225,7 +225,11 @@ describe('FieldValidator', () => {
       const args: ValidateFieldArguments<Model> = {
         model,
         validationDefinition: {
-          a: { b: { c: ({ value }) => value < 100 ? null : error } }
+          a: {
+            b: {
+              c: ({ value }) => value < 100 ? null : error,
+            }
+          }
         },
         path: 'a.b.c'
       };
@@ -257,7 +261,7 @@ describe('FieldValidator', () => {
           }
         }
       };
-      const expectedResult: FieldStatusMapping<Model> = {
+      const expectedResult = {
         a: 'Value cannot be 0',
         'b.c.d': 'Value has to be greater than 1000',
         'b.c.e': undefined,
