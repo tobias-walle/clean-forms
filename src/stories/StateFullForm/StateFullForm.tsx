@@ -1,7 +1,7 @@
 import { action } from '@storybook/addon-actions';
 import * as React from 'react';
 import { Form } from '../../lib/components';
-import { FormMeta, FormProps, FormState, OnChange } from '../../lib/components/Form/Form';
+import { FormProps, FormState, OnChange } from '../../lib/components/Form/Form';
 import { StateWrapper } from '../StateWrapper/StateWrapper';
 
 export interface StateFullFormProps<Model> extends Partial<FormProps<Model>> {
@@ -15,7 +15,7 @@ export class StateFullForm extends React.Component<StateFullFormProps<any>, {}> 
       <StateWrapper
         initialState={initialState}
         render={({ state, setState }) =>
-          <Form state={state} onChange={(newState, meta) => this.onChange(newState, meta, setState)} {...other}>
+          <Form state={state} onChange={(newState) => this.onChange(newState, setState)} {...other}>
             {children}
           </Form>
         }
@@ -23,8 +23,7 @@ export class StateFullForm extends React.Component<StateFullFormProps<any>, {}> 
     );
   }
 
-  private onChange = (state: FormState<any>, meta: FormMeta<any>, setState: (state: FormState<any>) => void) => {
-    action('onChange')(state, meta);
+  private onChange = (state: FormState<any>, setState: (state: FormState<any>) => void) => {
     setState(state);
   };
 }

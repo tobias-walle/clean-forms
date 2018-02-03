@@ -48,34 +48,43 @@ export interface FormState<Model> {
   status?: FieldStatusMapping;
 }
 
-export interface FormMeta<Model> {
-  validation: ValidationResultMapping;
-}
-
 export interface FormInfo<Model> {
   state: FormState<Model>;
-  meta: FormMeta<Model>;
+  validationResult: ValidationResultMapping;
 }
 
-export type OnChange<Model> = (state: FormState<Model>, meta: FormMeta<Model>) => void;
+export type OnChange<Model> = (state: FormState<Model>) => void;
 
-export interface FormProps<Model, FormValidation extends ValidationDefinition<Model> = ValidationDefinition<Model>> {
+export type RenderForm<Model> = React.StatelessComponent<FormInfo<Model>>;
+
+export interface FormProps<Model> {
   state: FormState<Model>;
   onChange?: OnChange<Model>;
-  validation?: FormValidation;
+  validation?: ValidationDefinition<Model>;
+  render?: RenderForm<Model>;
 }
 
-export class Form<Model = any, FormValidation extends ValidationDefinition<Model> = any> extends React.Component<FormProps<Model, FormValidation>, {}> {
+export interface FormComponentState {
+  validationResult: ValidationResultMapping;
+}
+
+export class Form<Model = any> extends React.Component<FormProps<Model>, FormComponentState> {
   public static childContextTypes = formContextTypes;
+  public state: FormComponentState = {
+    validationResult: {}
+  };
   private fieldsRegister: FieldRegister;
   private fieldValidator: FieldValidator<Model>;
   private fieldStatusUpdater: FieldStatusUpdater;
   private arrayGetKeyMapping: Map<string, GetKey<any>> = new Map();
 
   public render() {
+    const { render } = this.props;
+    const formInfo = this.getFormInfo();
     return (
       <form>
         {this.props.children}
+        {render && render(formInfo)}
       </form>
     );
   }
@@ -99,7 +108,14 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   }
 
   public componentDidMount() {
+    this.updateValidationResult(this.getModel());
     this.fieldsRegister.addListener(this.onFieldRegisterChanges);
+  }
+
+  public componentWillReceiveProps(newProps: FormProps<Model>) {
+    if (newProps.state.model !== this.props.state.model) {
+      this.updateValidationResult(newProps.state.model);
+    }
   }
 
   private onFieldMount: OnFieldMount = (path) => {
@@ -139,10 +155,6 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
     this.arrayGetKeyMapping.delete(path);
   }
 
-  private getArrayGetKey(path: Path): GetKey<any> | undefined {
-    return this.arrayGetKeyMapping.get(path);
-  }
-
   private onFieldRegisterChanges = (changes: FieldRegisterChanges): void => {
     let status = this.props.state.status || {};
     const model = this.getModel();
@@ -166,19 +178,16 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
 
   private triggerChange(state: FormState<Model>): void {
     const { onChange } = this.props;
-    const meta = this.createMetaData(state.model);
-    onChange && onChange(state || this.props.state, meta);
+    onChange && onChange(state || this.props.state);
   }
 
   private createState(model: Model, status: FieldStatusMapping | undefined): FormState<Model> {
     return { model, status };
   }
 
-  private createMetaData(model: Model): FormMeta<Model> {
-    const validationResult = this.validate(model);
-    return {
-      validation: validationResult
-    };
+  private updateValidationResult(model: Model): void {
+    const result = this.validate(model);
+    this.setState({validationResult: result});
   }
 
   private validate(model: Model): ValidationResultMapping {
@@ -189,7 +198,7 @@ export class Form<Model = any, FormValidation extends ValidationDefinition<Model
   private getFormInfo(): FormInfo<Model> {
     return {
       state: this.props.state,
-      meta: this.createMetaData(this.props.state.model)
+      validationResult: this.state.validationResult
     };
   }
 

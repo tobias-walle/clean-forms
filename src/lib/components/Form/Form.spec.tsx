@@ -71,7 +71,7 @@ describe('Form', () => {
         a: expectedNewValue
       },
       status: expect.anything()
-    }, expect.anything());
+    });
   });
 
   it('should emit model changes in groups', () => {
@@ -107,7 +107,7 @@ describe('Form', () => {
         c: { c1: expectedNewValue }
       },
       status: expect.anything()
-    }, expect.anything());
+    });
   });
 
   it('should initialize status', () => {
@@ -178,59 +178,47 @@ describe('Form', () => {
   });
 
   it('should update validation result', async () => {
-    const onChange = jest.fn();
     const model = { a: 'hello', b: 124 };
     const status = initFieldStatusMapping('a');
     const error = 'The value has to have a greater length than 10';
     const validators: ValidationDefinition<typeof model> = {
       a: ({ value }) => value.length > 10 ? null : error
     };
-    const expectValidationResult = createValidationResultExpectFunction(onChange);
-    const element = mount(
-      <Form state={{ model, status }} validation={validators} onChange={onChange}>
-        <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
-      </Form>
-    );
-    const inputs = element.find('input');
-    const firstInput = inputs.first();
+    const renderForm = jest.fn(() => (
+      <>
+      <InputField name={'a'}/>
+      <InputField name={'b'} inner={{
+        type: 'number'
+      }}/>
+      </>
+    ));
+    const expectValidationResult = createValidationResultExpectFunction(renderForm);
+    mount(<Form state={{ model, status }} validation={validators} render={renderForm}/>);
 
     expectValidationResult({
       a: error
     });
 
-    firstInput.simulate('change', mockEvent('01234567890'));
-
-    expectValidationResult({});
   });
 
   it('should update validation result for array', async () => {
-    const onChange = jest.fn();
-    const model = { array: ['hello'] };
+    const model = { array: [] };
     const status = initFieldStatusMapping('array', 'array.hello');
     const error = 'The array needs at least 1 item';
     const validators: ValidationDefinition<typeof model> = {
       array: new ArrayValidation(null, ({ value }) => value.length >= 1 ? null : error)
     };
-    const expectValidationResult = createValidationResultExpectFunction(onChange);
-    let removeItem: (() => void) | null = null;
+    const renderForm = jest.fn(() => (
+      <FieldArray name={'array'} render={() => (
+        <FieldArrayItems getKey={item => item} render={() =>
+          <InputField name={null}/>
+        }/>
+      )}/>
+    ));
+    const expectValidationResult = createValidationResultExpectFunction(renderForm);
     mount(
-      <Form state={{ model, status }} validation={validators} onChange={onChange}>
-        <FieldArray name={'array'} render={() => (
-          <FieldArrayItems getKey={item => item} render={(args) => {
-            removeItem = args.remove;
-            return <InputField name={null}/>;
-          }}/>
-        )}/>
-      </Form>
+      <Form state={{ model, status }} validation={validators} render={renderForm}/>
     );
-
-    expectValidationResult({});
-
-    removeItem!();
-
     expectValidationResult({
       array: error
     });
@@ -288,10 +276,10 @@ function createFieldStatusExpectFunction(onChange: jest.Mock<any>) {
   };
 }
 
-function createValidationResultExpectFunction(onChange: jest.Mock<any>) {
+function createValidationResultExpectFunction(renderForm: jest.Mock<any>) {
   return (validationResult: ValidationResultMapping) => {
-    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1];
-    expect(lastCall[1].validation).toEqual(validationResult);
+    const lastCall = renderForm.mock.calls[renderForm.mock.calls.length - 1];
+    expect(lastCall[0].validationResult).toEqual(validationResult);
   };
 }
 
