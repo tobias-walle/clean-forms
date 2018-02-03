@@ -1,7 +1,6 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { Field, FieldArray, FieldArrayItems } from '../';
-import { mockEvent } from '../../../testUtils/mockEvent';
 import { wait } from '../../../testUtils/wait';
 import { FieldRegister } from '../../utils/FieldRegister';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
@@ -12,7 +11,7 @@ import {
 } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
-import { Form, FormContext, FormState } from './Form';
+import { Form, FormContext } from './Form';
 
 describe('Form', () => {
   it('should render', () => {

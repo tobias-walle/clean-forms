@@ -23,59 +23,62 @@ storiesOf('Form', module)
       <InputField name={'value3'} inner={{ label: 'Value 3', type: 'number' }}/>
     </StateFullForm>
   ))
-  .add('with groups', () => {
-    const model = {
-      value1: 'First Value',
-      value2: 'Second Value',
-      value3: Math.PI,
-      value4: {
-        a: 123
-      }
-    };
-    return <StateFullForm
-      initialState={{ model }}>
+  .add('with groups', () => (
+    <StateFullForm
+      initialState={{
+        model: {
+          value1: 'First Value',
+          value2: 'Second Value',
+          value3: Math.PI,
+          value4: {
+            a: 123
+          }
+        }
+      }}>
       <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
       <InputField name={'value2'} inner={{ label: 'Value 2' }}/>
       <InputField name={'value3'} inner={{ label: 'Value 3', type: 'number' }}/>
       <FieldGroup name={'value4'}>
         <InputField name={'a'} inner={{ label: 'value4 => a' }}/>
       </FieldGroup>
-    </StateFullForm>;
-  })
+    </StateFullForm>
+  ))
   .add('with Arrays', () => {
-    const model = {
-      value1: '123',
-      array1: [
-        { item1: 'item1', item2: 'item2' }
-      ],
-    };
-    type Model = typeof model;
-    type Item = Model['array1'][0];
     const errorMessage = 'Length has to be greater than limit';
+
     const maxLengthValidator: (maxLength: number) => ValidationFunction<string> =
-      (maxLength) => ({value}) => value.length > maxLength ? null : errorMessage;
-    const validation: ValidationDefinition<Model> = {
-      value1: maxLengthValidator(1),
-      array1: new ArrayValidation<Model, Item>({
-        item1: maxLengthValidator(2),
-        item2: maxLengthValidator(2),
-      }, ({value}) => value.length > 1 ? null : 'The array needs at least two items')
-    };
+      (maxLength) => ({ value }) => value.length > maxLength
+        ? null
+        : errorMessage;
+
     return <StateFullForm
-      initialState={{ model }}
-      validation={validation as any}
+      initialState={{
+        model: {
+          value1: '123',
+          array1: [
+            { item1: 'item1', item2: 'item2' }
+          ],
+        }
+      }}
+      validation={{
+        value1: maxLengthValidator(1),
+        array1: new ArrayValidation({
+          item1: maxLengthValidator(2),
+          item2: maxLengthValidator(2),
+        }, ({ value }) => value.length > 1 ? null : 'The array needs at least two items')
+      }}
     >
       <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
       <FieldArray name={'array1'} render={({ addItem }) => (
         <>
-        <FieldArrayItems render={({ remove }) => (
-          <div>
-            <InputField name={'item1'} inner={{ label: 'Item 1' }}/>
-            <InputField name={'item2'} inner={{ label: 'Item 2' }}/>
-            <button type="button" onClick={remove}>Remove</button>
-          </div>
-        )}/>
-        <button type="button" onClick={() => addItem({ item1: 'new', item2: 'new' })}>Add</button>
+          <FieldArrayItems render={({ remove }) => (
+            <div>
+              <InputField name={'item1'} inner={{ label: 'Item 1' }}/>
+              <InputField name={'item2'} inner={{ label: 'Item 2' }}/>
+              <button type="button" onClick={remove}>Remove</button>
+            </div>
+          )}/>
+          <button type="button" onClick={() => addItem({ item1: 'new', item2: 'new' })}>Add</button>
         </>
       )}/>
     </StateFullForm>;
@@ -99,4 +102,26 @@ storiesOf('Form', module)
       <InputField name={'value3'} inner={{ label: 'Value 3', type: 'number' }}/>
     </StateFullForm>;
   })
+  .add('with submit', () => {
+    const model = {
+      value1: 'First Value',
+      value2: 'Second Value',
+      value3: Math.PI,
+      value4: {
+        a: 123
+      }
+    };
+    type Model = typeof model;
+    const validation: ValidationDefinition<Model> = {
+      value3: ({ value }) => value > 100 ? null : 'Value has to be greater than 100',
+    };
+    return <StateFullForm initialState={{ model }} validation={validation as any} render={() => (
+      <>
+        <InputField name={'value1'} inner={{ label: 'Value 1' }}/>
+        <InputField name={'value2'} inner={{ label: 'Value 2' }}/>
+        <InputField name={'value3'} inner={{ label: 'Value 3', type: 'number' }}/>
+        <button>Submit</button>
+      </>
+    )}/>;
+  });
 ;
