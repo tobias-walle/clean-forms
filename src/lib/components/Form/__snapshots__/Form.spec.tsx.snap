@@ -1,5 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Form should render 1`] = `<form />`;
+exports[`Form should render 1`] = `
+<form
+  onSubmit={[Function]}
+/>
+`;
 
 exports[`Form should render model in inputs 1`] = `"<form><label><div></div><input name=\\"a\\" value=\\"hello\\"></label><label><div></div><input type=\\"number\\" name=\\"b\\" value=\\"124\\"></label></form>"`;

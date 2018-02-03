@@ -267,6 +267,21 @@ describe('Form', () => {
       'array.b': DEFAULT_FIELD_STATUS
     });
   });
+
+  it('should trigger onSubmit', () => {
+    const model = { a: 123 };
+    const onSubmit = jest.fn();
+    const element = shallow(
+      <Form state={{model}} onSubmit={onSubmit}/>
+    );
+
+    const form = element.find('form');
+    form.props().onSubmit!(new Event('test') as any);
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      state: { model }, validationResult: expect.anything()
+    });
+  });
 });
 
 function createFieldStatusExpectFunction(onChange: jest.Mock<any>) {

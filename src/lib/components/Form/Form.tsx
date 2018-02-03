@@ -54,12 +54,14 @@ export interface FormInfo<Model> {
 }
 
 export type OnChange<Model> = (state: FormState<Model>) => void;
+export type OnSubmit<Model> = (form: FormInfo<Model>) => void;
 
 export type RenderForm<Model> = React.StatelessComponent<FormInfo<Model>>;
 
 export interface FormProps<Model> {
   state: FormState<Model>;
   onChange?: OnChange<Model>;
+  onSubmit?: OnSubmit<Model>;
   validation?: ValidationDefinition<Model>;
   render?: RenderForm<Model>;
 }
@@ -82,7 +84,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     const { render } = this.props;
     const formInfo = this.getFormInfo();
     return (
-      <form>
+      <form onSubmit={this.handleSubmit}>
         {this.props.children}
         {render && render(formInfo)}
       </form>
@@ -145,6 +147,14 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     const state = this.createState(model, status);
 
     this.triggerChange(state);
+  };
+
+  private handleSubmit = (event: React.FormEvent<any>) => {
+    const { onSubmit } = this.props;
+    event.stopPropagation();
+    event.preventDefault();
+
+    onSubmit && onSubmit(this.getFormInfo());
   };
 
   private setArrayGetKey: SetArrayGetKey = (path, getKey) => {
