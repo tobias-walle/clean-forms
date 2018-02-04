@@ -16,7 +16,7 @@ type DeepPartial<T> = {
 
 export interface ValidationFunctionArgs<Value = any, Model = any> {
   value: Value;
-  formValue: Model;
+  model: Model;
 }
 
 export type ValidationFunction<Value = any, Model = any> =

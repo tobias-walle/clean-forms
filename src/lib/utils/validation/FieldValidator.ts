@@ -82,6 +82,6 @@ export class FieldValidator<Model> {
     if (validationFunction == null) {
       return;
     }
-    return validationFunction({ value: this.value, formValue: this.model }) || undefined;
+    return validationFunction({ value: this.value, model: this.model }) || undefined;
   }
 }
