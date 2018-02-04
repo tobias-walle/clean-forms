@@ -92,7 +92,6 @@ describe('FieldStatusUpdater', () => {
     });
   });
 
-
   describe('addIfFieldNotExits', () => {
     it('should add field it it not exists', () => {
       const statusBefore: FieldStatusMapping = {

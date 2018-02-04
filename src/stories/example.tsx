@@ -78,7 +78,7 @@ export class MyForm extends React.Component<{}, MyFormState> {
         state={this.state}
         validation={this.validation}
         onChange={this.onChange}
-        onValidSubmit={() => console.log('Submit Successful')}
+        onValidSubmit={() => console.info('Submit Successful')}
       >
         <Input name={'username'} label={'Username'}/>
         <Input name={'password'} label={'Password'} type={'password'}/>
