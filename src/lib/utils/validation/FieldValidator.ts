@@ -16,10 +16,10 @@ export interface ValidateModelArguments<Model> {
   validationDefinition: ValidationDefinition<Model>;
 }
 
-export type ValidationResult = string | undefined;
+export type FieldError = string | undefined;
 
-export interface ValidationResultMapping {
-  [path: string]: ValidationResult;
+export interface FieldErrorMapping {
+  [path: string]: FieldError;
 }
 
 export class FieldValidator<Model> {
@@ -27,15 +27,15 @@ export class FieldValidator<Model> {
   private value: any;
   private model: Model;
 
-  public validateModel({ model, validationDefinition }: ValidateModelArguments<Model>): ValidationResultMapping {
+  public validateModel({ model, validationDefinition }: ValidateModelArguments<Model>): FieldErrorMapping {
     return getValidationDefinitionPaths(validationDefinition, model)
       .reduce((result, path) => {
         result[path] = this.validateField({model, validationDefinition, path});
         return result;
-      }, {} as ValidationResultMapping);
+      }, {} as FieldErrorMapping);
   }
 
-  public validateField({ model, validationDefinition, path }: ValidateFieldArguments<Model>): ValidationResult {
+  public validateField({ model, validationDefinition, path }: ValidateFieldArguments<Model>): FieldError {
     this.path = path;
     this.value = selectDeep({ object: model, path, assert: false });
     this.model = model;
@@ -47,7 +47,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runArrayValidation(validation: ArrayValidation): ValidationResult {
+  private runArrayValidation(validation: ArrayValidation): FieldError {
     if (this.value instanceof Array) {
       return this.runValidationFunctionInTryCatch(validation.arrayValidation);
     } else {
@@ -55,7 +55,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runValidationFunctionInTryCatchAndCheckType(validationFunction: any): ValidationResult {
+  private runValidationFunctionInTryCatchAndCheckType(validationFunction: any): FieldError {
     if (typeof validationFunction === 'function') {
       return this.runValidationFunctionInTryCatch(validationFunction);
     } else {
@@ -66,7 +66,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runValidationFunctionInTryCatch(validationFunction: ValidationFunction | undefined | null): ValidationResult {
+  private runValidationFunctionInTryCatch(validationFunction: ValidationFunction | undefined | null): FieldError {
     try {
       return this.runValidationFunctionIfDefined(validationFunction);
     } catch (e) {
@@ -78,7 +78,7 @@ export class FieldValidator<Model> {
     }
   }
 
-  private runValidationFunctionIfDefined(validationFunction: ValidationFunction | undefined | null): ValidationResult {
+  private runValidationFunctionIfDefined(validationFunction: ValidationFunction | undefined | null): FieldError {
     if (validationFunction == null) {
       return;
     }

@@ -1,7 +1,7 @@
 import { selectDeep } from '../utils';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../utils/statusTracking/FieldStatusMapping';
-import { ValidationDefinition, ValidationResult, ValidationResultMapping } from '../utils/validation';
+import { ValidationDefinition, FieldError, FieldErrorMapping } from '../utils/validation';
 
 export interface FormState<Model> {
   model: Model;
@@ -20,7 +20,7 @@ export class FormApi<Model> {
   public constructor(
     private readonly state: FormState<Model>,
     public readonly validationDefinition: ValidationDefinition<Model> = {},
-    public readonly validationResultMapping: ValidationResultMapping = {}
+    public readonly fieldErrorMapping: FieldErrorMapping = {}
   ) {
   }
 

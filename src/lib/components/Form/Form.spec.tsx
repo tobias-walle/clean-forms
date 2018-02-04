@@ -7,7 +7,7 @@ import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/Fi
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import {
   ArrayValidation, ValidationDefinition,
-  ValidationResultMapping
+  FieldErrorMapping
 } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';
@@ -278,7 +278,7 @@ describe('Form', () => {
     form.props().onSubmit!(new Event('test') as any);
 
     expect(onSubmit).toHaveBeenCalledWith({
-      state: { model }, validationDefinition: expect.anything(), validationResultMapping: expect.anything()
+      state: { model }, validationDefinition: expect.anything(), fieldErrorMapping: expect.anything()
     });
   });
 });
@@ -291,9 +291,9 @@ function createFieldStatusExpectFunction(onChange: jest.Mock<any>) {
 }
 
 function createValidationResultExpectFunction(renderForm: jest.Mock<any>) {
-  return (validationResult: ValidationResultMapping) => {
+  return (fieldErrorMapping: FieldErrorMapping) => {
     const lastCall = renderForm.mock.calls[renderForm.mock.calls.length - 1];
-    expect(lastCall[0].validationResultMapping).toEqual(validationResult);
+    expect(lastCall[0].fieldErrorMapping).toEqual(fieldErrorMapping);
   };
 }
 

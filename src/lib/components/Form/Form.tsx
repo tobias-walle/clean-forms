@@ -5,7 +5,7 @@ import { updateDeep } from '../../utils';
 import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import { FieldStatusUpdater } from '../../utils/statusTracking/FieldStatusUpdater';
-import { FieldValidator, ValidationDefinition, ValidationResultMapping } from '../../utils/validation';
+import { FieldValidator, ValidationDefinition, FieldErrorMapping } from '../../utils/validation';
 
 import { GetKey } from '../FieldArrayItems/FieldArrayItems';
 
@@ -55,7 +55,7 @@ export interface FormProps<Model> {
 }
 
 export interface FormComponentState {
-  validationResult: ValidationResultMapping;
+  fieldErrorMapping: FieldErrorMapping;
 }
 
 export class Form<Model = any> extends React.Component<FormProps<Model>, FormComponentState> {
@@ -73,7 +73,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.fieldValidator = new FieldValidator();
     this.fieldStatusUpdater = new FieldStatusUpdater(this.fieldsRegister);
     this.state = {
-      validationResult: this.validate(this.props.state.model)
+      fieldErrorMapping: this.validate(this.props.state.model)
     };
     this.handlePropsUpdate(this.props, this.state);
   }
@@ -119,16 +119,16 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.api = new FormApi<Model>(
       props.state,
       props.validation,
-      state.validationResult
+      state.fieldErrorMapping
     );
   }
 
   private updateValidationResult(model: Model): void {
     const result = this.validate(model);
-    this.setState({ validationResult: result });
+    this.setState({ fieldErrorMapping: result });
   }
 
-  private validate(model: Model): ValidationResultMapping {
+  private validate(model: Model): FieldErrorMapping {
     const { validation = {} } = this.props;
     return this.fieldValidator.validateModel({ model, validationDefinition: validation });
   }
