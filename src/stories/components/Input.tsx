@@ -28,7 +28,6 @@ export const Input = createField<string | number, StyledInputProps>(({
     onChange,
     onBlur,
     error,
-    dirty,
     touched
   },
   custom: {

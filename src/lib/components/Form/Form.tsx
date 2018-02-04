@@ -61,11 +61,11 @@ export interface FormComponentState {
 export class Form<Model = any> extends React.Component<FormProps<Model>, FormComponentState> {
   public static childContextTypes = formContextTypes;
   public state: FormComponentState;
+  public api: FormApi<Model>;
   private fieldsRegister: FieldRegister;
   private fieldValidator: FieldValidator<Model>;
   private fieldStatusUpdater: FieldStatusUpdater;
   private arrayGetKeyMapping: Map<string, GetKey<any>> = new Map();
-  private api: FormApi<Model>;
 
   constructor(props: FormProps<Model>, context: any) {
     super(props, context);
@@ -168,8 +168,14 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     event.stopPropagation();
     event.preventDefault();
 
+    this.markAllAsTouched();
     onSubmit && onSubmit(this.api);
   };
+
+  private markAllAsTouched(): void {
+    const status = this.fieldStatusUpdater.markAllAsTouched(this.api.status);
+    this.triggerChange(this.createState({status}));
+  }
 
   private setArrayGetKey: SetArrayGetKey = (path, getKey) => {
     this.arrayGetKeyMapping.set(path, getKey);

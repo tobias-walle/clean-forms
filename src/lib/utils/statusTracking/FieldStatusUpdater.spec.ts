@@ -71,6 +71,28 @@ describe('FieldStatusUpdater', () => {
     });
   });
 
+  describe('markAllAsTouched', () => {
+    it('should work', () => {
+      registerFields('a', 'b', 'c');
+      const statusBefore: FieldStatusMapping = {
+        a: DEFAULT_FIELD_STATUS,
+        b: DEFAULT_FIELD_STATUS,
+        c: DEFAULT_FIELD_STATUS,
+      };
+      const TOUCHED_STATUS = cloneFieldStatus(DEFAULT_FIELD_STATUS, { touched: true });
+      const expectedStatus: FieldStatusMapping = {
+        a: TOUCHED_STATUS,
+        b: TOUCHED_STATUS,
+        c: TOUCHED_STATUS,
+      };
+
+      const result = fieldStatusUpdater.markAllAsTouched(statusBefore);
+
+      expect(result).toEqual(expectedStatus);
+    });
+  });
+
+
   describe('addIfFieldNotExits', () => {
     it('should add field it it not exists', () => {
       const statusBefore: FieldStatusMapping = {

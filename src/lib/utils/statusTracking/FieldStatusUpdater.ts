@@ -1,5 +1,5 @@
 import { FieldRegister, Path } from '../FieldRegister';
-import { cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatusArguments } from './FieldStatus';
+import { cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusArguments } from './FieldStatus';
 import { FieldStatusMapping } from './FieldStatusMapping';
 
 export class FieldStatusUpdater {
@@ -9,11 +9,18 @@ export class FieldStatusUpdater {
   }
 
   public markAsDirty(status: FieldStatusMapping, path: Path): FieldStatusMapping {
-    return this.updateField(status, path, {dirty: true});
+    return this.updateField(status, path, { dirty: true });
   }
 
   public markAsTouched(status: FieldStatusMapping, path: Path): FieldStatusMapping {
-    return this.updateField(status, path, {touched: true});
+    return this.updateField(status, path, { touched: true });
+  }
+
+  public markAllAsTouched(status: FieldStatusMapping): FieldStatusMapping {
+    return Object.keys(status)
+      .reduce((result, path) => {
+        return this.markAsTouched(result, path);
+      }, status);
   }
 
   private updateField(

@@ -6,10 +6,7 @@ import { wait } from '../../../testUtils/wait';
 import { FieldRegister } from '../../utils/FieldRegister';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
-import {
-  ArrayValidation, FieldErrorMapping,
-  ValidationDefinition
-} from '../../utils/validation';
+import { ArrayValidation, FieldErrorMapping, ValidationDefinition } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { Form, FormContext } from './Form';
 
@@ -173,8 +170,8 @@ describe('Form', () => {
     };
     const renderForm = jest.fn(() => (
       <>
-      <InputField name={'a'}/>
-      <InputField name={'b'} type="number"/>
+        <InputField name={'a'}/>
+        <InputField name={'b'} type="number"/>
       </>
     ));
     const expectValidationResult = createValidationResultExpectFunction(renderForm);
@@ -257,7 +254,7 @@ describe('Form', () => {
     const model = { a: 123 };
     const onSubmit = jest.fn();
     const element = shallow(
-      <Form state={{model}} onSubmit={onSubmit}/>
+      <Form state={{ model }} onSubmit={onSubmit}/>
     );
 
     const form = element.find('form');
@@ -269,6 +266,28 @@ describe('Form', () => {
       fieldErrorMapping: expect.anything(),
       valid: true,
       inValid: false
+    });
+  });
+
+  it('should mark all fields as touched on submit', () => {
+    const model = { a: 123, b: 1 };
+    const status: FieldStatusMapping = { a: DEFAULT_FIELD_STATUS, b: DEFAULT_FIELD_STATUS };
+    const onChange = jest.fn();
+    const element = mount(
+      <Form state={{ model, status }} onChange={onChange}>
+        <InputField name={'a'}/>
+        <InputField name={'b'}/>
+      </Form>
+    );
+    const form = element.find('form');
+
+    form.props().onSubmit!(new Event('test') as any);
+
+    expect(onChange).toHaveBeenCalledWith({
+      model, status: {
+        a: new FieldStatus({ touched: true, dirty: false }),
+        b: new FieldStatus({ touched: true, dirty: false }),
+      }
     });
   });
 });
