@@ -1,6 +1,6 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
-import { InputField } from '../';
+import { InputField } from '../../../testUtils/InputField';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
 import { DELETE } from '../../utils';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';

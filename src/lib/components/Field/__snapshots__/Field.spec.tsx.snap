@@ -1,14 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Field should render 1`] = `
-<label>
-  <div />
-  <input
-    name="name"
-    onBlur={[Function]}
-    onChange={[Function]}
-    onFocus={[Function]}
-    value="value"
-  />
-</label>
+<input
+  name="name"
+  onBlur={[Function]}
+  onChange={[Function]}
+  onFocus={[Function]}
+  value="value"
+/>
 `;

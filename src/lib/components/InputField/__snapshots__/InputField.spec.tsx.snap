@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`InputField should render 1`] = `
-<Field
-  inner={Object {}}
-  name="name"
-  render={[Function]}
-/>
-`;

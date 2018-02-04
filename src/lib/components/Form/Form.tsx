@@ -104,11 +104,13 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.fieldsRegister.addListener(this.onFieldRegisterChanges);
   }
 
-  public componentWillReceiveProps(newProps: FormProps<Model>, newState: FormComponentState) {
+  public componentWillReceiveProps(newProps: FormProps<Model>) {
+    let state = this.state;
     if (newProps.state.model !== this.props.state.model) {
-      this.updateValidationResult(newProps.state.model);
+      state = this.updateValidationResult(newProps.state.model);
+      this.setState(state);
     }
-    this.handlePropsUpdate(newProps, newState);
+    this.handlePropsUpdate(newProps, state);
   }
 
   private handlePropsUpdate(props: FormProps<Model>, state: FormComponentState): void {
@@ -123,9 +125,9 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     );
   }
 
-  private updateValidationResult(model: Model): void {
+  private updateValidationResult(model: Model): FormComponentState {
     const result = this.validate(model);
-    this.setState({ fieldErrorMapping: result });
+    return { ...this.state, fieldErrorMapping: result };
   }
 
   private validate(model: Model): FieldErrorMapping {

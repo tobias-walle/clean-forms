@@ -18,16 +18,13 @@ exports[`FieldArrayItems should render items 1`] = `
         name="a"
         render={[Function]}
       >
-        <label>
-          <div />
-          <input
-            name="a"
-            onBlur={[Function]}
-            onChange={[Function]}
-            onFocus={[Function]}
-            value={0}
-          />
-        </label>
+        <input
+          name="a"
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          value={0}
+        />
       </Field>
     </createField(Component)>
   </FieldGroup>
@@ -44,16 +41,13 @@ exports[`FieldArrayItems should render items 1`] = `
         name="a"
         render={[Function]}
       >
-        <label>
-          <div />
-          <input
-            name="a"
-            onBlur={[Function]}
-            onChange={[Function]}
-            onFocus={[Function]}
-            value={1}
-          />
-        </label>
+        <input
+          name="a"
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          value={1}
+        />
       </Field>
     </createField(Component)>
   </FieldGroup>
@@ -70,16 +64,13 @@ exports[`FieldArrayItems should render items 1`] = `
         name="a"
         render={[Function]}
       >
-        <label>
-          <div />
-          <input
-            name="a"
-            onBlur={[Function]}
-            onChange={[Function]}
-            onFocus={[Function]}
-            value={2}
-          />
-        </label>
+        <input
+          name="a"
+          onBlur={[Function]}
+          onChange={[Function]}
+          onFocus={[Function]}
+          value={2}
+        />
       </Field>
     </createField(Component)>
   </FieldGroup>

@@ -56,7 +56,7 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
 
     const value = form.getFieldValue(this.path);
     const status = form.getFieldStatus(this.fieldId);
-    const error = form.getFieldError(this.fieldId);
+    const error = form.getFieldError(this.path);
     const input: InputProps<Value> = {
       name: name || undefined,
       value,

@@ -1,13 +1,13 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
+import { renderInput } from '../../../testUtils/InputField';
 import { mockEvent } from '../../../testUtils/mockEvent';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
 import { FormApi } from '../../api/FormApi';
 import { DEFAULT_FIELD_STATUS } from '../../utils/statusTracking/FieldStatus';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
 import { FormContext } from '../Form/Form';
-import { renderInput } from '../InputField/InputField';
-import { Field, InnerFieldProps } from './Field';
+import { Field, FieldRenderFunction, InnerFieldProps } from './Field';
 
 describe('Field', () => {
   it('should render', () => {

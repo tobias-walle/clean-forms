@@ -1,6 +1,7 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { Field, FieldArray, FieldArrayItems } from '../';
+import { InputField } from '../../../testUtils/InputField';
 import { wait } from '../../../testUtils/wait';
 import { FieldRegister } from '../../utils/FieldRegister';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
@@ -10,7 +11,6 @@ import {
   ValidationDefinition
 } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
-import { InputField } from '../InputField/InputField';
 import { Form, FormContext } from './Form';
 
 describe('Form', () => {
