@@ -156,7 +156,7 @@ describe('Form', () => {
     const inputs = element.find('input');
     const firstInput = inputs.first();
 
-    firstInput.simulate('focus', {});
+    firstInput.simulate('blur', {});
 
     expectFieldStatus({
       a: new FieldStatus({ dirty: false, touched: true }),

@@ -144,13 +144,13 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   };
 
   private onFieldFocus: OnFieldFocus = (path) => {
+  };
+
+  private onFieldBlur: OnFieldBlur = (path) => {
     const status = this.fieldStatusUpdater.markAsTouched(this.api.status, path);
 
     const state = this.createState({ status });
     this.triggerChange(state);
-  };
-
-  private onFieldBlur: OnFieldBlur = (path) => {
   };
 
   private onFieldChange: OnFieldChange<Model> = (id, path, value) => {
