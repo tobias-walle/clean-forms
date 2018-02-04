@@ -6,8 +6,8 @@ import { FieldRegister } from '../../utils/FieldRegister';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import {
-  ArrayValidation, ValidationDefinition,
-  FieldErrorMapping
+  ArrayValidation, FieldErrorMapping,
+  ValidationDefinition
 } from '../../utils/validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { InputField } from '../InputField/InputField';

@@ -5,7 +5,7 @@ import { updateDeep } from '../../utils';
 import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
 import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
 import { FieldStatusUpdater } from '../../utils/statusTracking/FieldStatusUpdater';
-import { FieldValidator, ValidationDefinition, FieldErrorMapping } from '../../utils/validation';
+import { FieldErrorMapping, FieldValidator, ValidationDefinition } from '../../utils/validation';
 
 import { GetKey } from '../FieldArrayItems/FieldArrayItems';
 

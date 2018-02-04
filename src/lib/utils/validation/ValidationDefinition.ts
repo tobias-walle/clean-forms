@@ -12,7 +12,7 @@ export type Is<T, U> = (Record<X<T & U>, False> & Record<any, True>)[Diff<X<T>, 
 
 type DeepPartial<T> = {
     [P in keyof T]?: If<Is<Function & T[P], Function>, T[P], DeepPartial<T[P]>>
-}
+};
 
 export interface ValidationFunctionArgs<Value = any, Model = any> {
   value: Value;

@@ -123,5 +123,5 @@ storiesOf('Form', module)
         <button>Submit</button>
       </>
     )}/>;
-  });
+  })
 ;

@@ -1,7 +1,7 @@
 import { selectDeep } from '../utils';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../utils/statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../utils/statusTracking/FieldStatusMapping';
-import { ValidationDefinition, FieldError, FieldErrorMapping } from '../utils/validation';
+import { FieldErrorMapping, ValidationDefinition } from '../utils/validation';
 
 export interface FormState<Model> {
   model: Model;
