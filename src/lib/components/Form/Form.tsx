@@ -50,6 +50,8 @@ export interface FormProps<Model> {
   state: FormState<Model>;
   onChange?: OnChange<Model>;
   onSubmit?: OnSubmit<Model>;
+  onValidSubmit?: OnSubmit<Model>;
+  onInValidSubmit?: OnSubmit<Model>;
   validation?: ValidationDefinition<Model>;
   render?: RenderForm<Model>;
 }
@@ -164,12 +166,17 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   };
 
   private handleSubmit = (event: React.FormEvent<any>) => {
-    const { onSubmit } = this.props;
+    const { onSubmit, onValidSubmit, onInValidSubmit } = this.props;
     event.stopPropagation();
     event.preventDefault();
 
     this.markAllAsTouched();
     onSubmit && onSubmit(this.api);
+    if (this.api.valid) {
+      onValidSubmit && onValidSubmit(this.api);
+    } else {
+      onInValidSubmit && onInValidSubmit(this.api);
+    }
   };
 
   private markAllAsTouched(): void {

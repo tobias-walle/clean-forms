@@ -269,6 +269,37 @@ describe('Form', () => {
     });
   });
 
+  it('should trigger onValidSubmit', () => {
+    const model = { a: 123 };
+    const onValidSubmit = jest.fn();
+    const onInValidSubmit = jest.fn();
+    const element = shallow(
+      <Form state={{ model }} onValidSubmit={onValidSubmit} onInValidSubmit={onInValidSubmit}/>
+    );
+
+    const form = element.find('form');
+    form.props().onSubmit!(new Event('test') as any);
+
+    expect(onValidSubmit).toHaveBeenCalled();
+    expect(onInValidSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should trigger onInValidSubmit', () => {
+    const model = { a: 123 };
+    const validation = { a: () => 'Error' };
+    const onValidSubmit = jest.fn();
+    const onInValidSubmit = jest.fn();
+    const element = shallow(
+      <Form state={{ model }} validation={validation} onValidSubmit={onValidSubmit} onInValidSubmit={onInValidSubmit}/>
+    );
+
+    const form = element.find('form');
+    form.props().onSubmit!(new Event('test') as any);
+
+    expect(onValidSubmit).not.toHaveBeenCalled();
+    expect(onInValidSubmit).toHaveBeenCalled();
+  });
+
   it('should mark all fields as touched on submit', () => {
     const model = { a: 123, b: 1 };
     const status: FieldStatusMapping = { a: DEFAULT_FIELD_STATUS, b: DEFAULT_FIELD_STATUS };
