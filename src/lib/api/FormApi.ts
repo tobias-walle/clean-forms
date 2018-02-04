@@ -17,11 +17,16 @@ export class FormApi<Model> {
     return this.state.model;
   }
 
+  public readonly valid: boolean;
+  public readonly inValid: boolean;
+
   public constructor(
     private readonly state: FormState<Model>,
     public readonly validationDefinition: ValidationDefinition<Model> = {},
     public readonly fieldErrorMapping: FieldErrorMapping = {}
   ) {
+    this.valid = this.isValid();
+    this.inValid = !this.valid;
   }
 
   public getFieldValue(path: string): any {
@@ -34,5 +39,18 @@ export class FormApi<Model> {
 
   public getFieldStatus(fieldId: string): FieldStatus {
     return this.status[fieldId] || DEFAULT_FIELD_STATUS;
+  }
+
+  private isValid(): boolean {
+    for (const fieldId in this.fieldErrorMapping) {
+      if (!this.fieldErrorMapping.hasOwnProperty(fieldId)) {
+        continue;
+      }
+      const error = this.fieldErrorMapping[fieldId];
+      if (error !== undefined) {
+        return false;
+      }
+    }
+    return true;
   }
 }

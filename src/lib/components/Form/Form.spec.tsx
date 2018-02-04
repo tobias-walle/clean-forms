@@ -278,7 +278,11 @@ describe('Form', () => {
     form.props().onSubmit!(new Event('test') as any);
 
     expect(onSubmit).toHaveBeenCalledWith({
-      state: { model }, validationDefinition: expect.anything(), fieldErrorMapping: expect.anything()
+      state: { model },
+      validationDefinition: expect.anything(),
+      fieldErrorMapping: expect.anything(),
+      valid: true,
+      inValid: false
     });
   });
 });

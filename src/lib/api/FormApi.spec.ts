@@ -43,4 +43,15 @@ describe('FormApi', () => {
     expect(api.getFieldError('a')).toBe('Error');
     expect(api.getFieldError('b')).toBe(undefined);
   });
+
+  it('should get valid/inValid for an invalid form', () => {
+    expect(api.inValid).toBe(true);
+    expect(api.valid).toBe(false);
+  });
+
+  it('should get valid/inValid for an valid form', () => {
+    api = new FormApi({ model });
+    expect(api.inValid).toBe(false);
+    expect(api.valid).toBe(true);
+  });
 });
