@@ -1,16 +1,8 @@
-# React Clean Forms
-
-[![Build Status](https://travis-ci.org/TobiasWalle/clean-forms.svg?branch=master)](https://travis-ci.org/TobiasWalle/clean-forms)
-[![Coverage Status](https://coveralls.io/repos/github/TobiasWalle/clean-forms/badge.svg?branch=master)](https://coveralls.io/github/TobiasWalle/clean-forms?branch=master)
-
-React Forms solved ✔
-
-```typescript
 import * as React from 'react';
-import {
-  FormState, FieldGroup, Form, createField,
-  ValidationDefinition, ValidationFunction
-} from 'clean-forms';
+import { FormState } from '../lib/api/FormApi';
+import { FieldGroup, Form } from '../lib/components';
+import { createField } from '../lib/hocs';
+import { ValidationDefinition, ValidationFunction } from '../lib/utils/validation';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -105,6 +97,3 @@ export class MyForm extends React.Component<{}, MyFormState> {
     this.setState(newState);
   };
 }
-```
-
-![Example](media/example.gif)

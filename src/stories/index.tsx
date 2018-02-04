@@ -2,9 +2,10 @@ import { action } from '@storybook/addon-actions';
 import { storiesOf } from '@storybook/react';
 import * as React from 'react';
 import { Form } from '../lib';
-import { FieldGroup } from '../lib/components/FieldGroup/FieldGroup';
+import { FieldGroup } from '../lib/components';
 import { ValidationFunction } from '../lib/utils/validation';
 import { Input } from './components/Input';
+import { MyForm } from './example';
 import { StateFullForm } from './StateFullForm/StateFullForm';
 
 const required: ValidationFunction<any> = ({value}) => value === '' || value == null
@@ -45,4 +46,5 @@ storiesOf('Form', module)
       <button>Submit</button>
     </StateFullForm>
   ))
+  .add('example', () => <MyForm/>)
 ;
