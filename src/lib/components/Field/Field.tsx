@@ -4,6 +4,7 @@ import { FormApi } from '../../api/FormApi';
 import { createPath } from '../../utils/createPath';
 import { Path } from '../../utils/FieldRegister';
 import { FieldStatus } from '../../utils/statusTracking/FieldStatus';
+import { FieldError } from '../../utils/validation';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
 
@@ -15,6 +16,9 @@ export interface InputProps<Value> extends FieldStatus {
   onFocus: () => void;
   onBlur: () => void;
   onChange: (value: Value) => void;
+  error: FieldError;
+  valid: boolean;
+  inValid: boolean;
 }
 
 export interface InnerFieldProps<Value, CustomProps, Model = any> {
@@ -51,13 +55,17 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
 
     const value = form.getFieldValue(this.path);
     const status = form.getFieldStatus(this.fieldId);
+    const error = form.getFieldError(this.fieldId);
     const input: InputProps<Value> = {
       name: name || undefined,
       value,
       onFocus: this.onFocus,
       onBlur: this.onBlur,
       onChange: this.onChange,
-      ...status
+      ...status,
+      error,
+      valid: !error,
+      inValid: !!error,
     };
 
     return render({ input, custom, form });

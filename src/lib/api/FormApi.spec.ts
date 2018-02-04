@@ -38,4 +38,9 @@ describe('FormApi', () => {
     expect(api.getFieldStatus('b')).toBe(DEFAULT_FIELD_STATUS);
     expect(api.getFieldStatus('c')).toBe(DEFAULT_FIELD_STATUS);
   });
+
+  it('should get error for a specific field', () => {
+    expect(api.getFieldError('a')).toBe('Error');
+    expect(api.getFieldError('b')).toBe(undefined);
+  });
 });

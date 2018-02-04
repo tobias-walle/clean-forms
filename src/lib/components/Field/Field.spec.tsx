@@ -2,6 +2,7 @@ import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { mockEvent } from '../../../testUtils/mockEvent';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
+import { FormApi } from '../../api/FormApi';
 import { DEFAULT_FIELD_STATUS } from '../../utils/statusTracking/FieldStatus';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
 import { FormContext } from '../Form/Form';
@@ -33,7 +34,40 @@ describe('Field', () => {
         onChange: expect.any(Function),
         onFocus: expect.any(Function),
         onBlur: expect.any(Function),
-        ...DEFAULT_FIELD_STATUS
+        ...DEFAULT_FIELD_STATUS,
+        error: undefined,
+        valid: true,
+        inValid: false
+      },
+      custom: { type },
+      form: context.form
+    };
+    expect(mockRender).toBeCalledWith(expectedInput);
+  });
+
+  it('should pass props for invalid field', () => {
+    const mockRender = jest.fn(renderInput);
+    const name = 'name';
+    const value = 'value';
+    const type = 'number';
+    const field = <Field name={name} render={mockRender} inner={{ type }}/>;
+    const model = { [name]: value };
+    const context = mockFormContext(model, {
+      form: new FormApi({ model }, {}, { name: 'Error' })
+    });
+
+    mount(field, { context });
+
+    const expectedInput: InnerFieldProps<any, any> = {
+      input: {
+        name, value,
+        onChange: expect.any(Function),
+        onFocus: expect.any(Function),
+        onBlur: expect.any(Function),
+        ...DEFAULT_FIELD_STATUS,
+        error: 'Error',
+        valid: false,
+        inValid: true
       },
       custom: { type },
       form: context.form
