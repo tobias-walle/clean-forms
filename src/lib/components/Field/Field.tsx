@@ -21,22 +21,23 @@ export interface InputProps<Value> extends FieldStatus {
   inValid: boolean;
 }
 
-export interface InnerFieldProps<Value, CustomProps, Model = any> {
+export interface InnerFieldProps<Value, Model = any, CustomProps = {}> {
   input: InputProps<Value>;
   form: FormApi<Model>;
-  custom: CustomProps | null;
+  custom: CustomProps;
 }
 
-export type FieldRenderFunction<Value, RenderProps> = React.StatelessComponent<InnerFieldProps<Value, RenderProps>>;
+export type FieldRenderFunction<Value = any, RenderProps = {}> =
+  React.StatelessComponent<InnerFieldProps<Value, any, RenderProps>>;
 
-export interface FieldPropsWithoutRender<CustomProps> {
+export interface FieldPropsWithoutRender {
   name: string | null;
-  inner?: CustomProps;
 }
 
-export interface FieldProps<Value, CustomProps> extends FieldPropsWithoutRender<CustomProps> {
+export type FieldProps<Value, CustomProps = {}> = FieldPropsWithoutRender & {
   render: FieldRenderFunction<Value, CustomProps>;
-}
+  inner: CustomProps;
+};
 
 export class Field<Value = any, CustomProps = any> extends React.Component<FieldProps<Value, CustomProps>, {}> {
   public static contextTypes = {
@@ -49,7 +50,7 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
   private path: Path;
 
   public render() {
-    const { name, render, inner: custom = null } = this.props;
+    const { name, render, inner: custom } = this.props;
     const { form } = this.context;
     this.updatePathAndId();
 

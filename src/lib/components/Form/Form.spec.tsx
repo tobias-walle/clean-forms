@@ -26,9 +26,7 @@ describe('Form', () => {
     const element = mount(
       <Form state={{ model }}>
         <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
+        <InputField name={'b'} type="number"/>
       </Form>
     );
     const inputs = element.find('input');
@@ -53,9 +51,7 @@ describe('Form', () => {
     const element = mount(
       <Form state={{ model, status }} onChange={onChange}>
         <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
+        <InputField name={'b'} type="number"/>
       </Form>
     );
     const expectedNewValue = 'new';
@@ -86,9 +82,7 @@ describe('Form', () => {
     const element = mount(
       <Form state={{ model, status }} onChange={onChange}>
         <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
+        <InputField name={'b'} type="number"/>
         <FieldGroup name={'c'}>
           <InputField name={'c1'}/>
         </FieldGroup>
@@ -117,9 +111,7 @@ describe('Form', () => {
     mount(
       <Form state={{ model }} onChange={onChange}>
         <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
+        <InputField name={'b'} type="number"/>
       </Form>
     );
     expectFieldStatus({
@@ -136,9 +128,7 @@ describe('Form', () => {
     const element = mount(
       <Form state={{ model, status }} onChange={onChange}>
         <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
+        <InputField name={'b'} type="number"/>
       </Form>
     );
     const inputs = element.find('input');
@@ -160,9 +150,7 @@ describe('Form', () => {
     const element = mount(
       <Form state={{ model, status }} onChange={onChange}>
         <InputField name={'a'}/>
-        <InputField name={'b'} inner={{
-          type: 'number'
-        }}/>
+        <InputField name={'b'} type="number"/>
       </Form>
     );
     const inputs = element.find('input');
@@ -186,9 +174,7 @@ describe('Form', () => {
     const renderForm = jest.fn(() => (
       <>
       <InputField name={'a'}/>
-      <InputField name={'b'} inner={{
-        type: 'number'
-      }}/>
+      <InputField name={'b'} type="number"/>
       </>
     ));
     const expectValidationResult = createValidationResultExpectFunction(renderForm);

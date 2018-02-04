@@ -10,10 +10,11 @@ exports[`FieldArrayItems should render items 1`] = `
     key="0"
     name="0"
   >
-    <Component
+    <createField(Component)
       name="a"
     >
       <Field
+        inner={Object {}}
         name="a"
         render={[Function]}
       >
@@ -28,17 +29,18 @@ exports[`FieldArrayItems should render items 1`] = `
           />
         </label>
       </Field>
-    </Component>
+    </createField(Component)>
   </FieldGroup>
   <FieldGroup
     accessor="1"
     key="1"
     name="1"
   >
-    <Component
+    <createField(Component)
       name="a"
     >
       <Field
+        inner={Object {}}
         name="a"
         render={[Function]}
       >
@@ -53,17 +55,18 @@ exports[`FieldArrayItems should render items 1`] = `
           />
         </label>
       </Field>
-    </Component>
+    </createField(Component)>
   </FieldGroup>
   <FieldGroup
     accessor="2"
     key="2"
     name="2"
   >
-    <Component
+    <createField(Component)
       name="a"
     >
       <Field
+        inner={Object {}}
         name="a"
         render={[Function]}
       >
@@ -78,7 +81,7 @@ exports[`FieldArrayItems should render items 1`] = `
           />
         </label>
       </Field>
-    </Component>
+    </createField(Component)>
   </FieldGroup>
 </FieldArrayItems>
 `;

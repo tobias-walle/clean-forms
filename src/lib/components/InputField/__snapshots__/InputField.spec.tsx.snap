@@ -2,6 +2,7 @@
 
 exports[`InputField should render 1`] = `
 <Field
+  inner={Object {}}
   name="name"
   render={[Function]}
 />

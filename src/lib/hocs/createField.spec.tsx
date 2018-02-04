@@ -10,7 +10,7 @@ describe('createField', () => {
     const name = 'name';
     const customProps = { a: 1, b: 2 };
 
-    const element = shallow(<MyField name={name} inner={customProps}/>);
+    const element = shallow(<MyField name={name} {...customProps}/>);
     const field = element.find(Field);
 
     expect(field.props()).toEqual({ render: InnerComponent, name, inner: customProps });

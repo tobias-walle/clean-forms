@@ -11,7 +11,7 @@ import { Field, InnerFieldProps } from './Field';
 
 describe('Field', () => {
   it('should render', () => {
-    const field = <Field name={'name'} render={renderInput}/>;
+    const field = <Field name={'name'} render={renderInput} inner={{}}/>;
     const model = { name: 'value' };
     const context: FormContext<any> = mockFormContext(model);
     expect(shallow(field, { context })).toMatchSnapshot();
@@ -79,7 +79,7 @@ describe('Field', () => {
     const name = 'name';
     const value = 'value';
     const onFieldChange = jest.fn();
-    const field = <Field name={name} render={renderInput}/>;
+    const field = <Field name={name} render={renderInput} inner={{}}/>;
     const model = { [name]: value };
     const context = mockFormContext(model, { onFieldChange });
 
@@ -100,7 +100,7 @@ describe('Field', () => {
     const value = 'value';
     const onFieldFocus = jest.fn();
     const onFieldBlur = jest.fn();
-    const field = <Field name={name} render={renderInput}/>;
+    const field = <Field name={name} render={renderInput} inner={{}}/>;
     const model = { [name]: value };
     const context = mockFormContext(model, { onFieldFocus, onFieldBlur });
 
@@ -127,7 +127,7 @@ describe('Field', () => {
     const value = 'value';
     const onFieldMount = jest.fn();
     const onFieldUnmount = jest.fn();
-    const field = <Field name={name} render={renderInput}/>;
+    const field = <Field name={name} render={renderInput} inner={{}}/>;
     const model = { [name]: value };
     const context = mockFormContext(model, { onFieldMount, onFieldUnmount });
 
@@ -150,7 +150,7 @@ describe('Field', () => {
     };
 
     const element = mount(
-      <Field name={'name'} render={renderInput}/>
+      <Field name={'name'} render={renderInput} inner={{}}/>
       , { context }
     );
     const input = element.find('input');
@@ -166,7 +166,7 @@ describe('Field', () => {
     };
 
     const element = mount(
-      <Field name={null} render={renderInput}/>
+      <Field name={null} render={renderInput} inner={{}}/>
       , { context });
 
     const input = element.find('input');
@@ -177,7 +177,7 @@ describe('Field', () => {
     const name = 'name';
     const value = 'value';
     const onFieldChange = jest.fn();
-    const field = <Field name={name} render={renderInput}/>;
+    const field = <Field name={name} render={renderInput} inner={{}}/>;
     const model = { group1: { group2: { [name]: value } } };
     const context: FormContext<any> & FieldGroupContext = {
       ...mockFormContext(model, { onFieldChange }),
