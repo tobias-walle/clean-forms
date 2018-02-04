@@ -1,4 +1,4 @@
-import { cloneFieldStatus, FieldStatus, isFieldStatus } from './FieldStatus';
+import { cloneFieldStatus, FieldStatus } from './FieldStatus';
 
 describe('FieldStatus', () => {
   it('should work this falsy arguments', () => {
@@ -28,4 +28,3 @@ describe('FieldStatus', () => {
     expect(clonedFieldStatus).toEqual(new FieldStatus({ dirty: true, touched: false }));
   });
 });
-

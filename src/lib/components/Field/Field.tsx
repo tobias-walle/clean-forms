@@ -1,14 +1,15 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { selectDeep } from '../../utils';
+import { FormApi } from '../../api/FormApi';
 import { createPath } from '../../utils/createPath';
 import { Path } from '../../utils/FieldRegister';
+import { FieldStatus } from '../../utils/statusTracking/FieldStatus';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
-import { FormContext, formContextTypes, FormInfo } from '../Form/Form';
+import { FormContext, formContextTypes } from '../Form/Form';
 
 export type FieldId = string;
 
-export interface InputProps<Value> {
+export interface InputProps<Value> extends FieldStatus {
   name?: string;
   value: Value;
   onFocus: () => void;
@@ -18,7 +19,7 @@ export interface InputProps<Value> {
 
 export interface InnerFieldProps<Value, CustomProps, Model = any> {
   input: InputProps<Value>;
-  form: FormInfo<Model>;
+  form: FormApi<Model>;
   custom: CustomProps | null;
 }
 
@@ -48,13 +49,15 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     const { form } = this.context;
     this.updatePathAndId();
 
-    const value = selectDeep({ object: form.state.model, path: this.path });
+    const value = form.getFieldValue(this.path);
+    const status = form.getFieldStatus(this.fieldId);
     const input: InputProps<Value> = {
       name: name || undefined,
       value,
       onFocus: this.onFocus,
       onBlur: this.onBlur,
-      onChange: this.onChange
+      onChange: this.onChange,
+      ...status
     };
 
     return render({ input, custom, form });

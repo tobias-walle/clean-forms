@@ -2,6 +2,7 @@ import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { mockEvent } from '../../../testUtils/mockEvent';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
+import { DEFAULT_FIELD_STATUS } from '../../utils/statusTracking/FieldStatus';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
 import { FormContext } from '../Form/Form';
 import { renderInput } from '../InputField/InputField';
@@ -32,6 +33,7 @@ describe('Field', () => {
         onChange: expect.any(Function),
         onFocus: expect.any(Function),
         onBlur: expect.any(Function),
+        ...DEFAULT_FIELD_STATUS
       },
       custom: { type },
       form: context.form

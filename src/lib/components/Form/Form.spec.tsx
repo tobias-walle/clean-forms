@@ -278,7 +278,7 @@ describe('Form', () => {
     form.props().onSubmit!(new Event('test') as any);
 
     expect(onSubmit).toHaveBeenCalledWith({
-      state: { model }, validationResult: expect.anything()
+      state: { model }, validationDefinition: expect.anything(), validationResultMapping: expect.anything()
     });
   });
 });
@@ -293,7 +293,7 @@ function createFieldStatusExpectFunction(onChange: jest.Mock<any>) {
 function createValidationResultExpectFunction(renderForm: jest.Mock<any>) {
   return (validationResult: ValidationResultMapping) => {
     const lastCall = renderForm.mock.calls[renderForm.mock.calls.length - 1];
-    expect(lastCall[0].validationResult).toEqual(validationResult);
+    expect(lastCall[0].validationResultMapping).toEqual(validationResult);
   };
 }
 

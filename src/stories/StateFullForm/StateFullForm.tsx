@@ -1,7 +1,8 @@
 import { action } from '@storybook/addon-actions';
 import * as React from 'react';
+import { FormState } from '../../lib/api/FormApi';
 import { Form } from '../../lib/components';
-import { FormProps, FormState } from '../../lib/components/Form/Form';
+import { FormProps } from '../../lib/components/Form/Form';
 import { StateWrapper } from '../StateWrapper/StateWrapper';
 
 export interface StateFullFormProps<Model> extends Partial<FormProps<Model>> {
