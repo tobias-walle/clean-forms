@@ -5,49 +5,25 @@
 
 React Forms solved ✔
 
+## Features
+
+* Input Validation
+* Dirty/Touched state tracking
+* Full Typescript support
+* Controlled Forms
+* Clean Interface
+* Can be used with React State, Redux, etc...
+
+## Example
+
+![Example](media/example.gif)
+
 ```typescript
 import * as React from 'react';
 import {
   FormState, FieldGroup, Form, createField,
   ValidationDefinition, ValidationFunction
 } from 'clean-forms';
-
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-}
-
-export const Input = createField<string | number, InputProps>(({
-  input: {
-    name,
-    onFocus,
-    onChange,
-    onBlur,
-    error,
-    touched
-  },
-  custom
-}) => {
-  return (
-    <div>
-      <label>
-        <span>{custom.label}: </span>
-        <input
-          name={name}
-          onChange={event => onChange(event.target.value)}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          {...custom}
-        />
-        <span>{touched ? error : ''}</span>
-      </label>
-    </div>
-  );
-});
-
-const required: ValidationFunction<string> =
-  ({ value }) => value === ''
-    ? 'The field is required'
-    : null;
 
 interface Model {
   username: string;
@@ -105,6 +81,45 @@ export class MyForm extends React.Component<{}, MyFormState> {
     this.setState(newState);
   };
 }
+
+// Validation Functions
+const required: ValidationFunction<string> =
+  ({ value }) => value === ''
+    ? 'The field is required'
+    : null;
+
+// Create the Input
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+}
+
+export const Input = createField<string | number, InputProps>(({
+  input: {
+    name,
+    onFocus,
+    onChange,
+    onBlur,
+    error,
+    touched
+  },
+  custom
+}) => {
+  return (
+    <div>
+      <label>
+        <span>{custom.label}: </span>
+        <input
+          name={name}
+          onChange={event => onChange(event.target.value)}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          {...custom}
+        />
+        <span>{touched ? error : ''}</span>
+      </label>
+    </div>
+  );
+});
+
 ```
 
-![Example](media/example.gif)
