@@ -1,10 +1,9 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { FormApi, FormState } from '../../api/FormApi';
-import { updateDeep } from '../../utils';
-import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
-import { FieldStatusMapping } from '../../statusTracking/FieldStatusMapping';
+import { FormApi, FormState } from '../../api';
+import { FieldStatusMapping } from '../../statusTracking';
 import { FieldStatusUpdater } from '../../statusTracking/FieldStatusUpdater';
+import { FieldRegister, FieldRegisterChanges, Path, updateDeep } from '../../utils';
 import { FieldErrorMapping, FieldValidator, ValidationDefinition } from '../../validation';
 
 import { GetKey } from '../FieldArrayItems/FieldArrayItems';
@@ -181,7 +180,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
 
   private markAllAsTouched(): void {
     const status = this.fieldStatusUpdater.markAllAsTouched(this.api.status);
-    this.triggerChange(this.createState({status}));
+    this.triggerChange(this.createState({ status }));
   }
 
   private setArrayGetKey: SetArrayGetKey = (path, getKey) => {
