@@ -1,4 +1,4 @@
-import { Paths } from '../FieldRegister';
+import { Paths } from '../utils/FieldRegister';
 import { getValidationDefinitionPaths } from './getValidationDefinitionPaths';
 import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
 

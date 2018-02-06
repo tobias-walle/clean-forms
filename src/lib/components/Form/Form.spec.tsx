@@ -4,9 +4,9 @@ import { Field, FieldArray, FieldArrayItems } from '../';
 import { InputField } from '../../../testUtils/InputField';
 import { wait } from '../../../testUtils/wait';
 import { FieldRegister } from '../../utils/FieldRegister';
-import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../utils/statusTracking/FieldStatus';
-import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
-import { ArrayValidation, FieldErrorMapping, ValidationDefinition } from '../../utils/validation';
+import { DEFAULT_FIELD_STATUS, FieldStatus } from '../../statusTracking/FieldStatus';
+import { FieldStatusMapping } from '../../statusTracking/FieldStatusMapping';
+import { ArrayValidation, FieldErrorMapping, ValidationDefinition } from '../../validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { Form, FormContext } from './Form';
 

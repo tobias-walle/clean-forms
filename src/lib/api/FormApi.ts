@@ -1,7 +1,6 @@
+import { DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusMapping } from '../statusTracking';
 import { selectDeep } from '../utils';
-import { DEFAULT_FIELD_STATUS, FieldStatus } from '../utils/statusTracking/FieldStatus';
-import { FieldStatusMapping } from '../utils/statusTracking/FieldStatusMapping';
-import { FieldError, FieldErrorMapping, ValidationDefinition } from '../utils/validation';
+import { FieldError, FieldErrorMapping, ValidationDefinition } from '../validation';
 
 export interface FormState<Model> {
   model: Model;
@@ -30,7 +29,7 @@ export class FormApi<Model> {
   }
 
   public getFieldValue(path: string): any {
-    return selectDeep({ object: this.model, path});
+    return selectDeep({ object: this.model, path });
   }
 
   public getFieldError(path: string): FieldError {

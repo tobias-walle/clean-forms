@@ -1,8 +1,5 @@
 import * as React from 'react';
-import { FormState } from '../lib/api/FormApi';
-import { FieldGroup, Form } from '../lib/components';
-import { createField } from '../lib/hocs';
-import { ValidationDefinition, ValidationFunction } from '../lib/utils/validation';
+import { createField, FieldGroup, Form, FormState, ValidationDefinition, ValidationFunction } from '../lib';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;

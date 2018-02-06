@@ -1,5 +1,5 @@
-import { DEFAULT_FIELD_STATUS, FieldStatus } from '../utils/statusTracking/FieldStatus';
-import { FieldStatusMapping } from '../utils/statusTracking/FieldStatusMapping';
+import { DEFAULT_FIELD_STATUS, FieldStatus } from '../statusTracking/FieldStatus';
+import { FieldStatusMapping } from '../statusTracking/FieldStatusMapping';
 import { FormApi } from './FormApi';
 
 describe('FormApi', () => {

@@ -1,4 +1,4 @@
-import { FieldRegister } from '../FieldRegister';
+import { FieldRegister } from '../utils/FieldRegister';
 import { cloneFieldStatus, DEFAULT_FIELD_STATUS } from './FieldStatus';
 import { FieldStatusMapping } from './FieldStatusMapping';
 import { FieldStatusUpdater } from './FieldStatusUpdater';

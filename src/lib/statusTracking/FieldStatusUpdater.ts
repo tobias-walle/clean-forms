@@ -1,4 +1,4 @@
-import { FieldRegister, Path } from '../FieldRegister';
+import { FieldRegister, Path } from '../utils/FieldRegister';
 import { cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusArguments } from './FieldStatus';
 import { FieldStatusMapping } from './FieldStatusMapping';
 

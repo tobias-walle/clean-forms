@@ -3,8 +3,8 @@ import * as React from 'react';
 import { FormApi } from '../../api/FormApi';
 import { createPath } from '../../utils/createPath';
 import { Path } from '../../utils/FieldRegister';
-import { FieldStatus } from '../../utils/statusTracking/FieldStatus';
-import { FieldError } from '../../utils/validation';
+import { FieldStatus } from '../../statusTracking/FieldStatus';
+import { FieldError } from '../../validation';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
 

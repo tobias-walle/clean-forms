@@ -3,9 +3,9 @@ import * as React from 'react';
 import { FormApi, FormState } from '../../api/FormApi';
 import { updateDeep } from '../../utils';
 import { FieldRegister, FieldRegisterChanges, Path } from '../../utils/FieldRegister';
-import { FieldStatusMapping } from '../../utils/statusTracking/FieldStatusMapping';
-import { FieldStatusUpdater } from '../../utils/statusTracking/FieldStatusUpdater';
-import { FieldErrorMapping, FieldValidator, ValidationDefinition } from '../../utils/validation';
+import { FieldStatusMapping } from '../../statusTracking/FieldStatusMapping';
+import { FieldStatusUpdater } from '../../statusTracking/FieldStatusUpdater';
+import { FieldErrorMapping, FieldValidator, ValidationDefinition } from '../../validation';
 
 import { GetKey } from '../FieldArrayItems/FieldArrayItems';
 

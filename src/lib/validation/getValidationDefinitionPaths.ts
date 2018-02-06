@@ -1,5 +1,5 @@
-import { createPath } from '../createPath';
-import { Path, Paths } from '../FieldRegister';
+import { createPath } from '../utils/createPath';
+import { Path, Paths } from '../utils/FieldRegister';
 import { isValidationResolver } from './isValidationResolver';
 import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
 

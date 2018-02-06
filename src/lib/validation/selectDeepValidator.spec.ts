@@ -1,5 +1,4 @@
-import { Path } from '../FieldRegister';
-import { selectDeep } from '../selectDeep';
+import { Path } from '../utils';
 import { selectDeepValidator } from './selectDeepValidator';
 import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
 

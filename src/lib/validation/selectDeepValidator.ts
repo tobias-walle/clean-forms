@@ -1,5 +1,5 @@
-import { SelectDeepArgs } from '../selectDeep';
-import { transformPathToArray } from '../transformPathToArray';
+import { SelectDeepArgs } from '../utils/selectDeep';
+import { transformPathToArray } from '../utils/transformPathToArray';
 import { ArrayValidation, ValidationFunction } from './ValidationDefinition';
 
 export function selectDeepValidator({ object, path }: SelectDeepArgs): ValidationFunction | undefined {
