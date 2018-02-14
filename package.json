@@ -1,9 +1,10 @@
 {
   "name": "clean-forms",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Components to create clean forms with react",
   "main": "./out/dist/lib/index.js",
   "types": "./out/dist/lib/index.d.ts",
+  "files": ["./out/dist/lib/**/*"],
   "repository": "git@github.com:TobiasWalle/clean-forms.git",
   "author": "Tobias Walle",
   "license": "MIT",
