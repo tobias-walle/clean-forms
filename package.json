@@ -1,6 +1,6 @@
 {
   "name": "clean-forms",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Components to create clean forms with react",
   "main": "out/dist/lib/index.js",
   "types": "out/dist/lib/index.d.ts",
