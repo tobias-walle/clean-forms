@@ -4,7 +4,9 @@
   "description": "Components to create clean forms with react",
   "main": "out/dist/lib/index.js",
   "types": "out/dist/lib/index.d.ts",
-  "files": ["out/dist/lib"],
+  "files": [
+    "out/dist/lib"
+  ],
   "repository": "git@github.com:TobiasWalle/clean-forms.git",
   "author": "Tobias Walle",
   "license": "MIT",
@@ -26,7 +28,9 @@
     "p": "plop",
     "tsc": "tsc --project tsconfig.lib.json",
     "check-types": "tsc --project tsconfig.json --noEmit",
-    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
+    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
+    "semantic-release": "semantic-release",
+    "travis-deploy-once": "travis-deploy-once"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^3.3.11",
@@ -54,9 +58,11 @@
     "react-emotion": "^8.0.12",
     "react-json-view": "^1.16.0",
     "rimraf": "^2.6.2",
+    "semantic-release": "^12.4.1",
     "ts-jest": "^22.0.2",
     "tslint": "^5.9.1",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.1",
+    "travis-deploy-once": "^4.3.4"
   },
   "peerDependencies": {
     "react": "^16.2.0"

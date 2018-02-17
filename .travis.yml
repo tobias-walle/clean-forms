@@ -5,6 +5,17 @@ language: node_js
 node_js:
   - "node"
 
+cache:
+  directories:
+    - ~/.npm
+
+notifications:
+  email: true
+
+node_js:
+  - '9'
+  - '8'
+
 before_install:
   - npm install -g yarn@latest
 
@@ -16,3 +27,10 @@ script:
   - yarn test -- --coverage
   - yarn build
   - yarn coveralls
+
+after_success:
+  - npm run travis-deploy-once "npm run semantic-release"
+
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/
