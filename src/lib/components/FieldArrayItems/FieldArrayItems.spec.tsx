@@ -66,6 +66,30 @@ describe('FieldArrayItems', () => {
     expect(onFieldChange).toHaveBeenCalledWith('array.key_0', 'array.0', DELETE);
   });
 
+  it('should pass item to render function', () => {
+    const item = { a: 0 };
+    const model = {
+      array: [item]
+    };
+    type Model = typeof model;
+    const onFieldChange: OnFieldChange<Model> = jest.fn();
+    const context: FormContext<Model> & FieldGroupContext = {
+      ...mockFormContext(model, { onFieldChange }),
+      namespace: 'array',
+      path: 'array',
+    };
+    const renderItem = jest.fn(() => <div/>);
+    mount(
+      <FieldArrayItems
+        getKey={(_, i) => `key_${i}`}
+        render={renderItem}/>
+      , { context }
+    );
+
+    expect(renderItem).toHaveBeenCalledTimes(1);
+    expect(renderItem.mock.calls[0][0].item).toBe(item);
+  });
+
   it('should pass setArray callback to render function', () => {
     const model = {
       array: [
