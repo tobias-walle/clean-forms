@@ -54,6 +54,22 @@ describe('FieldArray', () => {
     expect(onFieldChange).toHaveBeenCalledWith('array', 'array', ['item', 'newItem']);
   });
 
+  it('should pass "items" to render function', () => {
+    const model = { array: ['item'] };
+    type Model = typeof model;
+    const context: FormContext<Model> = mockFormContext(model);
+    const render = jest.fn(() => <div/>);
+
+    mount(
+      <FieldArray name={'array'} render={render}/>
+      , { context }
+    );
+
+    expect(render.mock.calls[0][0]).toMatchObject({
+      items: ['item']
+    });
+  });
+
   it('should register field on mount', () => {
     const model = { array: ['item'] };
     type Model = typeof model;

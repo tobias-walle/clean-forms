@@ -10,6 +10,7 @@ import { FormContext, formContextTypes } from '../Form/Form';
 export type AddItem<Item> = (item: Item) => void;
 
 export interface InnerFieldArrayProps<Item> {
+  items: Item[];
   addItem: AddItem<Item>;
 }
 
@@ -27,18 +28,21 @@ export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArray
     ...fieldGroupContextTypes
   };
   public context: FormContext<any> & FieldGroupContext;
-  private array: any[];
+  private items: any[];
   private path: Path;
   private identifier: string;
 
   public render() {
     const { name, render } = this.props;
     this.updatePathAndIdentifier();
-    this.array = this.getArray();
+    this.items = this.getItems();
 
     return (
       <FieldGroup name={name}>
-        {render({ addItem: this.addItem })}
+        {render({
+          addItem: this.addItem,
+          items: this.items,
+        })}
       </FieldGroup>
     );
   }
@@ -53,11 +57,11 @@ export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArray
   }
 
   private addItem: AddItem<any> = (item) => {
-    const newArray = [...this.array, item];
+    const newArray = [...this.items, item];
     this.setArray(newArray);
   };
 
-  private getArray(): any[] {
+  private getItems(): any[] {
     const { form: { state: { model } } } = this.context;
     return selectDeep({ object: model, path: this.path });
   }
