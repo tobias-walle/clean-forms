@@ -2,7 +2,6 @@
 
 exports[`FieldArrayItems should render items 1`] = `
 <FieldArrayItems
-  getKey={[Function]}
   render={[Function]}
 >
   <FieldGroup
@@ -76,3 +75,5 @@ exports[`FieldArrayItems should render items 1`] = `
   </FieldGroup>
 </FieldArrayItems>
 `;
+
+exports[`FieldArrayItems should throw an error if getKey is missing in the contenxt 1`] = `"Invalid context. Please make sure that \\"FieldArrayItems\\" is wrapped by a \\"FieldArray\\""`;

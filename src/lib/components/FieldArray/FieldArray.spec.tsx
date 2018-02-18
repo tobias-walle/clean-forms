@@ -3,7 +3,7 @@ import * as React from 'react';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, OnFieldChange, OnFieldMount } from '../Form/Form';
-import { FieldArray } from './FieldArray';
+import { FieldArray, FieldArrayContext, fieldArrayContextTypes } from './FieldArray';
 
 describe('FieldArray', () => {
   it('should pass Context', () => {
@@ -79,5 +79,28 @@ describe('FieldArray', () => {
     mount(<FieldArray name={'array'} render={() => (<div/>)}/>, { context });
 
     expect(onFieldMount).toHaveBeenCalledWith('array');
+  });
+
+  it('should provide getKey as context', () => {
+    const model = { array: ['item'] };
+    type Model = typeof model;
+    const context: FormContext<Model> = mockFormContext(model);
+    const getKey = jest.fn(() => '');
+
+    class Child extends React.Component {
+      public static contextTypes = fieldArrayContextTypes;
+      public context: FieldArrayContext;
+
+      public render() {
+        return <div/>;
+      }
+    }
+
+    let childRef: Child | null = null;
+    mount(<FieldArray name={'array'} getKey={getKey} render={() => (
+      <Child ref={ref => childRef = ref}/>
+    )}/>, { context });
+
+    expect(childRef!.context).toEqual({ getKey });
   });
 });

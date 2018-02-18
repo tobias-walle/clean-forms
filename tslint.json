@@ -31,6 +31,7 @@
     "member-ordering": [false],
     "variable-name": false,
     "ban-types": false,
+    "max-classes-per-file": false,
     "semicolon": [true, "always", "strict-bound-class-methods"],
     "object-literal-key-quotes": [true, "as-needed"]
   },

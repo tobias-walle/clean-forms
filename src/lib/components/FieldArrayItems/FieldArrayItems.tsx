@@ -1,6 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { FieldGroup } from '../';
+import { FieldArrayContext, fieldArrayContextTypes, FieldGroup } from '../';
 import { DELETE, selectDeep } from '../../utils';
 import { createPath } from '../../utils/createPath';
 import { Path } from '../../utils/FieldRegister';
@@ -19,7 +19,6 @@ export type FieldArrayItemsRender<Item> = React.StatelessComponent<InnerFieldArr
 
 export interface FieldArrayItemsProps<Item> {
   render: FieldArrayItemsRender<Item>;
-  getKey?: GetKey<Item>;
 }
 
 export interface FieldArrayItemsState {
@@ -28,13 +27,15 @@ export interface FieldArrayItemsState {
 export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItemsProps<Item>, FieldArrayItemsState> {
   public static contextTypes = {
     ...formContextTypes,
-    ...fieldGroupContextTypes
+    ...fieldGroupContextTypes,
+    ...fieldArrayContextTypes
   };
-  public context: FormContext<any> & FieldGroupContext;
+  public context: FormContext<any> & FieldGroupContext & FieldArrayContext;
   private array: Item[];
 
   public render() {
-    const { render, getKey = this.defaultGetKey } = this.props;
+    const { render } = this.props;
+    const getKey = this.getKeyFunction();
     this.array = this.getArray();
     return (
       <>
@@ -55,7 +56,6 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
     );
   }
 
-  private defaultGetKey: GetKey<Item> = (item, index) => `item_${index}`;
 
   private getArray(): Item[] {
     const { form: { state: { model }}, path = '' } = this.context;
@@ -78,8 +78,16 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   }
 
   private getNameForItem(item: Item, index: number): string {
-    const { getKey = this.defaultGetKey } = this.props;
+    const getKey = this.getKeyFunction();
     return String(getKey(item, index));
+  }
+
+  private getKeyFunction(): GetKey<Item> {
+    const { getKey } = this.context;
+    if (!getKey) {
+      throw new Error(`Invalid context. Please make sure that "FieldArrayItems" is wrapped by a "FieldArray"`);
+    }
+    return getKey;
   }
 
   private setArray = (newArray: Item[]): void => {

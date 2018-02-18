@@ -1,13 +1,19 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { FieldGroup } from '../';
-import { selectDeep } from '../../utils';
-import { createPath } from '../../utils/createPath';
-import { Path } from '../../utils/FieldRegister';
+import { FieldGroup, GetKey } from '../';
+import { createPath, Path, selectDeep } from '../../utils';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
 
 export type AddItem<Item> = (item: Item) => void;
+
+export const fieldArrayContextTypes = {
+  getKey: PropTypes.func,
+};
+
+export interface FieldArrayContext<Item = any> {
+  getKey: GetKey<Item>;
+}
 
 export interface InnerFieldArrayProps<Item> {
   items: Item[];
@@ -17,12 +23,14 @@ export interface InnerFieldArrayProps<Item> {
 export interface FieldArrayProps<Item> {
   name: string;
   render: React.StatelessComponent<InnerFieldArrayProps<Item>>;
+  getKey?: GetKey<Item>;
 }
 
 export interface FieldArrayState {
 }
 
 export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArrayState> {
+  public static childContextTypes = fieldArrayContextTypes;
   public static contextTypes = {
     ...formContextTypes,
     ...fieldGroupContextTypes
@@ -70,4 +78,11 @@ export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArray
     const { onFieldChange } = this.context;
     onFieldChange(this.identifier, this.path, newArray);
   }
+
+  public getChildContext(): FieldArrayContext {
+    const { getKey = this.defaultGetKey } = this.props;
+    return { getKey };
+  }
+
+  private defaultGetKey: GetKey<any> = (item, index) => `${index}`;
 }

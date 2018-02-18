@@ -190,8 +190,8 @@ describe('Form', () => {
       array: new ArrayValidation(null, ({ value }) => value.length >= 1 ? null : error)
     };
     const renderForm = jest.fn(() => (
-      <FieldArray name={'array'} render={() => (
-        <FieldArrayItems getKey={item => item} render={() =>
+      <FieldArray getKey={item => item} name={'array'} render={() => (
+        <FieldArrayItems render={() =>
           <InputField name={null}/>
         }/>
       )}/>
@@ -230,8 +230,8 @@ describe('Form', () => {
     const expectFieldStatus = createFieldStatusExpectFunction(onChange);
     const element = mount(
       <Form state={{ model, status }} onChange={onChange}>
-        <FieldArray name={'array'} render={() => (
-          <FieldArrayItems getKey={item => item} render={() => (
+        <FieldArray getKey={item => item} name={'array'} render={() => (
+          <FieldArrayItems render={() => (
             <InputField name={null}/>
           )}/>
         )}/>
