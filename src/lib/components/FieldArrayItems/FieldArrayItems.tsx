@@ -10,6 +10,7 @@ import { FormContext, formContextTypes } from '../Form/Form';
 export interface InnerFieldArrayItemProps<Item> {
   remove: () => void;
   item: Item;
+  index: number;
   setArray: (newArray: Item[]) => void;
 }
 
@@ -48,6 +49,7 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
           {render({
             remove: () => this.removeItem(item, index),
             setArray: this.setArray,
+            index,
             item
           })}
         </FieldGroup>

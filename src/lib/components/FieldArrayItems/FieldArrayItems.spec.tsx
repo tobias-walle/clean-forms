@@ -114,6 +114,30 @@ describe('FieldArrayItems', () => {
     expect(renderItem.mock.calls[0][0].item).toBe(item);
   });
 
+  it('should pass index to render function', () => {
+    const model = {
+      array: [{ a: 0 }, { a: 1 }]
+    };
+    type Model = typeof model;
+    const onFieldChange: OnFieldChange<Model> = jest.fn();
+    const context: FormContext<Model> & FieldGroupContext & FieldArrayContext = {
+      ...mockFormContext(model, { onFieldChange }),
+      namespace: 'array',
+      path: 'array',
+      getKey: (_, i) => i
+    };
+    const renderItem = jest.fn(() => <div/>);
+    mount(
+      <FieldArrayItems
+        render={renderItem}/>
+      , { context }
+    );
+
+    expect(renderItem).toHaveBeenCalledTimes(2);
+    expect(renderItem.mock.calls[0][0].index).toBe(0);
+    expect(renderItem.mock.calls[1][0].index).toBe(1);
+  });
+
   it('should pass setArray callback to render function', () => {
     const model = {
       array: [
