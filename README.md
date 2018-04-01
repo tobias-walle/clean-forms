@@ -7,8 +7,6 @@
 
 React Forms solved ✔
 
-*This library is still in development and public interfaces may change*
-
 ## Features
 
 * Input Validation
