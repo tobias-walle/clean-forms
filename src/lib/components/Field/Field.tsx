@@ -1,8 +1,8 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { FormApi } from '../../api';
 import { FieldStatus } from '../../statusTracking';
 import { createPath, Path } from '../../utils';
+import { isShallowEqual } from '../../utils/isShallowEqual';
 import { FieldError } from '../../validation';
 import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
 import { FormContext, formContextTypes } from '../Form/Form';
@@ -36,6 +36,8 @@ export interface FieldPropsWithoutRender {
 export type FieldProps<Value, CustomProps = {}> = FieldPropsWithoutRender & {
   render: FieldRenderFunction<Value, CustomProps>;
   inner: CustomProps;
+  /** Update the field everytime the form is updated. This may be necessary if the render depends on other fields. */
+  updateOnEveryFormChange?: boolean;
 };
 
 export class Field<Value = any, CustomProps = any> extends React.Component<FieldProps<Value, CustomProps>, {}> {
@@ -53,9 +55,7 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     const { form } = this.context;
     this.updatePathAndId();
 
-    const value = form.getFieldValue(this.path);
-    const status = form.getFieldStatus(this.fieldId);
-    const error = form.getFieldError(this.path);
+    const { value, status, error } = getInputValuesFromContext(this.context, this.props);
     const input: InputProps<Value> = {
       name: name || undefined,
       value,
@@ -69,6 +69,19 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     };
 
     return render({ input, custom, form });
+  }
+
+  public shouldComponentUpdate(nextProps: FieldProps<Value, CustomProps>, nextState: any, nextContext: any) {
+    const excludedKeys: Array<keyof typeof nextProps> = ['inner', 'updateOnEveryFormChange'];
+    const comparableProps = removeKeysFromObject(this.props, excludedKeys);
+    const comparableNextProps = removeKeysFromObject(nextProps, excludedKeys);
+    return !isShallowEqual(comparableProps, comparableNextProps)
+      || !isShallowEqual(this.props.inner, nextProps.inner)
+      || (this.props.updateOnEveryFormChange && !isShallowEqual(this.context, nextContext))
+      || !isShallowEqual(
+        getInputValuesFromContext(this.context, this.props),
+        getInputValuesFromContext(nextContext, nextProps)
+      );
   }
 
   private updatePathAndId(): void {
@@ -95,4 +108,25 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
   private onChange = (value: any) => {
     this.context.onFieldChange(this.fieldId, this.path, value);
   };
+}
+
+function getInputValuesFromContext(context: Field['context'], props: Field['props']): { value: any, status: FieldStatus, error: FieldError } {
+  const { form } = context;
+  const path = createPath(context.path, props.name);
+  const fieldId = createPath(context.namespace, props.name);
+  const value = form.getFieldValue(path);
+  const status = form.getFieldStatus(fieldId);
+  const error = form.getFieldError(path);
+  return { value, status, error };
+}
+
+function removeKeysFromObject(object: any, excluded: string[]): any {
+  const result: any = {};
+  Object.keys(object)
+    .forEach(key => {
+      if (!excluded.includes(key)) {
+        result[key] = object[key];
+      }
+    });
+  return result;
 }

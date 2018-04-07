@@ -7,7 +7,7 @@ import { FormApi } from '../../api/FormApi';
 import { DEFAULT_FIELD_STATUS } from '../../statusTracking/FieldStatus';
 import { FieldGroupContext } from '../FieldGroup/FieldGroup';
 import { FormContext } from '../Form/Form';
-import { Field, FieldRenderFunction, InnerFieldProps } from './Field';
+import { Field, FieldProps, InnerFieldProps } from './Field';
 
 describe('Field', () => {
   it('should render', () => {
@@ -194,5 +194,26 @@ describe('Field', () => {
     onChange!(mockEvent(newValue));
 
     expect(onFieldChange).toHaveBeenCalledWith('group1.group2.name', 'group1.group2.name', newValue);
+  });
+
+  describe('shouldComponentUpdate', () => {
+    it('should update if render has changed', () => {
+      const props: FieldProps<any, any> = {
+        name: 'value',
+        inner: { a: 1 },
+        render: renderInput,
+        updateOnEveryFormChange: false,
+      };
+      const model = { value: 'test', value2: 'test2' };
+      const context: FormContext<any> & FieldGroupContext = mockFormContext(model);
+
+      const component = shallow(<Field {...props}/>, { context }).instance();
+
+      expect(component.shouldComponentUpdate!(props, {}, context)).toBe(false);
+      expect(component.shouldComponentUpdate!({ ...props, name: 'value2' }, {}, context)).toBe(true);
+      expect(component.shouldComponentUpdate!({ ...props, inner: { a: 2 } }, {}, context)).toBe(true);
+      expect(component.shouldComponentUpdate!({ ...props, updateOnEveryFormChange: true }, {}, context)).toBe(false);
+      expect(component.shouldComponentUpdate!(props, {}, mockFormContext({ ...model, value: 'test2' }))).toBe(true);
+    });
   });
 });

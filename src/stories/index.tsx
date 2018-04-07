@@ -6,6 +6,7 @@ import { Form } from '../lib/index';
 import { ValidationFunction } from '../lib/validation';
 import { Input } from './components/Input';
 import { MyForm } from './example';
+import { MyHugeForm } from './huge-example';
 import { StateFullForm } from './StateFullForm/StateFullForm';
 
 const required: ValidationFunction<any> = ({value}) => value === '' || value == null
@@ -47,4 +48,5 @@ storiesOf('Form', module)
     </StateFullForm>
   ))
   .add('example', () => <MyForm/>)
+  .add('huge form', () => <MyHugeForm/>)
 ;
