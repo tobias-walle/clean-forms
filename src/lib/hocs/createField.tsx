@@ -3,7 +3,7 @@ import { Field } from '../components';
 import { FieldPropsWithoutRender, FieldRenderFunction } from '../components/Field/Field';
 import { Omit } from '../types';
 
-interface CreateFieldOptions {
+export interface CreateFieldOptions {
   /** Update the field everytime the form is updated. This may be necessary if the render depends on other fields. */
   updateOnEveryFormChange?: boolean;
 }
