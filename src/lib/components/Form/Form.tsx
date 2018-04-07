@@ -67,6 +67,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   private fieldValidator: FieldValidator<Model>;
   private fieldStatusUpdater: FieldStatusUpdater;
   private arrayGetKeyMapping: Map<string, GetKey<any>> = new Map();
+  private mounted: boolean = false;
 
   constructor(props: FormProps<Model>, context: any) {
     super(props, context);
@@ -102,7 +103,12 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   }
 
   public componentDidMount() {
+    this.mounted = true;
     this.fieldsRegister.addListener(this.onFieldRegisterChanges);
+  }
+
+  public componentWillUnmount() {
+    this.mounted = false;
   }
 
   public componentWillReceiveProps(newProps: FormProps<Model>) {
@@ -141,6 +147,10 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   };
 
   private onFieldUnmount: OnFieldMount = (path) => {
+    if (!this.mounted) {
+      // Cancel if the form is not mounted anymore
+      return;
+    }
     this.fieldsRegister.unregister(path);
   };
 
