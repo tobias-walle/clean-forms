@@ -31,10 +31,7 @@ export class FieldStatusUpdater {
     if (!this.fieldRegister.includesPath(path)) {
       return status;
     }
-    const oldStatus = status[path];
-    if (!oldStatus) {
-      throw new ReferenceError(`Couldn't find path "${path}" in status mapping ${JSON.stringify(status)}`);
-    }
+    const oldStatus = status[path] || DEFAULT_FIELD_STATUS;
     return { ...status, [path]: cloneFieldStatus(oldStatus, update) };
   }
 

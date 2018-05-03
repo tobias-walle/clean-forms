@@ -44,9 +44,9 @@ describe('FieldStatusUpdater', () => {
       expect(result).toEqual(expectedStatus);
     });
 
-    it('should throw an error if the field does not exits but is registered', () => {
+    it('should not throw an error if the field does not exits but is registered', () => {
       fieldRegister.register('x');
-      expect(() => fieldStatusUpdater.markAsDirty({}, 'x')).toThrowErrorMatchingSnapshot();
+      expect(() => fieldStatusUpdater.markAsDirty({}, 'x')).not.toThrowError();
     });
 
   });

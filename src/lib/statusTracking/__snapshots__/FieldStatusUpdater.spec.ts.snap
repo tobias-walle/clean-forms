@@ -1,3 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`FieldStatusUpdater markAsDirty should throw an error if the field does not exits but is registered 1`] = `"Couldn't find path \\"x\\" in status mapping {}"`;
