@@ -5,7 +5,7 @@ import { createField } from '../lib/hocs/index';
 export interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
-export const renderInput: FieldRenderFunction = ({
+export const renderInput: FieldRenderFunction<string | number, InputFieldProps> = ({
   input: {
     name,
     value,
@@ -19,7 +19,13 @@ export const renderInput: FieldRenderFunction = ({
     <input
       name={name}
       value={value}
-      onChange={event => onChange(event.target.value)}
+      onChange={event => {
+        let newValue: string | number = event.target.value;
+        if (custom.type === 'number') {
+          newValue = Number(newValue);
+        }
+        onChange(newValue);
+      }}
       onFocus={onFocus}
       onBlur={onBlur}
       {...custom}

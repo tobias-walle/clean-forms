@@ -3,7 +3,8 @@ import * as React from 'react';
 import { FormApi, FormState } from '../../api';
 import { FieldStatusMapping } from '../../statusTracking';
 import { FieldStatusUpdater } from '../../statusTracking/FieldStatusUpdater';
-import { FieldRegister, FieldRegisterChanges, Path, updateDeep } from '../../utils';
+import { FieldRegister, FieldRegisterChanges, Path } from '../../utils';
+import { StateUpdater } from '../../utils/StateUpdater';
 import { FieldErrorMapping, FieldValidator, ValidationDefinition } from '../../validation';
 
 import { GetKey } from '../FieldArrayItems/FieldArrayItems';
@@ -62,6 +63,7 @@ export interface FormComponentState {
 export class Form<Model = any> extends React.Component<FormProps<Model>, FormComponentState> {
   public static childContextTypes = formContextTypes;
   public state: FormComponentState;
+  public propsStateUpdater = new StateUpdater<FormState<Model>>(this.props.state);
   public api: FormApi<Model>;
   private fieldsRegister: FieldRegister;
   private fieldValidator: FieldValidator<Model>;
@@ -77,7 +79,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.state = {
       fieldErrorMapping: this.validate(this.props.state.model)
     };
-    this.handlePropsUpdate(this.props, this.state);
+    this.handlePropsUpdate(this.props, this.state, true);
   }
 
   public render() {
@@ -120,7 +122,13 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.handlePropsUpdate(newProps, state);
   }
 
-  private handlePropsUpdate(props: FormProps<Model>, state: FormComponentState): void {
+  private handlePropsUpdate(props: FormProps<Model>, state: FormComponentState, initial = false): void {
+    if (this.props.onChange !== props.onChange || initial) {
+      this.propsStateUpdater.registerOnChange(props.onChange);
+    }
+    if (this.props.state !== props.state || initial) {
+      this.propsStateUpdater.resetWith(props.state);
+    }
     this.updateFormApi(props, state);
   }
 
@@ -160,18 +168,16 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   private onFieldBlur: OnFieldBlur = (path) => {
     const status = this.fieldStatusUpdater.markAsTouched(this.api.status, path);
 
-    const state = this.createState({ status });
-    this.triggerChange(state);
+    this.propsStateUpdater.patch({ status });
   };
 
   private onFieldChange: OnFieldChange<Model> = (id, path, value) => {
-    const model = this.updateModel(path, value);
+    this.propsStateUpdater.updateDeep(`model.${path}`, value, true);
 
     let status: FieldStatusMapping = this.api.status;
     status = this.fieldStatusUpdater.markAsDirty(status, id);
 
-    const state = this.createState({ model, status });
-    this.triggerChange(state);
+    this.propsStateUpdater.patch({ status });
   };
 
   private handleSubmit = (event: React.FormEvent<any>) => {
@@ -190,7 +196,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
 
   private markAllAsTouched(): void {
     const status = this.fieldStatusUpdater.markAllAsTouched(this.api.status);
-    this.triggerChange(this.createState({ status }));
+    this.propsStateUpdater.patch({ status });
   }
 
   private setArrayGetKey: SetArrayGetKey = (path, getKey) => {
@@ -213,20 +219,6 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
       this.removeArrayGetKeyFunction(removedPath);
     });
 
-    const state = this.createState({ status });
-    this.triggerChange(state);
+    this.propsStateUpdater.patch({ status });
   };
-
-  private updateModel(path: Path, value: any): Model {
-    return updateDeep({ object: this.props.state.model, path, value });
-  }
-
-  private triggerChange(state: FormState<Model>): void {
-    const { onChange } = this.props;
-    onChange && onChange(state || this.props.state);
-  }
-
-  private createState(state: Partial<FormState<Model>>): FormState<Model> {
-    return { ...this.props.state, ...state };
-  }
 }

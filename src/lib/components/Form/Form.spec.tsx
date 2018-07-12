@@ -1,8 +1,10 @@
-import { mount, shallow } from 'enzyme';
+import { mount, ReactWrapper, shallow } from 'enzyme';
 import * as React from 'react';
 import { Field, FieldArray, FieldArrayItems } from '../';
 import { InputField } from '../../../testUtils/InputField';
 import { wait } from '../../../testUtils/wait';
+import { FormState } from '../../api';
+import { createField } from '../../hocs';
 import { DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusMapping } from '../../statusTracking';
 import { FieldRegister } from '../../utils';
 import { ArrayValidation, FieldErrorMapping, ValidationDefinition } from '../../validation';
@@ -321,6 +323,164 @@ describe('Form', () => {
     });
   });
 });
+
+describe('Integration Tests', () => {
+  it('should work with normal form', () => {
+    interface Model {
+      user: {
+        name: {
+          first: string;
+          last: string;
+        }
+      };
+      age: number;
+      password: string;
+    }
+
+    type FormWrapperState = FormState<Model>;
+
+    class FormWrapper extends React.Component<{}, FormWrapperState> {
+      public state: FormWrapperState = {
+        model: {
+          user: {
+            name: {
+              first: '',
+              last: '',
+            }
+          },
+          age: 0,
+          password: '',
+        },
+      };
+
+      public render() {
+        return (
+          <Form
+            state={this.state}
+            onChange={newState => this.setState(newState)}
+          >
+            <FieldGroup name="user">
+              <InputField name="name.first"/>
+              <InputField name="name.last"/>
+            </FieldGroup>
+            <InputField type="number" name="age"/>
+            <InputField type="password" name="password"/>
+          </Form>
+        );
+      }
+    }
+
+    const form = mount(<FormWrapper/>);
+
+    setInputValue(form.find('input[name="name.first"]'), 'First Name');
+    setInputValue(form.find('input[name="name.last"]'), 'Last Name');
+    setInputValue(form.find('input[name="age"]'), '18');
+    setInputValue(form.find('input[name="password"]'), 'secret');
+
+    expect(form.state()).toEqual({
+      model: {
+        user: {
+          name: {
+            first: 'First Name',
+            last: 'Last Name',
+          }
+        },
+        age: 18,
+        password: 'secret',
+      },
+      status: {
+        age: new FieldStatus({ dirty: true, touched: false }),
+        password: new FieldStatus({ dirty: true, touched: false }),
+        'user.name.first': new FieldStatus({ dirty: true, touched: false }),
+        'user.name.last': new FieldStatus({ dirty: true, touched: false }),
+      }
+    });
+  });
+
+  it('should work with inputs that set the value on componentDidMount', () => {
+    interface Model {
+      value1: string;
+      value2: string;
+      value3: string;
+    }
+
+    interface SelfUpdatingInputProps {
+      name?: string;
+      value: string;
+      onChange: (value: string) => void;
+    }
+
+    class SelfUpdatingInput extends React.Component<SelfUpdatingInputProps, {}> {
+      public render() {
+        return (
+          <input
+            name={this.props.name}
+            value={this.props.value}
+            onChange={(event) => this.props.onChange(event.target.value)}
+          />
+        );
+      }
+
+      public componentDidMount() {
+        this.props.onChange('initialValue');
+      }
+    }
+
+    const SelfUpdatingInputField = createField<string, {}>(({ input }) => (
+      <SelfUpdatingInput name={input.name} value={input.value} onChange={input.onChange}/>
+    ));
+
+    type FormWrapperState = FormState<Model>;
+
+    class FormWrapper extends React.Component<{}, FormWrapperState> {
+      public state: FormWrapperState = {
+        model: {
+          value1: '',
+          value2: '',
+          value3: '',
+        },
+      };
+
+      public render() {
+        return (
+          <Form
+            state={this.state}
+            onChange={newState => {
+              this.setState(state => newState);
+            }}
+          >
+            <SelfUpdatingInputField name="value1"/>
+            <SelfUpdatingInputField name="value2"/>
+            <SelfUpdatingInputField name="value3"/>
+          </Form>
+        );
+      }
+    }
+
+    const form = mount(<FormWrapper/>);
+
+    setInputValue(form.find('input[name="value3"]'), 'otherValue');
+
+    expect(form.state()).toEqual({
+      model: {
+        value1: 'initialValue',
+        value2: 'initialValue',
+        value3: 'otherValue',
+      },
+      status: {
+        value1: new FieldStatus({ dirty: false, touched: false }),
+        value2: new FieldStatus({ dirty: false, touched: false }),
+        value3: new FieldStatus({ dirty: true, touched: false }),
+      }
+    });
+  });
+
+});
+
+function setInputValue(wrapper: ReactWrapper<any>, value: string) {
+  (wrapper.getDOMNode() as any).value = value;
+  wrapper.simulate('change');
+}
 
 function createFieldStatusExpectFunction(onChange: jest.Mock<any>) {
   return (fieldStatusMapping: FieldStatusMapping) => {
