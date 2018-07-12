@@ -14,7 +14,6 @@ notifications:
 
 node_js:
   - '9'
-  - '8'
 
 before_install:
   - npm install -g yarn@latest
