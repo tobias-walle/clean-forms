@@ -1,5 +1,4 @@
 import { assertPropertyInObject } from './assertPropertyInObject';
-import { removeItemFromArray } from './removeItemFromArray';
 import { transformPathToArray } from './transformPathToArray';
 
 export const DELETE = Symbol('DELETE');
