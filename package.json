@@ -11,7 +11,7 @@
   "author": "Tobias Walle",
   "license": "MIT",
   "scripts": {
-    "prepublish": "run-s lint test build",
+    "prepublish": "run-s validate-typescript lint test build",
     "start": "run-s storybook",
     "storybook": "run-p watch-storybook start-storybook",
     "start-storybook": "start-storybook -p 9001 -c .storybook",
@@ -20,6 +20,7 @@
     "test-coverage": "jest --coverage",
     "lint": "tslint --project tsconfig.json -c tslint.json",
     "build": "run-s clear tsc",
+    "validate-typescript": "tsc -p ./tsconfig.json --noemit",
     "clear": "rimraf out",
     "clear-dist": "rimraf out/dist",
     "clear-storybook": "rimraf out/storybook",
