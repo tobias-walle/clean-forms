@@ -1,5 +1,5 @@
 import { FieldStatus } from './FieldStatus';
 
 export interface FieldStatusMapping {
-  [path: string]: FieldStatus;
+  [path: string]: FieldStatus | undefined;
 }

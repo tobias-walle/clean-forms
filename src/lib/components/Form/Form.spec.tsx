@@ -157,6 +157,7 @@ describe('Form', () => {
     firstInput.simulate('blur', {});
 
     expectFieldStatus({
+      array: undefined,
       a: new FieldStatus({ dirty: false, touched: true }),
       b: DEFAULT_FIELD_STATUS
     });
@@ -204,6 +205,36 @@ describe('Form', () => {
     );
     expectValidationResult({
       array: error
+    });
+  });
+
+  it('should update validation result for array items', async () => {
+    const model = { array: [
+        {a: 0, b: 0},
+        {a: 4, b: 0},
+        {a: 0, b: 0}
+      ] };
+    const status = initFieldStatusMapping('array', 'array.hello');
+    const error = 'The value has to be bigger than 0';
+    const validators: ValidationDefinition<typeof model> = {
+      array: new ArrayValidation({ a: ({ value }) => value > 0 ? null : error })
+    };
+    const renderForm = jest.fn(() => (
+      <FieldArray name={'array'} render={() => (
+        <FieldArrayItems render={() =>
+          <InputField name={null}/>
+        }/>
+      )}/>
+    ));
+    const expectValidationResult = createValidationResultExpectFunction(renderForm);
+    mount(
+      <Form state={{ model, status }} validation={validators} render={renderForm}/>
+    );
+    expectValidationResult({
+      array: undefined,
+      'array.0.a': error,
+      'array.1.a': undefined,
+      'array.2.a': error
     });
   });
 

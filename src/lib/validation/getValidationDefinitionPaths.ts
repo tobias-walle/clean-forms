@@ -27,10 +27,10 @@ export function getValidationDefinitionPathsForObject(
     const currentPath = createPath(parentPath, key);
     const itemValue = value[key];
     const itemDefinition = validationDefinition[key];
-    if (isValidationResolver(itemDefinition)) {
-      paths.push(currentPath);
-    } else if (typeof itemDefinition === 'object') {
+    if (itemDefinition instanceof ArrayValidation || (!isValidationResolver(itemDefinition) && typeof itemDefinition === 'object')) {
       return [...paths, ...getValidationDefinitionPaths(itemDefinition, itemValue, currentPath)];
+    } else if (isValidationResolver(itemDefinition)) {
+      paths.push(currentPath);
     }
     return paths;
   }
@@ -44,7 +44,7 @@ function getValidationDefinitionPathsForArray(
   const keys = range(array.length).map(n => String(n));
   const initialPaths = [];
   if (arrayValidation.arrayValidation) {
-    initialPaths.push('');
+    initialPaths.push(parentPath);
   }
   return keys.reduce(getKeyPaths, initialPaths);
 
@@ -52,10 +52,12 @@ function getValidationDefinitionPathsForArray(
     const currentPath = createPath(parentPath, key);
     const itemValue = (array as any)[key];
     const itemDefinition = arrayValidation.itemValidation;
-    if (isValidationResolver(itemDefinition)) {
-      paths.push(currentPath);
-    } else if (typeof itemDefinition === 'object' && itemDefinition != null) {
-      return [...paths, ...getValidationDefinitionPaths(itemDefinition, itemValue, currentPath)];
+    if (itemDefinition != null) {
+      if (itemDefinition instanceof ArrayValidation || (!isValidationResolver(itemDefinition) && typeof itemDefinition === 'object')) {
+        return [...paths, ...getValidationDefinitionPaths(itemDefinition, itemValue, currentPath)];
+      } else if (isValidationResolver(itemDefinition)) {
+        paths.push(currentPath);
+      }
     }
     return paths;
   }

@@ -18,7 +18,7 @@ describe('getValidationDefinitionPaths', () => {
       b: {
         c: () => null,
         d: {
-          e: new ArrayValidation(null)
+          e: new ArrayValidation(null, () => null)
         }
       }
     };
@@ -66,5 +66,19 @@ describe('getValidationDefinitionPaths', () => {
     ];
 
     expect(getValidationDefinitionPaths(arrayValidation, model)).toEqual(expectedPaths);
+  });
+
+  it('should work with array validators in objects', () => {
+    const model = { array: [ { a: '' } ] };
+    const arrayValidation = new ArrayValidation(
+      { a: () => null },
+      () => null
+    );
+    const expectedPaths: Paths = [
+      'array',
+      'array.0.a'
+    ];
+
+    expect(getValidationDefinitionPaths({ array: arrayValidation }, model)).toEqual(expectedPaths);
   });
 });
