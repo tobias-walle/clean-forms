@@ -7,3 +7,4 @@ export * from './selectDeep';
 export * from './updateDeep';
 export * from './transformPathToArray';
 export * from './updateDeep';
+export * from './assertNotNull';

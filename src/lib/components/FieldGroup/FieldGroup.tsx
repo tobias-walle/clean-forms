@@ -1,17 +1,6 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { createPath } from '../../utils/createPath';
-import { Path } from '../../utils/FieldRegister';
-
-export const fieldGroupContextTypes = {
-  namespace: PropTypes.string,
-  path: PropTypes.string,
-};
-
-export interface FieldGroupContext {
-  namespace?: Path;
-  path?: Path;
-}
+import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
+import { createPath } from '../../utils';
 
 export interface FieldGroupProps {
   name: string;
@@ -22,19 +11,23 @@ export interface FieldGroupState {
 }
 
 export class FieldGroup extends React.Component<FieldGroupProps, FieldGroupState> {
-  public static childContextTypes = fieldGroupContextTypes;
-  public static contextTypes = fieldGroupContextTypes;
-  public context: FieldGroupContext;
-
   public render() {
-    return this.props.children;
+    return (
+      <FieldGroupContext.Consumer>
+        {parentContext => (
+          <FieldGroupContext.Provider value={this.createContext(parentContext)}>
+            {this.props.children}
+          </FieldGroupContext.Provider>
+        )}
+      </FieldGroupContext.Consumer>
+    );
   }
 
-  public getChildContext(): FieldGroupContext {
+  private createContext(parentContext: FieldGroupContextValue): FieldGroupContextValue {
     const { name, accessor } = this.props;
     return {
-      path: createPath(this.context.path, accessor || name),
-      namespace: createPath(this.context.namespace, name)
+      path: createPath(parentContext.path, accessor || name),
+      namespace: createPath(parentContext.namespace, name)
     };
   }
 }

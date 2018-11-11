@@ -1,11 +1,10 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { FieldArrayContext, fieldArrayContextTypes, FieldGroup } from '../';
-import { DELETE, selectDeep } from '../../utils';
-import { createPath } from '../../utils/createPath';
-import { Path } from '../../utils/FieldRegister';
-import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
-import { FormContext, formContextTypes } from '../Form/Form';
+import { FieldGroup } from '../';
+import { FieldArrayContext, FieldArrayContextValue } from '../../contexts/field-array-context';
+import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
+import { FormContext, FormContextValue } from '../../contexts/form-context';
+import { assertNotNull, DELETE, selectDeep } from '../../utils';
+import { createPath, Path } from '../../utils';
 
 export interface InnerFieldArrayItemProps<Item> {
   remove: () => void;
@@ -22,16 +21,38 @@ export interface FieldArrayItemsProps<Item> {
   render: FieldArrayItemsRender<Item>;
 }
 
-export interface FieldArrayItemsState {
+export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItemsProps<Item>> {
+  public render() {
+    return (
+      <FormContext.Consumer>
+        {formContext => (
+          <FieldGroupContext.Consumer>
+            {groupContext => (
+              <FieldArrayContext.Consumer>
+                {arrayContext => (
+                  <FieldArrayItemsWithoutContext
+                    {...this.props}
+                    formContext={assertNotNull(formContext, 'You cannot use the FieldArrayItems outside a form')}
+                    groupContext={groupContext}
+                    arrayContext={arrayContext}
+                  />
+                )}
+              </FieldArrayContext.Consumer>
+            )}
+          </FieldGroupContext.Consumer>
+        )}
+      </FormContext.Consumer>
+    );
+  }
 }
 
-export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItemsProps<Item>, FieldArrayItemsState> {
-  public static contextTypes = {
-    ...formContextTypes,
-    ...fieldGroupContextTypes,
-    ...fieldArrayContextTypes
-  };
-  public context: FormContext<any> & FieldGroupContext & FieldArrayContext;
+export interface FieldArrayItemsWithoutContextProps<Item> extends FieldArrayItemsProps<Item> {
+  formContext: FormContextValue<any>;
+  groupContext: FieldGroupContextValue;
+  arrayContext: FieldArrayContextValue;
+}
+
+export class FieldArrayItemsWithoutContext<Item = any> extends React.PureComponent<FieldArrayItemsWithoutContextProps<Item>> {
   private array: Item[];
 
   public render() {
@@ -59,23 +80,24 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   }
 
   private getArray(): Item[] {
-    const { form: { state: { model }}, path = '' } = this.context;
+    const { form: { state: { model }} } = this.props.formContext;
+    const { path = '' } = this.props.groupContext;
     return selectDeep({ object: model, path });
   }
 
   private removeItem(item: Item, index: number): void {
-    const { onFieldChange } = this.context;
+    const { onFieldChange } = this.props.formContext;
     const identifier = this.getItemIdentifier(item, index);
     const path = this.getItemPath(index);
     onFieldChange(identifier, path, DELETE);
   }
 
   private getItemPath(index: number): Path {
-    return createPath(this.context.path, index);
+    return createPath(this.props.groupContext.path, index);
   }
 
   private getItemIdentifier(item: Item, index: number): Path {
-    return createPath(this.context.namespace, this.getNameForItem(item, index));
+    return createPath(this.props.groupContext.namespace, this.getNameForItem(item, index));
   }
 
   private getNameForItem(item: Item, index: number): string {
@@ -84,7 +106,7 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   }
 
   private getKeyFunction(): GetKey<Item> {
-    const { getKey } = this.context;
+    const { getKey } = this.props.arrayContext;
     if (!getKey) {
       throw new Error(`Invalid context. Please make sure that "FieldArrayItems" is wrapped by a "FieldArray"`);
     }
@@ -92,7 +114,8 @@ export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItems
   }
 
   private setArray = (newArray: Item[]): void => {
-    const { path = '', namespace = '', onFieldChange } = this.context;
+    const { onFieldChange } = this.props.formContext;
+    const { path = '', namespace = '' } = this.props.groupContext;
     onFieldChange(namespace, path, newArray);
   };
 

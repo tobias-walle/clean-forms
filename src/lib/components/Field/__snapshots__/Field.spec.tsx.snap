@@ -3,9 +3,6 @@
 exports[`Field should render 1`] = `
 <input
   name="name"
-  onBlur={[Function]}
-  onChange={[Function]}
-  onFocus={[Function]}
   value="value"
 />
 `;

@@ -1,11 +1,12 @@
-import { mount } from 'enzyme';
+import { mount, render } from 'enzyme';
 import * as React from 'react';
-import { FieldArrayContext } from '../';
+import { withArrayContext, withFormContext, withGroupContext } from '../../../testUtils/context';
 import { InputField } from '../../../testUtils/InputField';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
+import { FieldArrayContextValue } from '../../contexts/field-array-context';
+import { FieldGroupContextValue } from '../../contexts/field-group-context';
+import { FormContextValue, OnFieldChange } from '../../contexts/form-context';
 import { DELETE } from '../../utils';
-import { FieldGroupContext } from '../FieldGroup/FieldGroup';
-import { FormContext, OnFieldChange } from '../Form/Form';
 import { FieldArrayItems } from './FieldArrayItems';
 
 describe('FieldArrayItems', () => {
@@ -17,45 +18,25 @@ describe('FieldArrayItems', () => {
         { a: 2 },
       ]
     };
-    const context: FormContext<typeof model> & FieldGroupContext & FieldArrayContext = {
-      ...mockFormContext(model),
+    const formContext: FormContextValue<typeof model> = mockFormContext(model);
+    const groupContext: FieldGroupContextValue = {
       namespace: 'array',
       path: 'array',
+    };
+    const arrayContext: FieldArrayContextValue = {
       getKey: (_, i) => i
     };
-    const element = mount(
-      <FieldArrayItems
-        render={() => (
-          <InputField name={'a'}/>
-        )}/>
-      , { context }
+    const element = render(
+      withFormContext(formContext)(
+        withGroupContext(groupContext)(
+          withArrayContext(arrayContext)(
+            <FieldArrayItems render={() => <InputField name={'a'}/>}/>
+          )
+        )
+      )
     );
 
     expect(element).toMatchSnapshot();
-    expect(element.find(InputField).length).toBe(3);
-  });
-
-  it('should throw an error if getKey is missing in the contenxt', () => {
-    const model = {
-      array: [
-        { a: 0 },
-      ]
-    };
-    const context: FormContext<typeof model> & FieldGroupContext = {
-      ...mockFormContext(model),
-      namespace: 'array',
-      path: 'array',
-    };
-    console.error = jest.fn();
-    const render = () => mount(
-      <FieldArrayItems
-        render={() => (
-          <InputField name={'a'}/>
-        )}/>
-      , { context }
-    );
-
-    expect(render).toThrowErrorMatchingSnapshot();
   });
 
   it('should pass remove callback to render function', () => {
@@ -68,21 +49,28 @@ describe('FieldArrayItems', () => {
     };
     type Model = typeof model;
     const onFieldChange: OnFieldChange<Model> = jest.fn();
-    const context: FormContext<Model> & FieldGroupContext & FieldArrayContext = {
-      ...mockFormContext(model, { onFieldChange }),
+    const formContext: FormContextValue<typeof model> = mockFormContext(model, { onFieldChange });
+    const groupContext: FieldGroupContextValue = {
       namespace: 'array',
       path: 'array',
+    };
+    const arrayContext: FieldArrayContextValue = {
       getKey: (_, i) => `key_${i}`
     };
     const element = mount(
-      <FieldArrayItems
-        render={({ remove }) => (
-          <div>
-            <InputField name={'a'}/>
-            <button onClick={remove}>Remove</button>
-          </div>
-        )}/>
-      , { context }
+      withFormContext(formContext)(
+        withGroupContext(groupContext)(
+          withArrayContext(arrayContext)(
+            <FieldArrayItems
+              render={({ remove }) => (
+                <div>
+                  <InputField name={'a'}/>
+                  <button onClick={remove}>Remove</button>
+                </div>
+              )}/>
+          )
+        )
+      )
     );
 
     element.find('button').first().simulate('click');
@@ -97,17 +85,23 @@ describe('FieldArrayItems', () => {
     };
     type Model = typeof model;
     const onFieldChange: OnFieldChange<Model> = jest.fn();
-    const context: FormContext<Model> & FieldGroupContext & FieldArrayContext = {
-      ...mockFormContext(model, { onFieldChange }),
+    const formContext: FormContextValue<typeof model> = mockFormContext(model, { onFieldChange });
+    const groupContext: FieldGroupContextValue = {
       namespace: 'array',
       path: 'array',
+    };
+    const arrayContext: FieldArrayContextValue = {
       getKey: (_, i) => i
     };
     const renderItem = jest.fn(() => <div/>);
     mount(
-      <FieldArrayItems
-        render={renderItem}/>
-      , { context }
+      withFormContext(formContext)(
+        withGroupContext(groupContext)(
+          withArrayContext(arrayContext)(
+            <FieldArrayItems render={renderItem}/>
+          )
+        )
+      )
     );
 
     expect(renderItem).toHaveBeenCalledTimes(1);
@@ -120,17 +114,23 @@ describe('FieldArrayItems', () => {
     };
     type Model = typeof model;
     const onFieldChange: OnFieldChange<Model> = jest.fn();
-    const context: FormContext<Model> & FieldGroupContext & FieldArrayContext = {
-      ...mockFormContext(model, { onFieldChange }),
+    const formContext: FormContextValue<typeof model> = mockFormContext(model, { onFieldChange });
+    const groupContext: FieldGroupContextValue = {
       namespace: 'array',
       path: 'array',
+    };
+    const arrayContext: FieldArrayContextValue = {
       getKey: (_, i) => i
     };
     const renderItem = jest.fn(() => <div/>);
     mount(
-      <FieldArrayItems
-        render={renderItem}/>
-      , { context }
+      withFormContext(formContext)(
+        withGroupContext(groupContext)(
+          withArrayContext(arrayContext)(
+            <FieldArrayItems render={renderItem}/>
+          )
+        )
+      )
     );
 
     expect(renderItem).toHaveBeenCalledTimes(2);
@@ -148,21 +148,28 @@ describe('FieldArrayItems', () => {
     };
     type Model = typeof model;
     const onFieldChange: OnFieldChange<Model> = jest.fn();
-    const context: FormContext<Model> & FieldGroupContext & FieldArrayContext = {
-      ...mockFormContext(model, { onFieldChange }),
+    const formContext: FormContextValue<typeof model> = mockFormContext(model, { onFieldChange });
+    const groupContext: FieldGroupContextValue = {
       namespace: 'array',
       path: 'array',
+    };
+    const arrayContext: FieldArrayContextValue = {
       getKey: (_, i) => i
     };
     const element = mount(
-      <FieldArrayItems
-        render={({ setArray }) => (
-          <div>
-            <InputField name={'a'}/>
-            <button onClick={() => setArray([])}>Remove</button>
-          </div>
-        )}/>
-      , { context }
+      withFormContext(formContext)(
+        withGroupContext(groupContext)(
+          withArrayContext(arrayContext)(
+            <FieldArrayItems
+              render={({ setArray }) => (
+                <div>
+                  <InputField name={'a'}/>
+                  <button onClick={() => setArray([])}>Remove</button>
+                </div>
+              )}/>
+          )
+        )
+      )
     );
 
     element.find('button').first().simulate('click');

@@ -1,19 +1,15 @@
-import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { FieldGroup, GetKey } from '../';
-import { createPath, Path, selectDeep } from '../../utils';
-import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
-import { FormContext, formContextTypes } from '../Form/Form';
+import {
+  defaultFieldArrayContextValue,
+  FieldArrayContext,
+  FieldArrayContextValue
+} from '../../contexts/field-array-context';
+import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
+import { FormContext, FormContextValue } from '../../contexts/form-context';
+import { assertNotNull, createPath, Path, selectDeep } from '../../utils';
 
 export type AddItem<Item> = (item: Item) => void;
-
-export const fieldArrayContextTypes = {
-  getKey: PropTypes.func,
-};
-
-export interface FieldArrayContext<Item = any> {
-  getKey: GetKey<Item>;
-}
 
 export interface InnerFieldArrayProps<Item> {
   items: Item[];
@@ -26,42 +22,62 @@ export interface FieldArrayProps<Item> {
   getKey?: GetKey<Item>;
 }
 
-export interface FieldArrayState {
+export class FieldArray extends React.Component<FieldArrayProps<any>, {}> {
+  public render() {
+    return (
+      <FieldGroupContext.Consumer>
+        {groupContext => (
+          <FormContext.Consumer>
+            {formContext => (
+              <FieldArrayWithoutContext
+                groupContext={groupContext}
+                formContext={assertNotNull(formContext, 'You cannot use the FieldArray outside a form')}
+                fieldArrayProps={this.props}
+              />
+            )}
+          </FormContext.Consumer>
+        )}
+      </FieldGroupContext.Consumer>
+    );
+  }
 }
 
-export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArrayState> {
-  public static childContextTypes = fieldArrayContextTypes;
-  public static contextTypes = {
-    ...formContextTypes,
-    ...fieldGroupContextTypes
-  };
-  public context: FormContext<any> & FieldGroupContext;
+export interface FieldArrayWithoutContextProps<Item> {
+  fieldArrayProps: FieldArrayProps<Item>;
+  groupContext: FieldGroupContextValue;
+  formContext: FormContextValue<any>;
+}
+
+class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutContextProps<any>, {}> {
   private items: any[];
   private path: Path;
   private identifier: string;
 
   public render() {
-    const { name, render } = this.props;
+    const { name, render } = this.props.fieldArrayProps;
     this.updatePathAndIdentifier();
     this.items = this.getItems();
 
     return (
       <FieldGroup name={name}>
-        {render({
-          addItem: this.addItem,
-          items: this.items,
-        })}
+        <FieldArrayContext.Provider value={this.createChildContext()}>
+          {render({
+            addItem: this.addItem,
+            items: this.items,
+          })}
+        </FieldArrayContext.Provider>
       </FieldGroup>
     );
   }
 
   private updatePathAndIdentifier(): void {
-    this.path = createPath(this.context.path, this.props.name);
-    this.identifier = createPath(this.context.namespace, this.props.name);
+    const { groupContext, fieldArrayProps: { name } } = this.props;
+    this.path = createPath(groupContext.path, name);
+    this.identifier = createPath(groupContext.namespace, name);
   }
 
   public componentDidMount() {
-    this.context.onFieldMount(this.identifier);
+    this.props.formContext.onFieldMount(this.identifier);
   }
 
   private addItem: AddItem<any> = (item) => {
@@ -70,19 +86,21 @@ export class FieldArray extends React.Component<FieldArrayProps<any>, FieldArray
   };
 
   private getItems(): any[] {
-    const { form: { state: { model } } } = this.context;
+    const { form: { state: { model } } } = this.props.formContext;
     return selectDeep({ object: model, path: this.path });
   }
 
   private setArray(newArray: any[]): void {
-    const { onFieldChange } = this.context;
+    const { onFieldChange } = this.props.formContext;
     onFieldChange(this.identifier, this.path, newArray);
   }
 
-  public getChildContext(): FieldArrayContext {
-    const { getKey = this.defaultGetKey } = this.props;
-    return { getKey };
+  private createChildContext(): FieldArrayContextValue {
+    const { getKey } = this.props.fieldArrayProps;
+    if (getKey) {
+      return { getKey };
+    } else {
+      return defaultFieldArrayContextValue;
+    }
   }
-
-  private defaultGetKey: GetKey<any> = (item, index) => `${index}`;
 }

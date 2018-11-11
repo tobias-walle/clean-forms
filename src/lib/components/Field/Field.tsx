@@ -1,12 +1,11 @@
-import * as PropTypes from 'prop-types' ;
 import * as React from 'react';
 import { FormApi } from '../../api';
+import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
+import { FormContext, FormContextValue } from '../../contexts/form-context';
 import { FieldStatus } from '../../statusTracking';
-import { createPath, Path } from '../../utils';
+import { assertNotNull, createPath, Path } from '../../utils';
 import { isShallowEqual } from '../../utils/isShallowEqual';
 import { FieldError } from '../../validation';
-import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
-import { FormContext, formContextTypes } from '../Form/Form';
 
 export type FieldId = string;
 
@@ -41,22 +40,41 @@ export type FieldProps<Value, CustomProps = {}> = FieldPropsWithoutRender & {
   updateOnEveryFormChange?: boolean;
 };
 
-export class Field<Value = any, CustomProps = any> extends React.Component<FieldProps<Value, CustomProps>, {}> {
-  public static contextTypes = {
-    ...formContextTypes,
-    ...fieldGroupContextTypes
-  };
-  public context: FormContext<any> & FieldGroupContext;
+export class Field<Value = any, CustomProps = any> extends React.Component<FieldProps<Value, CustomProps>> {
+  public render() {
+    return (
+      <FormContext.Consumer>
+        {formContext => (
+          <FieldGroupContext.Consumer>
+            {groupContext => (
+              <FieldWithoutContext
+                {...this.props}
+                formContext={assertNotNull(formContext, 'You cannot use the Field Component outside a form.')}
+                groupContext={groupContext}
+              />
+            )}
+          </FieldGroupContext.Consumer>
+        )}
+      </FormContext.Consumer>
+    );
+  }
+}
 
+type FieldPropsWithoutContext<Value, CustomProps = {}> = FieldProps<Value, CustomProps> & {
+  formContext: FormContextValue<any>;
+  groupContext: FieldGroupContextValue;
+};
+
+class FieldWithoutContext<Value = any, CustomProps = any> extends React.Component<FieldPropsWithoutContext<Value, CustomProps>> {
   private fieldId: FieldId;
   private path: Path;
 
   public render() {
     const { name, render, inner: custom } = this.props;
-    const { form } = this.context;
+    const { form } = this.props.formContext;
     this.updatePathAndId();
 
-    const { value, status, error } = getInputValuesFromContext(this.context, this.props);
+    const { value, status, error } = getInputValuesFromContext(this.props);
     const input: InputProps<Value> = {
       name: name || undefined,
       value,
@@ -72,49 +90,51 @@ export class Field<Value = any, CustomProps = any> extends React.Component<Field
     return render({ input, custom, form });
   }
 
-  public shouldComponentUpdate(nextProps: FieldProps<Value, CustomProps>, nextState: any, nextContext: any) {
-    const excludedKeys: Array<keyof typeof nextProps> = ['inner', 'updateOnEveryFormChange'];
+  public shouldComponentUpdate(nextProps: FieldPropsWithoutContext<Value, CustomProps>, nextState: any) {
+    const excludedKeys: Array<keyof typeof nextProps> = ['inner', 'updateOnEveryFormChange', 'groupContext'];
     const comparableProps = removeKeysFromObject(this.props, excludedKeys);
     const comparableNextProps = removeKeysFromObject(nextProps, excludedKeys);
     return !isShallowEqual(comparableProps, comparableNextProps)
       || !isShallowEqual(this.props.inner, nextProps.inner)
-      || (this.props.updateOnEveryFormChange && !isShallowEqual(this.context, nextContext))
+      || !isShallowEqual(this.props.groupContext, nextProps.groupContext)
+      || (this.props.updateOnEveryFormChange && !isShallowEqual(this.props.formContext, nextProps.formContext))
       || !isShallowEqual(
-        getInputValuesFromContext(this.context, this.props),
-        getInputValuesFromContext(nextContext, nextProps)
+        getInputValuesFromContext(this.props),
+        getInputValuesFromContext(nextProps)
       );
   }
 
   private updatePathAndId(): void {
-    this.path = createPath(this.context.path, this.props.name);
-    this.fieldId = createPath(this.context.namespace, this.props.name);
+    this.path = createPath(this.props.groupContext.path, this.props.name);
+    this.fieldId = createPath(this.props.groupContext.namespace, this.props.name);
   }
 
   public componentDidMount() {
-    this.context.onFieldMount(this.fieldId);
+    this.props.formContext.onFieldMount(this.fieldId);
   }
 
   public componentWillUnmount() {
-    this.context.onFieldUnmount(this.fieldId);
+    this.props.formContext.onFieldUnmount(this.fieldId);
   }
 
   private onFocus = () => {
-    this.context.onFieldFocus(this.fieldId);
+    this.props.formContext.onFieldFocus(this.fieldId);
   };
 
   private onBlur = () => {
-    this.context.onFieldBlur(this.fieldId);
+    this.props.formContext.onFieldBlur(this.fieldId);
   };
 
   private onChange = (value: any) => {
-    this.context.onFieldChange(this.fieldId, this.path, value);
+    this.props.formContext.onFieldChange(this.fieldId, this.path, value);
   };
 }
 
-function getInputValuesFromContext(context: Field['context'], props: Field['props']): { value: any, status: FieldStatus, error: FieldError } {
-  const { form } = context;
-  const path = createPath(context.path, props.name);
-  const fieldId = createPath(context.namespace, props.name);
+function getInputValuesFromContext(props: FieldWithoutContext['props']): { value: any, status: FieldStatus, error: FieldError } {
+  const { form } = props.formContext;
+  const { groupContext  } = props;
+  const path = createPath(groupContext.path, props.name);
+  const fieldId = createPath(groupContext.namespace, props.name);
   const value = form.getFieldValue(path);
   const status = form.getFieldStatus(fieldId);
   const error = form.getFieldError(path);

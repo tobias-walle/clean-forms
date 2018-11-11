@@ -1,8 +1,8 @@
-import { FormApi } from '../lib/api/FormApi';
-import { FormContext } from '../lib/components/Form/Form';
+import { FormApi } from '../lib/api';
+import { FormContextValue } from '../lib/contexts/form-context';
 
-export function mockFormContext<Model = any>(model: Model, override: Partial<FormContext<Model>> = {}): FormContext<Model> {
-  const defaultOverride: Partial<FormContext<Model>> = {
+export function mockFormContext<Model = any>(model: Model, override: Partial<FormContextValue<Model>> = {}): FormContextValue<Model> {
+  const defaultOverride: Partial<FormContextValue<Model>> = {
     onFieldChange: () => {
     },
     onFieldBlur: () => {
@@ -14,7 +14,7 @@ export function mockFormContext<Model = any>(model: Model, override: Partial<For
     onFieldUnmount: () => {
     },
   };
-  const context: Partial<FormContext<Model>> = {
+  const context: Partial<FormContextValue<Model>> = {
     form: new FormApi({ model }),
     ...defaultOverride,
     ...override

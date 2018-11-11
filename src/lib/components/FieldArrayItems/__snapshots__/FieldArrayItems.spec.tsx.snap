@@ -1,79 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FieldArrayItems should render items 1`] = `
-<FieldArrayItems
-  render={[Function]}
->
-  <FieldGroup
-    accessor="0"
-    key="0"
-    name="0"
-  >
-    <createField(Component)
-      name="a"
-    >
-      <Field
-        inner={Object {}}
-        name="a"
-        render={[Function]}
-      >
-        <input
-          name="a"
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          value={0}
-        />
-      </Field>
-    </createField(Component)>
-  </FieldGroup>
-  <FieldGroup
-    accessor="1"
-    key="1"
-    name="1"
-  >
-    <createField(Component)
-      name="a"
-    >
-      <Field
-        inner={Object {}}
-        name="a"
-        render={[Function]}
-      >
-        <input
-          name="a"
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          value={1}
-        />
-      </Field>
-    </createField(Component)>
-  </FieldGroup>
-  <FieldGroup
-    accessor="2"
-    key="2"
-    name="2"
-  >
-    <createField(Component)
-      name="a"
-    >
-      <Field
-        inner={Object {}}
-        name="a"
-        render={[Function]}
-      >
-        <input
-          name="a"
-          onBlur={[Function]}
-          onChange={[Function]}
-          onFocus={[Function]}
-          value={2}
-        />
-      </Field>
-    </createField(Component)>
-  </FieldGroup>
-</FieldArrayItems>
+Array [
+  <input
+    name="a"
+    value="0"
+  />,
+  <input
+    name="a"
+    value="1"
+  />,
+  <input
+    name="a"
+    value="2"
+  />,
+]
 `;
-
-exports[`FieldArrayItems should throw an error if getKey is missing in the contenxt 1`] = `"Invalid context. Please make sure that \\"FieldArrayItems\\" is wrapped by a \\"FieldArray\\""`;

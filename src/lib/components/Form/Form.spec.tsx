@@ -1,19 +1,20 @@
-import { mount, ReactWrapper, shallow } from 'enzyme';
+import { mount, ReactWrapper, render, shallow } from 'enzyme';
 import * as React from 'react';
 import { Field, FieldArray, FieldArrayItems } from '../';
 import { InputField } from '../../../testUtils/InputField';
 import { wait } from '../../../testUtils/wait';
 import { FormState } from '../../api';
+import { FormContextValue } from '../../contexts/form-context';
 import { createField } from '../../hocs';
 import { DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusMapping } from '../../statusTracking';
 import { FieldRegister } from '../../utils';
 import { ArrayValidation, FieldErrorMapping, ValidationDefinition } from '../../validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
-import { Form, FormContext } from './Form';
+import { Form } from './Form';
 
 describe('Form', () => {
   it('should render', () => {
-    expect(shallow(<Form state={{ model: {} }}/>)).toMatchSnapshot();
+    expect(render(<Form state={{ model: {} }}/>)).toMatchSnapshot();
   });
 
   it('should render model in inputs', () => {
@@ -247,7 +248,7 @@ describe('Form', () => {
         <InputField name={'a'}/>
       </Form>
     );
-    const context: FormContext<any> = element.find(Field).instance().context;
+    const context: FormContextValue<any> = element.find(Field).first().childAt(0).props().formContext;
 
     context.onFieldUnmount('a');
 
@@ -270,7 +271,7 @@ describe('Form', () => {
         )}/>
       </Form>
     );
-    const context: FormContext<any> = element.find(Field).first().instance().context;
+    const context: FormContextValue<any> = element.find(Field).first().childAt(0).props().formContext;
 
     context.onFieldUnmount('array.a');
 

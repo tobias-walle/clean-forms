@@ -1,52 +1,47 @@
 import { mount } from 'enzyme';
 import * as React from 'react';
+import { withFormContext } from '../../../testUtils/context';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
-import { FieldGroupContext, fieldGroupContextTypes } from '../FieldGroup/FieldGroup';
-import { FormContext, OnFieldChange, OnFieldMount } from '../Form/Form';
-import { FieldArray, FieldArrayContext, fieldArrayContextTypes } from './FieldArray';
+import { FieldArrayContext } from '../../contexts/field-array-context';
+import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
+import { OnFieldChange, OnFieldMount } from '../../contexts/form-context';
+import { FieldArray } from './FieldArray';
 
 describe('FieldArray', () => {
   it('should pass Context', () => {
-    class MyComponent extends React.Component<{}, {}> {
-      public static contextTypes = fieldGroupContextTypes;
-      public context: FieldGroupContext;
-
-      public render() {
-        return <div/>;
-      }
-    }
-
     const model = { array: ['item'] };
-    type Model = typeof model;
-    const context: FormContext<Model> = mockFormContext(model);
+    const context = mockFormContext(model);
+    const renderWithContext = jest.fn(() => <div/>);
 
-    const element = mount(
-      <FieldArray name={'array'} render={() => (
-        <MyComponent/>
-      )}/>
-      , { context }
+    mount(
+      withFormContext(context)(
+        <FieldArray name={'array'} render={() => (
+          <FieldGroupContext.Consumer>
+            {renderWithContext}
+          </FieldGroupContext.Consumer>
+        )}/>
+      )
     );
-    const expectedContext: FieldGroupContext = {
+    const expectedContext: FieldGroupContextValue = {
       namespace: 'array',
       path: 'array',
     };
 
-    const myComponent: MyComponent = element.find(MyComponent).instance() as any;
-
-    expect(myComponent.context).toEqual(expectedContext);
+    expect(renderWithContext).toHaveBeenCalledWith(expectedContext);
   });
 
   it('should pass "addItem" to render function', () => {
     const model = { array: ['item'] };
     type Model = typeof model;
     const onFieldChange: OnFieldChange<Model> = jest.fn();
-    const context: FormContext<Model> = mockFormContext(model, { onFieldChange });
+    const context = mockFormContext<Model>(model, { onFieldChange });
 
     const element = mount(
-      <FieldArray name={'array'} render={({ addItem }) => (
-        <button onClick={() => addItem('newItem')}>Add</button>
-      )}/>
-      , { context }
+      withFormContext(context)(
+        <FieldArray name={'array'} render={({ addItem }) => (
+          <button onClick={() => addItem('newItem')}>Add</button>
+        )}/>
+      )
     );
     const firstButton = element.find('button').first();
     firstButton.simulate('click');
@@ -57,12 +52,13 @@ describe('FieldArray', () => {
   it('should pass "items" to render function', () => {
     const model = { array: ['item'] };
     type Model = typeof model;
-    const context: FormContext<Model> = mockFormContext(model);
+    const context = mockFormContext<Model>(model);
     const render = jest.fn(() => <div/>);
 
     mount(
-      <FieldArray name={'array'} render={render}/>
-      , { context }
+      withFormContext(context)(
+        <FieldArray name={'array'} render={render}/>
+      )
     );
 
     expect(render.mock.calls[0][0]).toMatchObject({
@@ -74,9 +70,13 @@ describe('FieldArray', () => {
     const model = { array: ['item'] };
     type Model = typeof model;
     const onFieldMount: OnFieldMount = jest.fn();
-    const context: FormContext<Model> = mockFormContext(model, { onFieldMount });
+    const context = mockFormContext<Model>(model, { onFieldMount });
 
-    mount(<FieldArray name={'array'} render={() => (<div/>)}/>, { context });
+    mount(
+      withFormContext(context)(
+        <FieldArray name={'array'} render={() => (<div/>)}/>
+      )
+    );
 
     expect(onFieldMount).toHaveBeenCalledWith('array');
   });
@@ -84,23 +84,21 @@ describe('FieldArray', () => {
   it('should provide getKey as context', () => {
     const model = { array: ['item'] };
     type Model = typeof model;
-    const context: FormContext<Model> = mockFormContext(model);
+    const context = mockFormContext<Model>(model);
     const getKey = jest.fn(() => '');
 
-    class Child extends React.Component {
-      public static contextTypes = fieldArrayContextTypes;
-      public context: FieldArrayContext;
+    const renderContext = jest.fn(() => <div/>);
 
-      public render() {
-        return <div/>;
-      }
-    }
+    mount(
+      withFormContext(context)(
+        <FieldArray name={'array'} getKey={getKey} render={() => (
+          <FieldArrayContext.Consumer>
+            {renderContext}
+          </FieldArrayContext.Consumer>
+        )}/>
+      )
+    );
 
-    let childRef: Child | null = null;
-    mount(<FieldArray name={'array'} getKey={getKey} render={() => (
-      <Child ref={ref => childRef = ref}/>
-    )}/>, { context });
-
-    expect(childRef!.context).toEqual({ getKey });
+    expect(renderContext).toHaveBeenCalledWith({ getKey });
   });
 });

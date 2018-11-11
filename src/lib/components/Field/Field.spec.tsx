@@ -1,20 +1,21 @@
-import { mount, shallow } from 'enzyme';
+import { mount, render } from 'enzyme';
 import * as React from 'react';
+import { withFormContext, withGroupContext } from '../../../testUtils/context';
 import { renderInput } from '../../../testUtils/InputField';
 import { mockEvent } from '../../../testUtils/mockEvent';
 import { mockFormContext } from '../../../testUtils/mockFormContext';
-import { FormApi } from '../../api/FormApi';
-import { DEFAULT_FIELD_STATUS } from '../../statusTracking/FieldStatus';
-import { FieldGroupContext } from '../FieldGroup/FieldGroup';
-import { FormContext } from '../Form/Form';
+import { FormApi } from '../../api';
+import { FieldGroupContextValue } from '../../contexts/field-group-context';
+import { FormContextValue } from '../../contexts/form-context';
+import { DEFAULT_FIELD_STATUS } from '../../statusTracking';
 import { Field, FieldProps, InnerFieldProps } from './Field';
 
 describe('Field', () => {
   it('should render', () => {
     const field = <Field name={'name'} render={renderInput} inner={{}}/>;
     const model = { name: 'value' };
-    const context: FormContext<any> = mockFormContext(model);
-    expect(shallow(field, { context })).toMatchSnapshot();
+    const context: FormContextValue<any> = mockFormContext(model);
+    expect(render(withFormContext(context)(field))).toMatchSnapshot();
   });
 
   it('should pass props', () => {
@@ -26,7 +27,7 @@ describe('Field', () => {
     const model = { [name]: value };
     const context = mockFormContext(model);
 
-    mount(field, { context });
+    mount(withFormContext(context)(field));
 
     const expectedInput: InnerFieldProps<any, any> = {
       input: {
@@ -56,7 +57,7 @@ describe('Field', () => {
       form: new FormApi({ model }, {}, { name: 'Error' })
     });
 
-    mount(field, { context });
+    mount(withFormContext(context)(field));
 
     const expectedInput: InnerFieldProps<any, any> = {
       input: {
@@ -83,7 +84,7 @@ describe('Field', () => {
     const model = { [name]: value };
     const context = mockFormContext(model, { onFieldChange });
 
-    const element = mount(field, { context });
+    const element = mount(withFormContext(context)(field));
     const wrapper = element.find('input');
     const onChange = wrapper.props().onChange;
 
@@ -104,7 +105,7 @@ describe('Field', () => {
     const model = { [name]: value };
     const context = mockFormContext(model, { onFieldFocus, onFieldBlur });
 
-    const element = mount(field, { context });
+    const element = mount(withFormContext(context)(field));
     const wrapper = element.find('input');
     const onFocus = wrapper.props().onFocus;
     const onBlur = wrapper.props().onBlur;
@@ -131,7 +132,7 @@ describe('Field', () => {
     const model = { [name]: value };
     const context = mockFormContext(model, { onFieldMount, onFieldUnmount });
 
-    const element = mount(field, { context });
+    const element = mount(withFormContext(context)(field), { context });
 
     expect(onFieldMount).toHaveBeenCalledWith(name);
     expect(onFieldUnmount).not.toHaveBeenCalled();
@@ -143,15 +144,15 @@ describe('Field', () => {
 
   it('should support namespace and path', () => {
     const model = { testGroup1: { testGroup2: { name: 'value' } } };
-    const context: FormContext<any> & FieldGroupContext = {
-      ...mockFormContext(model),
+    const formContext: FormContextValue<any> = mockFormContext(model);
+    const groupContext: FieldGroupContextValue = {
       namespace: 'testGroup1.testGroup2',
       path: 'testGroup1.testGroup2',
     };
 
     const element = mount(
-      <Field name={'name'} render={renderInput} inner={{}}/>
-      , { context }
+      withFormContext(formContext)(withGroupContext(groupContext)(<Field name={'name'} render={renderInput}
+                                                                         inner={{}}/>))
     );
     const input = element.find('input');
     expect(input.props().value).toBe('value');
@@ -159,15 +160,15 @@ describe('Field', () => {
 
   it('should support null as name', () => {
     const model = { testGroup1: { testGroup2: 'value' } };
-    const context: FormContext<any> & FieldGroupContext = {
-      ...mockFormContext(model),
+    const formContext: FormContextValue<any> = mockFormContext(model);
+    const groupContext: FieldGroupContextValue = {
       namespace: 'testGroup1.testGroup2',
       path: 'testGroup1.testGroup2'
     };
 
     const element = mount(
-      <Field name={null} render={renderInput} inner={{}}/>
-      , { context });
+      withFormContext(formContext)(withGroupContext(groupContext)(<Field name={null} render={renderInput} inner={{}}/>))
+    );
 
     const input = element.find('input');
     expect(input.props().value).toBe('value');
@@ -179,12 +180,12 @@ describe('Field', () => {
     const onFieldChange = jest.fn();
     const field = <Field name={name} render={renderInput} inner={{}}/>;
     const model = { group1: { group2: { [name]: value } } };
-    const context: FormContext<any> & FieldGroupContext = {
-      ...mockFormContext(model, { onFieldChange }),
+    const formContext: FormContextValue<any> = mockFormContext(model, { onFieldChange });
+    const groupContext: FieldGroupContextValue = {
       namespace: 'group1.group2',
       path: 'group1.group2',
     };
-    const element = mount(field, { context });
+    const element = mount(withFormContext(formContext)(withGroupContext(groupContext)(field)));
     const wrapper = element.find('input');
     const onChange = wrapper.props().onChange;
 
@@ -205,15 +206,31 @@ describe('Field', () => {
         updateOnEveryFormChange: false,
       };
       const model = { value: 'test', value2: 'test2' };
-      const context: FormContext<any> & FieldGroupContext = mockFormContext(model);
+      const formContext: FormContextValue<any> = mockFormContext(model);
 
-      const component = shallow(<Field {...props}/>, { context }).instance();
+      const component = mount(withFormContext(formContext)(<Field {...props}/>)).find(Field).childAt(0).instance();
 
-      expect(component.shouldComponentUpdate!(props, {}, context)).toBe(false);
-      expect(component.shouldComponentUpdate!({ ...props, name: 'value2' }, {}, context)).toBe(true);
-      expect(component.shouldComponentUpdate!({ ...props, inner: { a: 2 } }, {}, context)).toBe(true);
-      expect(component.shouldComponentUpdate!({ ...props, updateOnEveryFormChange: true }, {}, context)).toBe(false);
-      expect(component.shouldComponentUpdate!(props, {}, mockFormContext({ ...model, value: 'test2' }))).toBe(true);
+      const contextProps = { formContext, groupContext: {} };
+
+      expect(component.shouldComponentUpdate!({ ...props, ...contextProps }, {}, {})).toBe(false);
+      expect(component.shouldComponentUpdate!({
+        ...props,
+        ...contextProps,
+        groupContext: {
+          name: 'value2'
+        }
+      }, {}, {})).toBe(true);
+      expect(component.shouldComponentUpdate!({ ...props, ...contextProps, inner: { a: 2 } }, {}, {})).toBe(true);
+      expect(component.shouldComponentUpdate!({
+        ...props,
+        ...contextProps,
+        updateOnEveryFormChange: true
+      }, {}, {})).toBe(false);
+      expect(component.shouldComponentUpdate!({
+        ...props,
+        ...contextProps,
+        formContext: mockFormContext({ ...model, value: 'test2' })
+      }, {}, {})).toBe(true);
     });
   });
 });
