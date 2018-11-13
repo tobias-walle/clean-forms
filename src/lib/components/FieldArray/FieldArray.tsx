@@ -8,6 +8,7 @@ import {
 import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
 import { FormContext, FormContextValue } from '../../contexts/form-context';
 import { assertNotNull, createPath, Path, selectDeep } from '../../utils';
+import { isShallowEqual } from '../../utils/isShallowEqual';
 
 export type AddItem<Item> = (item: Item) => void;
 
@@ -40,6 +41,10 @@ export class FieldArray extends React.Component<FieldArrayProps<any>, {}> {
       </FieldGroupContext.Consumer>
     );
   }
+
+  public shouldComponentUpdate(nextProps: FieldArrayProps<any>) {
+    return isShallowEqual(this.props, nextProps);
+  }
 }
 
 export interface FieldArrayWithoutContextProps<Item> {
@@ -48,7 +53,7 @@ export interface FieldArrayWithoutContextProps<Item> {
   formContext: FormContextValue<any>;
 }
 
-class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutContextProps<any>, {}> {
+class FieldArrayWithoutContext extends React.Component<FieldArrayWithoutContextProps<any>, {}> {
   private items: any[];
   private path: Path;
   private identifier: string;
@@ -78,6 +83,10 @@ class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutCont
 
   public componentDidMount() {
     this.props.formContext.onFieldMount(this.identifier);
+  }
+
+  public shouldComponentUpdate(nextProps: FieldArrayWithoutContextProps<any>) {
+    return isShallowEqual(this.props, nextProps);
   }
 
   private addItem: AddItem<any> = (item) => {

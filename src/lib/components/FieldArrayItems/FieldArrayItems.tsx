@@ -5,6 +5,7 @@ import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-
 import { FormContext, FormContextValue } from '../../contexts/form-context';
 import { assertNotNull, DELETE, selectDeep } from '../../utils';
 import { createPath, Path } from '../../utils';
+import { isShallowEqual } from '../../utils/isShallowEqual';
 
 export interface InnerFieldArrayItemProps<Item> {
   remove: () => void;
@@ -15,13 +16,13 @@ export interface InnerFieldArrayItemProps<Item> {
 
 export type GetKey<Item> = (item: Item, index: number) => any;
 
-export type FieldArrayItemsRender<Item> = React.StatelessComponent<InnerFieldArrayItemProps<Item>>;
+export type FieldArrayItemsRender<Item> = (props: InnerFieldArrayItemProps<Item>) => React.ReactNode;
 
 export interface FieldArrayItemsProps<Item> {
   render: FieldArrayItemsRender<Item>;
 }
 
-export class FieldArrayItems<Item = any> extends React.Component<FieldArrayItemsProps<Item>> {
+export class FieldArrayItems<Item = any> extends React.PureComponent<FieldArrayItemsProps<Item>> {
   public render() {
     return (
       <FormContext.Consumer>
@@ -52,7 +53,7 @@ export interface FieldArrayItemsWithoutContextProps<Item> extends FieldArrayItem
   arrayContext: FieldArrayContextValue;
 }
 
-export class FieldArrayItemsWithoutContext<Item = any> extends React.PureComponent<FieldArrayItemsWithoutContextProps<Item>> {
+export class FieldArrayItemsWithoutContext<Item = any> extends React.Component<FieldArrayItemsWithoutContextProps<Item>> {
   private array: Item[];
 
   public render() {
@@ -77,6 +78,10 @@ export class FieldArrayItemsWithoutContext<Item = any> extends React.PureCompone
       ))}
       </>
     );
+  }
+
+  public shouldComponentUpdate(nextProps: FieldArrayItemsWithoutContextProps<any>) {
+    return isShallowEqual(this.props, nextProps);
   }
 
   private getArray(): Item[] {

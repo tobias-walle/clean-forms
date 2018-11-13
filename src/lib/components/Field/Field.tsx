@@ -40,7 +40,7 @@ export type FieldProps<Value, CustomProps = {}> = FieldPropsWithoutRender & {
   updateOnEveryFormChange?: boolean;
 };
 
-export class Field<Value = any, CustomProps = any> extends React.Component<FieldProps<Value, CustomProps>> {
+export class Field<Value = any, CustomProps = any> extends React.PureComponent<FieldProps<Value, CustomProps>> {
   public render() {
     return (
       <FormContext.Consumer>
@@ -91,17 +91,23 @@ class FieldWithoutContext<Value = any, CustomProps = any> extends React.Componen
   }
 
   public shouldComponentUpdate(nextProps: FieldPropsWithoutContext<Value, CustomProps>, nextState: any) {
-    const excludedKeys: Array<keyof typeof nextProps> = ['inner', 'updateOnEveryFormChange', 'groupContext'];
+    const excludedKeys: Array<keyof typeof nextProps> = ['inner', 'updateOnEveryFormChange', 'groupContext', 'formContext'];
     const comparableProps = removeKeysFromObject(this.props, excludedKeys);
     const comparableNextProps = removeKeysFromObject(nextProps, excludedKeys);
-    return !isShallowEqual(comparableProps, comparableNextProps)
-      || !isShallowEqual(this.props.inner, nextProps.inner)
-      || !isShallowEqual(this.props.groupContext, nextProps.groupContext)
-      || (this.props.updateOnEveryFormChange && !isShallowEqual(this.props.formContext, nextProps.formContext))
-      || !isShallowEqual(
+
+    const havePropsChanged = !isShallowEqual(comparableProps, comparableNextProps);
+    const haveInnerPropsChanged = !isShallowEqual(this.props.inner, nextProps.inner);
+    const hasGroupContextChanged = !isShallowEqual(this.props.groupContext, nextProps.groupContext);
+    const isUpdateOnEveryFormChangedActivatedAndHasFormChanged = (this.props.updateOnEveryFormChange && !isShallowEqual(this.props.formContext, nextProps.formContext));
+    const haveInputValuesChanged = !isShallowEqual(
         getInputValuesFromContext(this.props),
         getInputValuesFromContext(nextProps)
       );
+    return havePropsChanged
+      || haveInnerPropsChanged
+      || hasGroupContextChanged
+      || isUpdateOnEveryFormChangedActivatedAndHasFormChanged
+      || haveInputValuesChanged;
   }
 
   private updatePathAndId(): void {
