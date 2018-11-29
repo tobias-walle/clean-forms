@@ -53,7 +53,7 @@ export interface FieldArrayItemsWithoutContextProps<Item> extends FieldArrayItem
   arrayContext: FieldArrayContextValue;
 }
 
-export class FieldArrayItemsWithoutContext<Item = any> extends React.Component<FieldArrayItemsWithoutContextProps<Item>> {
+export class FieldArrayItemsWithoutContext<Item = any> extends React.PureComponent<FieldArrayItemsWithoutContextProps<Item>> {
   private array: Item[];
 
   public render() {
@@ -78,10 +78,6 @@ export class FieldArrayItemsWithoutContext<Item = any> extends React.Component<F
       ))}
       </>
     );
-  }
-
-  public shouldComponentUpdate(nextProps: FieldArrayItemsWithoutContextProps<any>) {
-    return isShallowEqual(this.props, nextProps);
   }
 
   private getArray(): Item[] {

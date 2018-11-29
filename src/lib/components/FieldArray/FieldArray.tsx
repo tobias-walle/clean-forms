@@ -53,7 +53,7 @@ export interface FieldArrayWithoutContextProps<Item> {
   formContext: FormContextValue<any>;
 }
 
-class FieldArrayWithoutContext extends React.Component<FieldArrayWithoutContextProps<any>, {}> {
+class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutContextProps<any>, {}> {
   private items: any[];
   private path: Path;
   private identifier: string;
@@ -83,10 +83,6 @@ class FieldArrayWithoutContext extends React.Component<FieldArrayWithoutContextP
 
   public componentDidMount() {
     this.props.formContext.onFieldMount(this.identifier);
-  }
-
-  public shouldComponentUpdate(nextProps: FieldArrayWithoutContextProps<any>) {
-    return isShallowEqual(this.props, nextProps);
   }
 
   private addItem: AddItem<any> = (item) => {
