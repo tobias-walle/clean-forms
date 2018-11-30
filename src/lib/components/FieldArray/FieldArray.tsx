@@ -53,7 +53,7 @@ export interface FieldArrayWithoutContextProps<Item> {
   formContext: FormContextValue<any>;
 }
 
-class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutContextProps<any>, {}> {
+class FieldArrayWithoutContext extends React.Component<FieldArrayWithoutContextProps<any>, {}> {
   private items: any[];
   private path: Path;
   private identifier: string;
@@ -85,14 +85,20 @@ class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutCont
     this.props.formContext.onFieldMount(this.identifier);
   }
 
+  public shouldComponentUpdate(nextProps: FieldArrayWithoutContextProps<any>) {
+    return !(selectArrayFromProps(this.props) === selectArrayFromProps(nextProps))
+      || !(this.props.formContext.onFieldChange === nextProps.formContext.onFieldChange)
+      || !isShallowEqual(this.props.groupContext, nextProps.groupContext)
+      || !isShallowEqual(this.props.fieldArrayProps, nextProps.fieldArrayProps);
+  }
+
   private addItem: AddItem<any> = (item) => {
     const newArray = [...this.items, item];
     this.setArray(newArray);
   };
 
   private getItems(): any[] {
-    const { form: { state: { model } } } = this.props.formContext;
-    return selectDeep({ object: model, path: this.path });
+    return selectArrayFromProps(this.props);
   }
 
   private setArray(newArray: any[]): void {
@@ -108,4 +114,10 @@ class FieldArrayWithoutContext extends React.PureComponent<FieldArrayWithoutCont
       return defaultFieldArrayContextValue;
     }
   }
+}
+
+function selectArrayFromProps<Item>(props: FieldArrayWithoutContextProps<Item>): Item[] {
+  const { form: { state: { model } } } = props.formContext;
+  const path = createPath(props.groupContext.path, props.fieldArrayProps.name);
+  return selectDeep({ object: model, path });
 }

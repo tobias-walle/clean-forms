@@ -1,7 +1,9 @@
 import * as React from 'react';
 import {
   ArrayValidation,
-  createField, FieldArray, FieldArrayItems,
+  createField,
+  FieldArray,
+  FieldArrayItems,
   FieldGroup,
   Form,
   FormState,
@@ -72,9 +74,6 @@ export class MyHugeForm extends React.Component<{}, MyFormState> {
         }
       },
       e: [
-        { ...arrayData },
-        { ...arrayData },
-        { ...arrayData }
       ]
     }
   };
@@ -110,8 +109,15 @@ export class MyHugeForm extends React.Component<{}, MyFormState> {
           </FieldGroup>
         </FieldGroup>
         <h3>e</h3>
-        <FieldArray name="e" render={() => (
-          <FieldArrayItems render={({index}) => this.renderDataInputFields(this.state.model.e[index])}/>
+        <FieldArray name="e" render={({ addItem }) => (
+          <div>
+            <FieldArrayItems render={({ index }) => {
+              return this.renderDataInputFields(this.state.model.e[index]);
+            }}/>
+            <button onClick={() => {
+              return addItem({ [`new-${Math.random().toString(36).substr(2)}`]: 123 });
+            }}>Add</button>
+          </div>
         )}/>
         <div>
           <button>Submit</button>

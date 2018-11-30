@@ -3,9 +3,8 @@ import { FieldGroup } from '../';
 import { FieldArrayContext, FieldArrayContextValue } from '../../contexts/field-array-context';
 import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
 import { FormContext, FormContextValue } from '../../contexts/form-context';
-import { assertNotNull, DELETE, selectDeep } from '../../utils';
-import { createPath, Path } from '../../utils';
-import { isShallowEqual } from '../../utils/isShallowEqual';
+import { assertNotNull, createPath, DELETE, Path, selectDeep } from '../../utils';
+import { arePropertiesShallowEqual } from '../../utils/isShallowEqual';
 
 export interface InnerFieldArrayItemProps<Item> {
   remove: () => void;
@@ -53,7 +52,7 @@ export interface FieldArrayItemsWithoutContextProps<Item> extends FieldArrayItem
   arrayContext: FieldArrayContextValue;
 }
 
-export class FieldArrayItemsWithoutContext<Item = any> extends React.PureComponent<FieldArrayItemsWithoutContextProps<Item>> {
+export class FieldArrayItemsWithoutContext<Item = any> extends React.Component<FieldArrayItemsWithoutContextProps<Item>> {
   private array: Item[];
 
   public render() {
@@ -62,28 +61,33 @@ export class FieldArrayItemsWithoutContext<Item = any> extends React.PureCompone
     this.array = this.getArray();
     return (
       <>
-      {this.array.map((item, index) => (
-        <FieldGroup
-          key={getKey(item, index)}
-          name={this.getNameForItem(item, index)}
-          accessor={this.getAccessorForItem(index)}
-        >
-          {render({
-            remove: () => this.removeItem(item, index),
-            setArray: this.setArray,
-            index,
-            item
-          })}
-        </FieldGroup>
-      ))}
+        {this.array.map((item, index) => (
+          <FieldGroup
+            key={getKey(item, index)}
+            name={this.getNameForItem(item, index)}
+            accessor={this.getAccessorForItem(index)}
+          >
+            {render({
+              remove: () => this.removeItem(item, index),
+              setArray: this.setArray,
+              index,
+              item
+            })}
+          </FieldGroup>
+        ))}
       </>
     );
   }
 
+  public shouldComponentUpdate(nextProps: FieldArrayItemsWithoutContextProps<any>, nextState: any, nextContext: any) {
+    return !arePropertiesShallowEqual(['groupContext', 'arrayContext'], this.props, nextProps)
+      || !(this.props.render === nextProps.render)
+      || !(selectArrayFromProps(this.props) === selectArrayFromProps(nextProps))
+      || !(this.props.formContext.onFieldChange === nextProps.formContext.onFieldChange);
+  }
+
   private getArray(): Item[] {
-    const { form: { state: { model }} } = this.props.formContext;
-    const { path = '' } = this.props.groupContext;
-    return selectDeep({ object: model, path });
+    return selectArrayFromProps(this.props);
   }
 
   private removeItem(item: Item, index: number): void {
@@ -123,4 +127,10 @@ export class FieldArrayItemsWithoutContext<Item = any> extends React.PureCompone
   private getAccessorForItem(index: number): string {
     return String(index);
   }
+}
+
+function selectArrayFromProps<Item>(props: FieldArrayItemsWithoutContextProps<Item>): Item[] {
+  const { form: { state: { model } } } = props.formContext;
+  const { path = '' } = props.groupContext;
+  return selectDeep({ object: model, path });
 }

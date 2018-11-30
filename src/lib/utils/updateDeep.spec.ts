@@ -66,6 +66,7 @@ describe('updateDeep', () => {
 
     const result = updateDeep({ object: original, path, value, assert: false });
 
+    expect(original).toEqual({ a: [0, 1, 2] });
     expect(result.a).toEqual([1, 2]);
     expect(result.a.length).toBe(2);
   });
