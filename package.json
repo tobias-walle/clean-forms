@@ -5,7 +5,8 @@
   "main": "out/dist/lib/index.js",
   "types": "out/dist/lib/index.d.ts",
   "files": [
-    "out/dist/lib"
+    "out/dist/lib",
+    "src"
   ],
   "repository": "git@github.com:TobiasWalle/clean-forms.git",
   "author": "Tobias Walle",
