@@ -186,6 +186,25 @@ describe('Form', () => {
 
   });
 
+  it('should take a single validation function', async () => {
+    const model = { a: 'hello', b: 124 };
+    const status = initFieldStatusMapping('a');
+    const error = 'The value has to have a greater length than 10';
+    const validator: ValidationDefinition<typeof model> = ({ value }) => value.a.length > 10 ? null : [['a', error]];
+    const renderForm = jest.fn(() => (
+      <>
+        <InputField name={'a'}/>
+        <InputField name={'b'} type="number"/>
+      </>
+    ));
+    const expectValidationResult = createValidationResultExpectFunction(renderForm);
+    mount(<Form state={{ model, status }} validation={validator} render={renderForm}/>);
+
+    expectValidationResult({
+      a: error
+    });
+  });
+
   it('should update validation result for array', async () => {
     const model = { array: [] };
     const status = initFieldStatusMapping('array', 'array.hello');

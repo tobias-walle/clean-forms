@@ -1,14 +1,16 @@
 import { createPath } from '../utils/createPath';
 import { Path, Paths } from '../utils/FieldRegister';
 import { isValidationResolver } from './isValidationResolver';
-import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
+import { ArrayValidation, ValidationDefinition, ValidationMapping } from './ValidationDefinition';
 
 export function getValidationDefinitionPaths(
   validationDefinition: ValidationDefinition<any> | ArrayValidation,
   value: any,
   parentPath: Path = ''
 ): Paths {
-  if (validationDefinition instanceof ArrayValidation) {
+  if (validationDefinition instanceof Function) {
+    return [''];
+  } else if (validationDefinition instanceof ArrayValidation) {
     return getValidationDefinitionPathsForArray(validationDefinition, value, parentPath);
   } else {
     return getValidationDefinitionPathsForObject(validationDefinition, value, parentPath);
@@ -16,7 +18,7 @@ export function getValidationDefinitionPaths(
 }
 
 export function getValidationDefinitionPathsForObject(
-  validationDefinition: ValidationDefinition<any>,
+  validationDefinition: ValidationMapping<any>,
   value: any,
   parentPath: Path = ''
 ): Paths {
