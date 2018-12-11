@@ -3,8 +3,11 @@ export interface ValidationFunctionArgs<Value = any, Model = any> {
   model: Model;
 }
 
+export type ValidationError = string | null;
+export type ValidationErrors = Array<[string, ValidationError]>;
+
 export type ValidationFunction<Value = any, Model = any> =
-  (args: ValidationFunctionArgs<Value, Model>) => string | null;
+  (args: ValidationFunctionArgs<Value, Model>) => ValidationError | ValidationErrors;
 
 export class ArrayValidation<Model = any, Item = any, ArrayType = Item[]> {
   constructor(
