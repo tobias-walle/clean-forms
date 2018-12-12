@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { FieldGroupContext, FieldGroupContextValue } from '../../contexts/field-group-context';
 import { createPath } from '../../utils';
-import { isShallowEqual } from '../../utils/isShallowEqual';
 
 export interface FieldGroupProps {
   name: string;
   accessor?: string;
 }
 
-export class FieldGroup extends React.Component<FieldGroupProps, {}> {
+export class FieldGroup extends React.PureComponent<FieldGroupProps, {}> {
   public render() {
     return (
       <FieldGroupContext.Consumer>
@@ -19,10 +18,6 @@ export class FieldGroup extends React.Component<FieldGroupProps, {}> {
         )}
       </FieldGroupContext.Consumer>
     );
-  }
-
-  public shouldComponentUpdate(nextProps: FieldGroupProps) {
-    return isShallowEqual(this.props, nextProps);
   }
 
   private createContext(parentContext: FieldGroupContextValue): FieldGroupContextValue {
