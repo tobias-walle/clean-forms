@@ -580,6 +580,68 @@ describe('Integration Tests', () => {
     expect(renderMockField.mock.calls[1][0].input.error).toBe('required');
   });
 
+  it('should work with fast updates', () => {
+    interface Model {
+      name: string;
+    }
+
+    const renderMockField = jest.fn(() => <div/>);
+    const MockField = createField<string, {}>(renderMockField);
+
+    interface FormWrapperState {
+      form: FormState<Model>;
+      validation: ValidationMapping<Model>;
+    }
+
+    class FormWrapper extends React.Component<{}, FormWrapperState> {
+      public state: FormWrapperState = {
+        form: {
+          model: {
+            name: 'hello'
+          },
+        },
+        validation: {}
+      };
+
+      public render() {
+        return (
+          <Form
+            state={this.state.form}
+            onChange={newForm => {
+              return this.setState({ form: newForm });
+            }}
+            validation={this.state.validation}
+          >
+            <MockField name="name"/>
+          </Form>
+        );
+      }
+    }
+
+    const form = mount(<FormWrapper/>);
+    const required = ({ value }: ValidationFunctionArgs) => value === '' ? 'required' : null;
+
+    form.setState({
+      form: {
+        model: {
+          name: ''
+        }
+      }
+    });
+
+    form.setState({
+      validation: {
+        name: required
+      }
+    });
+
+    expect((form.state() as FormWrapperState).form.model).toMatchObject({
+      name: ''
+    });
+    const lastCall = renderMockField.mock.calls[renderMockField.mock.calls.length - 1];
+    expect(lastCall[0].input.error).toBe('required');
+  });
+
 });
 
 function setInputValue(wrapper: ReactWrapper<any>, value: string) {

@@ -41,7 +41,10 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     fieldErrorMapping: {}
   };
 
-  public propsStateUpdater = new StateUpdater<FormState<Model>>(this.props.state);
+  public propsStateUpdater = new StateUpdater<FormState<Model>>(
+    () => this.props.state,
+    () => this.mounted
+  );
   private formContext: FormContextValue<Model>;
   private fieldsRegister: FieldRegister;
   private fieldStatusUpdater: FieldStatusUpdater;
@@ -52,10 +55,11 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     super(props, context);
     this.fieldsRegister = new FieldRegister();
     this.fieldStatusUpdater = new FieldStatusUpdater(this.fieldsRegister);
-    this.handlePropsUpdate(this.props, this.state, true);
+    this.handlePropsUpdate();
   }
 
   public render() {
+    this.handlePropsUpdate();
     this.updateFormApi(this.props, this.state);
     const { render } = this.props;
 
@@ -82,13 +86,8 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.mounted = false;
   }
 
-  private handlePropsUpdate(props: FormProps<Model>, state: FormComponentState, initial = false): void {
-    if (this.props.onChange !== props.onChange || initial) {
-      this.propsStateUpdater.registerOnChange(props.onChange);
-    }
-    if (this.props.state !== props.state || initial) {
-      this.propsStateUpdater.resetWith(props.state);
-    }
+  private handlePropsUpdate(): void {
+    this.propsStateUpdater.registerOnChange(this.props.onChange);
   }
 
   private updateFormApi(props: FormProps<Model>, state: FormComponentState) {
