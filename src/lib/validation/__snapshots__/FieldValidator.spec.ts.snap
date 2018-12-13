@@ -1,3 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FieldValidator validateModel should catch errors in validation function 1`] = `"Error while running validation function for value 50 in path \\"a\\":"`;
+exports[`validateModel should catch errors in validation function 1`] = `"Error while running validation function for value 50 in path a:"`;

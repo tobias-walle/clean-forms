@@ -8,7 +8,13 @@ import { FormContextValue } from '../../contexts/form-context';
 import { createField } from '../../hocs';
 import { DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusMapping } from '../../statusTracking';
 import { FieldRegister } from '../../utils';
-import { ArrayValidation, FieldErrorMapping, ValidationDefinition } from '../../validation';
+import {
+  ArrayValidation,
+  FieldErrorMapping,
+  ValidationDefinition,
+  ValidationFunctionArgs,
+  ValidationMapping
+} from '../../validation';
 import { FieldGroup } from '../FieldGroup/FieldGroup';
 import { Form } from './Form';
 
@@ -229,11 +235,13 @@ describe('Form', () => {
   });
 
   it('should update validation result for array items', async () => {
-    const model = { array: [
-        {a: 0, b: 0},
-        {a: 4, b: 0},
-        {a: 0, b: 0}
-      ] };
+    const model = {
+      array: [
+        { a: 0, b: 0 },
+        { a: 4, b: 0 },
+        { a: 0, b: 0 }
+      ]
+    };
     const status = initFieldStatusMapping('array', 'array.hello');
     const error = 'The value has to be bigger than 0';
     const validators: ValidationDefinition<typeof model> = {
@@ -524,6 +532,52 @@ describe('Integration Tests', () => {
         value3: new FieldStatus({ dirty: true, touched: false }),
       }
     });
+  });
+
+  it('should run validation if validation is changed', () => {
+    interface Model {
+      name: '';
+    }
+
+    const renderMockField = jest.fn(() => <div/>);
+    const MockField = createField<string, {}>(renderMockField);
+
+    interface FormWrapperState {
+      form: FormState<Model>;
+      validation: ValidationMapping<Model>;
+    }
+
+    class FormWrapper extends React.Component<{}, FormWrapperState> {
+      public state: FormWrapperState = {
+        form: {
+          model: {
+            name: ''
+          },
+        },
+        validation: {}
+      };
+
+      public render() {
+        return (
+          <Form
+            state={this.state.form}
+            onChange={newForm => this.setState({ form: newForm })}
+            validation={this.state.validation}
+          >
+            <MockField name="name"/>
+          </Form>
+        );
+      }
+    }
+
+    const form = mount(<FormWrapper/>);
+    form.setState({
+      validation: {
+        name: ({ value }: ValidationFunctionArgs) => value === '' ? 'required' : null
+      }
+    });
+
+    expect(renderMockField.mock.calls[1][0].input.error).toBe('required');
   });
 
 });

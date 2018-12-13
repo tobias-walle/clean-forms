@@ -13,7 +13,7 @@ import { FieldStatusMapping } from '../../statusTracking';
 import { FieldStatusUpdater } from '../../statusTracking/FieldStatusUpdater';
 import { FieldRegister, FieldRegisterChanges, Path } from '../../utils';
 import { StateUpdater } from '../../utils/StateUpdater';
-import { FieldErrorMapping, FieldValidator, ValidationDefinition } from '../../validation';
+import { FieldErrorMapping, validateModel, ValidationDefinition } from '../../validation';
 
 import { GetKey } from '../FieldArrayItems/FieldArrayItems';
 
@@ -37,11 +37,13 @@ export interface FormComponentState {
 }
 
 export class Form<Model = any> extends React.Component<FormProps<Model>, FormComponentState> {
-  public state: FormComponentState;
+  public state: FormComponentState = {
+    fieldErrorMapping: {}
+  };
+
   public propsStateUpdater = new StateUpdater<FormState<Model>>(this.props.state);
   private formContext: FormContextValue<Model>;
   private fieldsRegister: FieldRegister;
-  private fieldValidator: FieldValidator<Model>;
   private fieldStatusUpdater: FieldStatusUpdater;
   private arrayGetKeyMapping: Map<string, GetKey<any>> = new Map();
   private mounted: boolean = false;
@@ -49,16 +51,14 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   constructor(props: FormProps<Model>, context: any) {
     super(props, context);
     this.fieldsRegister = new FieldRegister();
-    this.fieldValidator = new FieldValidator();
     this.fieldStatusUpdater = new FieldStatusUpdater(this.fieldsRegister);
-    this.state = {
-      fieldErrorMapping: this.validate(this.props.state.model)
-    };
     this.handlePropsUpdate(this.props, this.state, true);
   }
 
   public render() {
+    this.updateFormApi(this.props, this.state);
     const { render } = this.props;
+
     return (
       <FormContext.Provider value={this.formContext}>
         <form onSubmit={this.handleSubmit}>
@@ -67,6 +67,10 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
         </form>
       </FormContext.Provider>
     );
+  }
+
+  public static getDerivedStateFromProps(props: FormProps<any>, state: FormState<any>): FormComponentState {
+    return updateFieldErrorMappingState(props.state.model, props.validation || {});
   }
 
   public componentDidMount() {
@@ -78,15 +82,6 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     this.mounted = false;
   }
 
-  public componentWillReceiveProps(newProps: FormProps<Model>) {
-    let state = this.state;
-    if (newProps.state.model !== this.props.state.model) {
-      state = this.updateValidationResult(newProps.state.model);
-      this.setState(state);
-    }
-    this.handlePropsUpdate(newProps, state);
-  }
-
   private handlePropsUpdate(props: FormProps<Model>, state: FormComponentState, initial = false): void {
     if (this.props.onChange !== props.onChange || initial) {
       this.propsStateUpdater.registerOnChange(props.onChange);
@@ -94,7 +89,6 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     if (this.props.state !== props.state || initial) {
       this.propsStateUpdater.resetWith(props.state);
     }
-    this.updateFormApi(props, state);
   }
 
   private updateFormApi(props: FormProps<Model>, state: FormComponentState) {
@@ -112,16 +106,6 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
       onFieldUnmount: this.onFieldUnmount,
       setArrayGetKey: this.setArrayGetKey
     };
-  }
-
-  private updateValidationResult(model: Model): FormComponentState {
-    const result = this.validate(model);
-    return { ...this.state, fieldErrorMapping: result };
-  }
-
-  private validate(model: Model): FieldErrorMapping {
-    const { validation = {} } = this.props;
-    return this.fieldValidator.validateModel({ model, validationDefinition: validation });
   }
 
   private onFieldMount: OnFieldMount = (path) => {
@@ -200,4 +184,12 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   private getApi(): FormApi<Model> {
     return this.formContext.form;
   }
+}
+
+function updateFieldErrorMappingState<Model>(
+  model: Model,
+  validationDefinition: ValidationDefinition<Model>
+): FormComponentState {
+  const result = validateModel({ model, validationDefinition });
+  return { fieldErrorMapping: result };
 }
