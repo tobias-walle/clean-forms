@@ -31,8 +31,31 @@ describe('getValidationDefinitionPaths', () => {
     expect(getValidationDefinitionPaths(validationDefinition, value)).toEqual(expectedPaths);
   });
 
+  it('should get paths if value is empty', () => {
+    const value = {
+      b: {
+        c: 12
+      }
+    };
+    const validationDefinition: ValidationDefinition<any> = {
+      a: () => null,
+      b: {
+        c: () => null,
+        d: {
+          e: new ArrayValidation(null, () => null)
+        }
+      }
+    };
+    const expectedPaths: Paths = [
+      'a',
+      'b.c'
+    ];
+
+    expect(getValidationDefinitionPaths(validationDefinition, value)).toEqual(expectedPaths);
+  });
+
   it('should work with value arrays', () => {
-    const model = [ 0 ];
+    const model = [0];
     const arrayValidation = new ArrayValidation(
       () => null
     );
@@ -44,7 +67,7 @@ describe('getValidationDefinitionPaths', () => {
   });
 
   it('should work with object arrays', () => {
-    const model = [ { a: '' } ];
+    const model = [{ a: '' }];
     const arrayValidation = new ArrayValidation(
       { a: () => null },
     );
@@ -56,7 +79,7 @@ describe('getValidationDefinitionPaths', () => {
   });
 
   it('should work with array validators', () => {
-    const model = [ { a: '' } ];
+    const model = [{ a: '' }];
     const arrayValidation = new ArrayValidation(
       null,
       () => null
@@ -69,7 +92,7 @@ describe('getValidationDefinitionPaths', () => {
   });
 
   it('should work with array validators in objects', () => {
-    const model = { array: [ { a: '' } ] };
+    const model = { array: [{ a: '' }] };
     const arrayValidation = new ArrayValidation(
       { a: () => null },
       () => null

@@ -25,8 +25,11 @@ export function getValidationDefinitionPathsForObject(
   const keys = Object.keys(validationDefinition);
   return keys.reduce(getKeyPaths, []);
 
-  function getKeyPaths(paths: Paths, key: string) {
+  function getKeyPaths(paths: Paths, key: string): Paths {
     const currentPath = createPath(parentPath, key);
+    if (value == null || validationDefinition == null) {
+      return [];
+    }
     const itemValue = value[key];
     const itemDefinition = validationDefinition[key];
     if (itemDefinition instanceof ArrayValidation || (!isValidationResolver(itemDefinition) && typeof itemDefinition === 'object')) {
