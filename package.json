@@ -35,6 +35,7 @@
     "travis-deploy-once": "travis-deploy-once"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
     "@storybook/addon-actions": "^4.1.6",
     "@storybook/addons": "^4.1.6",
     "@storybook/cli": "^4.1.6",
@@ -46,6 +47,7 @@
     "@types/react-dom": "^16.0.11",
     "@types/storybook__addon-actions": "^3.4.1",
     "@types/storybook__react": "^4.0.0",
+    "babel-loader": "^8.0.5",
     "coveralls": "^3.0.2",
     "emotion": "^9.2.5",
     "enzyme": "^3.8.0",
@@ -63,7 +65,8 @@
     "travis-deploy-once": "^5.0.11",
     "ts-jest": "^23.10.5",
     "tslint": "^5.12.0",
-    "typescript": "^3.2.2"
+    "typescript": "^3.2.2",
+    "webpack": "^4.28.1"
   },
   "peerDependencies": {
     "react": "^16.2.0"
