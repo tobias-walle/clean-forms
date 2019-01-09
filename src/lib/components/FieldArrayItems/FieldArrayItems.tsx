@@ -130,7 +130,7 @@ export class FieldArrayItemsWithoutContext<Item = any> extends React.Component<F
 }
 
 function selectArrayFromProps<Item>(props: FieldArrayItemsWithoutContextProps<Item>): Item[] {
-  const { form: { state: { model } } } = props.formContext;
+  const { form: { model } } = props.formContext;
   const { path = '' } = props.groupContext;
   return selectDeep({ object: model, path });
 }

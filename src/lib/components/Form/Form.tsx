@@ -140,11 +140,17 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   };
 
   private handleSubmit = (event: React.FormEvent<any>) => {
-    const { onSubmit, onValidSubmit, onInValidSubmit, formProps } = this.props;
     event.stopPropagation();
     event.preventDefault();
 
+    const { formProps } = this.props;
     formProps && formProps.onSubmit && formProps.onSubmit(event);
+
+    this.submit();
+  };
+
+  public submit() {
+    const { onSubmit, onValidSubmit, onInValidSubmit } = this.props;
 
     this.markAllAsTouched();
     onSubmit && onSubmit(this.getApi());
@@ -153,7 +159,7 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
     } else {
       onInValidSubmit && onInValidSubmit(this.getApi());
     }
-  };
+  }
 
   private markAllAsTouched(): void {
     const status = this.fieldStatusUpdater.markAllAsTouched(this.getApi().status);

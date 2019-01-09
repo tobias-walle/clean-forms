@@ -117,7 +117,7 @@ class FieldArrayWithoutContext extends React.Component<FieldArrayWithoutContextP
 }
 
 function selectArrayFromProps<Item>(props: FieldArrayWithoutContextProps<Item>): Item[] {
-  const { form: { state: { model } } } = props.formContext;
+  const { form: { model } } = props.formContext;
   const path = createPath(props.groupContext.path, props.fieldArrayProps.name);
   return selectDeep({ object: model, path });
 }

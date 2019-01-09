@@ -381,6 +381,21 @@ describe('Form', () => {
       }
     });
   });
+
+  it('should submit via ref', () => {
+    const model = { a: 123, b: 1 };
+    const handleSubmit = jest.fn();
+    const element = mount(
+      <Form state={{ model }} onSubmit={handleSubmit}>
+        <InputField name={'a'}/>
+        <InputField name={'b'}/>
+      </Form>
+    );
+    const form = element.instance() as Form;
+    form.submit();
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('Integration Tests', () => {

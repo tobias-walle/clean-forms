@@ -1,4 +1,3 @@
-import { action } from '@storybook/addon-actions';
 import { storiesOf } from '@storybook/react';
 import * as React from 'react';
 import { FieldGroup } from '../lib/components';
@@ -6,6 +5,7 @@ import { Form } from '../lib/index';
 import { ValidationFunction } from '../lib/validation';
 import { Input } from './components/Input';
 import { MyForm } from './example';
+import { MyFormWithExternalButton } from './example-external-button';
 import { MyHugeForm } from './huge-example';
 import { StateFullForm } from './StateFullForm/StateFullForm';
 
@@ -48,5 +48,6 @@ storiesOf('Form', module)
     </StateFullForm>
   ))
   .add('example', () => <MyForm/>)
+  .add('external button', () => <MyFormWithExternalButton/>)
   .add('huge form', () => <MyHugeForm/>)
 ;
