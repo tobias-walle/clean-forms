@@ -30,6 +30,7 @@ export interface FormProps<Model> {
   onInValidSubmit?: OnSubmit<Model>;
   validation?: ValidationDefinition<Model>;
   render?: RenderForm<Model>;
+  formProps?: JSX.IntrinsicElements['form'];
 }
 
 export interface FormComponentState {
@@ -61,11 +62,11 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   public render() {
     this.handlePropsUpdate();
     this.updateFormApi(this.props, this.state);
-    const { render } = this.props;
+    const { render, formProps } = this.props;
 
     return (
       <FormContext.Provider value={this.formContext}>
-        <form onSubmit={this.handleSubmit}>
+        <form {...formProps} onSubmit={this.handleSubmit}>
           {this.props.children}
           {render && render(this.formContext.form)}
         </form>
@@ -139,9 +140,11 @@ export class Form<Model = any> extends React.Component<FormProps<Model>, FormCom
   };
 
   private handleSubmit = (event: React.FormEvent<any>) => {
-    const { onSubmit, onValidSubmit, onInValidSubmit } = this.props;
+    const { onSubmit, onValidSubmit, onInValidSubmit, formProps } = this.props;
     event.stopPropagation();
     event.preventDefault();
+
+    formProps && formProps.onSubmit && formProps.onSubmit(event);
 
     this.markAllAsTouched();
     onSubmit && onSubmit(this.getApi());
