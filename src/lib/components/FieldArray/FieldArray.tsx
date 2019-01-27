@@ -23,7 +23,7 @@ export interface FieldArrayProps<Item> {
   getKey?: GetKey<Item>;
 }
 
-export class FieldArray extends React.Component<FieldArrayProps<any>, {}> {
+export class FieldArray extends React.PureComponent<FieldArrayProps<any>, {}> {
   public render() {
     return (
       <FieldGroupContext.Consumer>
@@ -40,10 +40,6 @@ export class FieldArray extends React.Component<FieldArrayProps<any>, {}> {
         )}
       </FieldGroupContext.Consumer>
     );
-  }
-
-  public shouldComponentUpdate(nextProps: FieldArrayProps<any>) {
-    return isShallowEqual(this.props, nextProps);
   }
 }
 
