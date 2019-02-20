@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import * as React from 'react';
 import { GetKey } from '../components';
 
@@ -10,3 +11,7 @@ export const defaultFieldArrayContextValue: FieldArrayContextValue = {
 };
 
 export const FieldArrayContext = React.createContext<FieldArrayContextValue>(defaultFieldArrayContextValue);
+
+export function useFieldArrayContext(): FieldArrayContextValue {
+  return useContext(FieldArrayContext);
+}

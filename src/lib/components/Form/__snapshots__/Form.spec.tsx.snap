@@ -1,5 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`Form should render 1`] = `<form />`;
-
-exports[`Form should render model in inputs 1`] = `"<form><input name=\\"a\\" value=\\"hello\\"><input name=\\"b\\" type=\\"number\\" value=\\"124\\"></form>"`;

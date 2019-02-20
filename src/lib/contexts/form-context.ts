@@ -1,7 +1,8 @@
+import { useContext } from 'react';
 import * as React from 'react';
 import { FormApi } from '../api';
 import { GetKey } from '../components';
-import { Path } from '../utils';
+import { assertNotNull, Path } from '../utils';
 
 export type OnFieldMount = (id: string) => void;
 
@@ -26,3 +27,10 @@ export interface FormContextValue<Model> {
 }
 
 export const FormContext = React.createContext<FormContextValue<any> | null>(null);
+
+export function useFormContext<T>(): FormContextValue<T> {
+  return assertNotNull(
+    useContext(FormContext),
+    'This component needs to be used inside a FormContext'
+  );
+}

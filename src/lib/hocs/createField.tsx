@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Field } from '../components';
-import { FieldPropsWithoutRender, FieldRenderFunction } from '../components/Field/Field';
+import { FieldPropsWithoutRender, FieldRenderFunction } from '../components/Field';
 import { Omit } from '../types';
 import { createStandaloneField, StandaloneFieldComponent } from './createStandaloneField';
 
 export type FieldComponentProps<CustomProps> = Omit<CustomProps, 'name'> & FieldPropsWithoutRender;
 
-export type FieldComponent<Value, CustomProps> = React.StatelessComponent<FieldComponentProps<CustomProps>>
+export type FieldComponent<Value, CustomProps> = React.FunctionComponent<FieldComponentProps<CustomProps>>
   & { standalone: StandaloneFieldComponent<Value, CustomProps> };
 
 export interface CreateFieldOptions {
@@ -19,7 +19,12 @@ export function createField<Value, CustomProps = {}>(
   options: CreateFieldOptions = {}
 ): FieldComponent<Value, CustomProps> {
   const result: FieldComponent<Value, CustomProps> = (
-    ({ name, ...inner }: any) => <Field name={name} render={render} inner={inner} {...options}/>
+    ({ name, ...inner }: FieldComponentProps<CustomProps>) => <Field
+      name={name}
+      render={render as any}
+      inner={inner}
+      {...options}
+    />
   ) as any;
   result.displayName = `createField(${render.displayName || 'Component'})`;
   result.standalone = createStandaloneField(render);

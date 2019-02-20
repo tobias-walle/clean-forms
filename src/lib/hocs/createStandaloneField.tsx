@@ -5,7 +5,7 @@ import { DEFAULT_FIELD_STATUS } from '../statusTracking';
 import { Omit } from '../types';
 import { emptyFunction } from '../utils/emptyFunction';
 
-const stubFormApi = new FormApi({ model: {} });
+const stubFormApi = new FormApi<any>({ model: {} });
 
 export type StandaloneFieldProps<Value, CustomProps> =
   Omit<CustomProps, keyof InputProps<Value>>

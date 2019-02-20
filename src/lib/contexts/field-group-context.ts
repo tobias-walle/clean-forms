@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useContext } from 'react';
 import { Path } from '../utils';
 
 export interface FieldGroupContextValue {
@@ -7,3 +8,7 @@ export interface FieldGroupContextValue {
 }
 
 export const FieldGroupContext = React.createContext<FieldGroupContextValue>({});
+
+export function useFieldGroupContext(): FieldGroupContextValue {
+  return useContext(FieldGroupContext);
+}
