@@ -7,7 +7,7 @@ export interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElem
   showErrorIfDirty?: boolean;
 }
 
-export const renderInput: FieldRenderFunction<string | number, InputFieldProps> = ({
+export const renderInput: FieldRenderFunction<string | number, {}, InputFieldProps> = ({
   input: {
     name,
     value,

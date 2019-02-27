@@ -17,7 +17,7 @@ describe('selectDeepValidator', () => {
 
   it('should select item validation from array validation', () => {
     const validator = () => null;
-    const object: ArrayValidation = new ArrayValidation(validator);
+    const object = new ArrayValidation(validator);
     const path: Path = '0';
 
     const result = selectDeepValidator({ object, path });

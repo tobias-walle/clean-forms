@@ -4,7 +4,7 @@ import { isValidationResolver } from './isValidationResolver';
 import { ArrayValidation, ValidationDefinition, ValidationMapping } from './ValidationDefinition';
 
 export function getValidationDefinitionPaths(
-  validationDefinition: ValidationDefinition<any> | ArrayValidation,
+  validationDefinition: ValidationDefinition<any>,
   value: any,
   parentPath: Path = ''
 ): Paths {
@@ -42,7 +42,7 @@ export function getValidationDefinitionPathsForObject(
 }
 
 function getValidationDefinitionPathsForArray(
-  arrayValidation: ArrayValidation,
+  arrayValidation: ArrayValidation<any>,
   array: any[],
   parentPath: Path = ''
 ): Paths {

@@ -1,26 +1,31 @@
-export interface ValidationFunctionArgs<Value = any, Model = any> {
-  value: Value;
-  model: Model;
-}
-
 export type ValidationError = string | null;
 export type ValidationErrors = Array<[string, ValidationError]>;
 
-export type ValidationFunction<Value = any, Model = any> =
-  (args: ValidationFunctionArgs<Value, Model>) => ValidationError | ValidationErrors;
+type ArrayItemType<T> = T extends Array<infer U> ? U : never;
 
-export class ArrayValidation<Model = any, Item = any, ArrayType = Item[]> {
+export type ValidationFunction<Value = unknown> =
+  (value: Value) => ValidationError | ValidationErrors;
+
+export class ArrayValidation<Value = Array<unknown>> {
   constructor(
-    public readonly itemValidation: ValidationFunction<Item, Model> | ValidationMapping<Item> | ArrayValidation<Model> | null,
-    public readonly arrayValidation?: ValidationFunction<ArrayType, Model>
+    public readonly itemValidation: ValidationEntry<ArrayItemType<Value>> | null,
+    public readonly arrayValidation?: ValidationFunction<Value>
   ) {
   }
 }
 
-export type ValidationResolver<Value = any, Model = any> = ArrayValidation<Model, any, Value> | ValidationFunction<Value, Model>;
+export type ValidationResolver<Value> = Value extends any[]
+  ? ArrayValidation<Value>
+  : ValidationFunction<Value>;
 
-export interface ValidationMapping<Model> {
-  [key: string]: ValidationResolver<any, any> | ValidationMapping<any> ;
-}
+export type ValidationEntry<Value> = Value extends any[]
+  ? ArrayValidation<Value>
+  : Value extends object
+    ? ValidationFunction<Value> | ValidationMapping<Value>
+    : ValidationFunction<Value>;
 
-export type ValidationDefinition<Model> = ValidationResolver<Model, any> | ValidationMapping<Model>;
+export type ValidationMapping<Model> = {
+  [K in keyof Model]?: ValidationEntry<Model[K]>;
+};
+
+export type ValidationDefinition<Model> = ValidationResolver<Model> | ValidationMapping<Model>;

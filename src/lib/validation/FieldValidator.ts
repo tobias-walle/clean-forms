@@ -69,7 +69,7 @@ function runValidationFunctionIfDefined<Model>(value: any, model: Model, validat
   if (validationFunction == null) {
     return [];
   }
-  const validationResult = validationFunction({ value, model });
+  const validationResult = validationFunction(value);
   if (validationResult instanceof Array) {
     return validationResult
       .map(([path, error]): [string, FieldError] =>

@@ -56,7 +56,7 @@ describe('getValidationDefinitionPaths', () => {
 
   it('should work with value arrays', () => {
     const model = [0];
-    const arrayValidation = new ArrayValidation(
+    const arrayValidation = new ArrayValidation<any>(
       () => null
     );
     const expectedPaths: Paths = [
@@ -68,7 +68,7 @@ describe('getValidationDefinitionPaths', () => {
 
   it('should work with object arrays', () => {
     const model = [{ a: '' }];
-    const arrayValidation = new ArrayValidation(
+    const arrayValidation = new ArrayValidation<typeof model>(
       { a: () => null },
     );
     const expectedPaths: Paths = [
@@ -93,7 +93,7 @@ describe('getValidationDefinitionPaths', () => {
 
   it('should work with array validators in objects', () => {
     const model = { array: [{ a: '' }] };
-    const arrayValidation = new ArrayValidation(
+    const arrayValidation = new ArrayValidation<any>(
       { a: () => null },
       () => null
     );

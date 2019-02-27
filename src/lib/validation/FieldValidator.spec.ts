@@ -12,7 +12,7 @@ describe('validateModel', () => {
     const args: ValidateModelArguments<Model> = {
       model,
       validationDefinition: {
-        a: ({ value }) => value < 100 ? null : error
+        a: (value) => value < 100 ? null : error
       }
     };
 
@@ -31,7 +31,7 @@ describe('validateModel', () => {
     const args: ValidateModelArguments<Model> = {
       model,
       validationDefinition: {
-        a: ({ value }) => value < 100 ? null : errorMessage
+        a: (value) => value < 100 ? null : errorMessage
       }
     };
 
@@ -77,8 +77,8 @@ describe('validateModel', () => {
     const model: Model = { array: [{ a: 1, b: 'hello' }] };
     const error = 'Value has to be greater than 1';
     const validationDefinition = {
-      array: new ArrayValidation<Model, Item>(
-        { a: ({ value }) => value > 1 ? null : error },
+      array: new ArrayValidation<Item[]>(
+        { a: (value) => value > 1 ? null : error },
       )
     };
     const args: ValidateModelArguments<Model> = { model, validationDefinition };
@@ -96,8 +96,8 @@ describe('validateModel', () => {
     const model: Model = { array: [0, 1] };
     const error = 'Value has to be greater than 0';
     const validationDefinition = {
-      array: new ArrayValidation<Model, number>(
-        ({ value }) => value > 0 ? null : error
+      array: new ArrayValidation<number[]>(
+        (value) => value > 0 ? null : error
       )
     };
     const args: ValidateModelArguments<Model> = { model, validationDefinition };
@@ -120,8 +120,8 @@ describe('validateModel', () => {
     const model: Model = { array: [] };
     const error = 'Value has to be greater than 1';
     const validationDefinition = {
-      array: new ArrayValidation<Model, Item>(
-        { a: ({ value }) => value > 1 ? null : error },
+      array: new ArrayValidation<Item[]>(
+        { a: (value) => value > 1 ? null : error },
       )
     };
     const args: ValidateModelArguments<Model> = { model, validationDefinition };
@@ -144,9 +144,9 @@ describe('validateModel', () => {
     const model: Model = { array: [{ a: 1, b: 'hello' }] };
     const error = 'Array has to be bigger than 1';
     const validationDefinition = {
-      array: new ArrayValidation<Model, Item>(
+      array: new ArrayValidation<Item[]>(
         null,
-        ({ value }) => value.length > 1 ? null : error
+        (value) => value.length > 1 ? null : error
       )
     };
     const args: ValidateModelArguments<Model> = { model, validationDefinition };
@@ -171,8 +171,8 @@ describe('validateModel', () => {
     const validationDefinition: ValidationDefinition<Model> = {
       array: new ArrayValidation(
         new ArrayValidation(
-          new ArrayValidation<Model, Item>(
-            { a: ({ value }) => value > 1 ? null : error },
+          new ArrayValidation<Item[]>(
+            { a: (value) => value > 1 ? null : error },
           )),
       )
     };
@@ -196,7 +196,7 @@ describe('validateModel', () => {
       validationDefinition: {
         a: {
           b: {
-            c: ({ value }) => value < 100 ? null : error,
+            c: (value) => value < 100 ? null : error,
           }
         }
       }
@@ -222,11 +222,11 @@ it('should get validation status mapping', () => {
   };
   type Model = typeof model;
   const validationDefinition: ValidationDefinition<Model> = {
-    a: ({ value }) => value !== 0 ? null : 'Value cannot be 0',
+    a: (value) => value !== 0 ? null : 'Value cannot be 0',
     b: {
       c: {
-        d: ({ value }) => value > 1000 ? null : 'Value has to be greater than 1000',
-        e: ({ value }) => value === 0 ? null : 'Value has to be 0'
+        d: (value) => value > 1000 ? null : 'Value has to be greater than 1000',
+        e: (value) => value === 0 ? null : 'Value has to be 0'
       }
     }
   };
@@ -253,8 +253,8 @@ it('should work if the validator returns multiple errors', () => {
   };
   type Model = typeof model;
   const validationDefinition: ValidationDefinition<Model> = {
-    a: ({ value }) => value !== 0 ? null : 'Value cannot be 0',
-    b: ({ value }) => [
+    a: (value) => value !== 0 ? null : 'Value cannot be 0',
+    b: (value) => [
       ['c.d', value.c.d > 1000 ? null : 'Value has to be greater than 1000'],
       ['c.e', value.c.e === 0 ? null : 'Value has to be 0'],
       ['', 'Error'],

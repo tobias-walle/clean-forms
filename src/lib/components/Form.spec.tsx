@@ -185,7 +185,7 @@ describe('Form', () => {
 
   describe('Validation', () => {
     const minLengthErrorMessage = 'The value has to have more characters';
-    const minLength = (length: number): ValidationFunction => ({ value }) => value.length < length
+    const minLength = (length: number): ValidationFunction<{ length: number }> => value => value.length < length
       ? minLengthErrorMessage
       : null;
 
@@ -194,7 +194,7 @@ describe('Form', () => {
       address: {
         street: minLength(3)
       },
-      children: new ArrayValidation(
+      children: new ArrayValidation<Model[]>(
         {
           name: minLength(4)
         },
