@@ -1,14 +1,8 @@
 import * as React from 'react';
-import { memo, useCallback, useLayoutEffect } from 'react';
-import { FieldGroup, GetKey } from '.';
-import {
-  defaultFieldArrayContextValue,
-  FieldArrayContext,
-  FieldArrayContextValue
-} from '../contexts/field-array-context';
-import { useFieldGroupContext } from '../contexts/field-group-context';
-import { useFormContext } from '../contexts/form-context';
-import { createPath, selectDeep } from '../utils';
+import { memo, useCallback } from 'react';
+import { GetKey } from '.';
+import { FieldArrayContext, FieldArrayContextProvider } from '../contexts/field-array-context';
+import { FieldContextProvider } from '../contexts/field-context';
 
 export type AddItem<Item> = (item: Item) => void;
 
@@ -30,35 +24,21 @@ function _FieldArray<Item = any>({
   render,
   getKey
 }: FieldArrayProps<Item>) {
-  const { form, ...formContext } = useFormContext();
-  const groupContext = useFieldGroupContext();
-  const path = createPath(groupContext.path, name);
-  const identifier = createPath(groupContext.namespace, name);
-
-  const items = selectDeep({ object: form.model, path });
-
-  useLayoutEffect(() => {
-    formContext.onFieldMount(identifier);
-    return () => formContext.onFieldUnmount(identifier);
-  }, [identifier]);
-
-  const setArray = useCallback((newArray: Item[]) => {
-    formContext.onFieldChange(identifier, path, newArray);
-  }, [formContext.onFieldChange, identifier, path]);
-
-  const addItem: AddItem<Item> = useCallback((item) => {
-    const newArray = [...items, item];
-    setArray(newArray);
-  }, [items, setArray]);
-
-  const childContext: FieldArrayContextValue = getKey ? { getKey } : defaultFieldArrayContextValue;
+  const getIndexKey: GetKey<Item> = useCallback((_, index) => index, []);
 
   return (
-    <FieldGroup name={name}>
-      <FieldArrayContext.Provider value={childContext}>
-        {render({ addItem, items })}
-      </FieldArrayContext.Provider>
-    </FieldGroup>
+    <FieldContextProvider
+      relativeFieldPath={name}
+      relativeModelPath={name}
+    >
+      <FieldArrayContextProvider getKey={getKey || getIndexKey}>
+        <FieldArrayContext.Consumer>
+          {context => {
+            return context ? render(context) : null;
+          }}
+        </FieldArrayContext.Consumer>
+      </FieldArrayContextProvider>
+    </FieldContextProvider>
   );
 }
 

@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { FieldGroupContext, useFieldGroupContext } from '../contexts/field-group-context';
-import { createPath } from '../utils';
+import { FieldContextProvider } from '../contexts/field-context';
 
 export interface FieldGroupProps {
   name: string;
@@ -8,16 +7,18 @@ export interface FieldGroupProps {
   children?: React.ReactNode;
 }
 
-function _FieldGroup({ name, accessor, children }: FieldGroupProps) {
-  const parentContext = useFieldGroupContext();
-  const newContext = {
-    path: createPath(parentContext.path, accessor || name),
-    namespace: createPath(parentContext.namespace, name)
-  };
+function _FieldGroup({
+  name,
+  accessor = '',
+  children
+}: FieldGroupProps) {
   return (
-    <FieldGroupContext.Provider value={newContext}>
+    <FieldContextProvider
+      relativeModelPath={name}
+      relativeFieldPath={accessor}
+    >
       {children}
-    </FieldGroupContext.Provider>
+    </FieldContextProvider>
   );
 }
 

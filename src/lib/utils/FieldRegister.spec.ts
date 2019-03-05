@@ -1,4 +1,4 @@
-import { wait } from '../../testUtils/wait';
+import { delay } from '../../testUtils/delay';
 import { FieldRegister } from './FieldRegister';
 
 describe('FieldRegister', () => {
@@ -31,20 +31,20 @@ describe('FieldRegister', () => {
     fieldRegister.register(path1);
     fieldRegister.register(path2);
     fieldRegister.register(path3);
-    await wait(DEBOUNCE_TIME);
+    await delay(DEBOUNCE_TIME);
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveBeenCalledWith({ registered: [path1, path2, path3], unregistered: []});
 
     fieldRegister.unregister(path2);
-    await wait(DEBOUNCE_TIME);
+    await delay(DEBOUNCE_TIME);
 
     expect(listener).toHaveBeenCalledTimes(2);
     expect(listener).toHaveBeenCalledWith({ registered: [], unregistered: [path2]});
 
     fieldRegister.removeListener(listener);
     fieldRegister.register(path2);
-    await wait(DEBOUNCE_TIME);
+    await delay(DEBOUNCE_TIME);
 
     expect(listener).toHaveBeenCalledTimes(2);
   });

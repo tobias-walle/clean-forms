@@ -1,17 +1,15 @@
 import * as React from 'react';
-import { FieldRenderFunction } from '../lib/components/Field';
-import { createField } from '../lib/hocs/index';
+import { createField, FieldRenderFunction } from '../lib/hocs/index';
 
 export interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   showErrorIfDirty?: boolean;
 }
 
-export const renderInput: FieldRenderFunction<string | number, {}, InputFieldProps> = ({
+export const renderInput: FieldRenderFunction<string | number, InputFieldProps> = ({
   input: {
     name,
     value,
-    onFocus,
     onChange,
     onBlur,
     error,
@@ -37,7 +35,6 @@ export const renderInput: FieldRenderFunction<string | number, {}, InputFieldPro
           }
           onChange(newValue);
         }}
-        onFocus={onFocus}
         onBlur={onBlur}
         {...custom}
       />

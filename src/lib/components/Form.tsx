@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { memo, MutableRefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { FormApi, FormState } from '../api';
+import { FieldContext, FieldContextValue } from '../contexts/field-context';
 import {
   FormContext,
+  FormContextValue,
   OnFieldBlur,
   OnFieldChange,
   OnFieldFocus,
@@ -58,6 +60,12 @@ function _Form<Model = any>(props: FormProps<Model>) {
     onValidSubmit
   } = props;
   const { model } = state;
+
+  const setModel = useCallback(
+    (newModel: Model) => onChange && onChange({ model: newModel }),
+    [onChange]
+  );
+
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -186,7 +194,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     submit();
   }, [submit, formProps]);
 
-  const formContext = useMemo(() => ({
+  const formContext: FormContextValue<Model> = {
     form: api,
     onFieldBlur: handleFieldBlur,
     onFieldChange: handleFieldChange,
@@ -194,14 +202,32 @@ function _Form<Model = any>(props: FormProps<Model>) {
     onFieldMount: handleFieldMount,
     onFieldUnmount: handleFieldUnmount,
     setArrayGetKey
-  }), [api]);
+  };
+
+  const error = api.getFieldError('');
+  const markAsTouched = useCallback(() => handleFieldBlur(''), [handleFieldBlur]);
+
+  const rootFieldContext: FieldContextValue<Model> = {
+    fieldPath: '',
+    modelPath: '',
+    name: '',
+    value: model,
+    setValue: setModel,
+    markAsTouched,
+    error,
+    valid: !error,
+    invalid: !!error,
+    ...api.getFieldStatus('')
+  };
 
   return (
     <FormContext.Provider value={formContext}>
-      <form {...formProps} onSubmit={handleSubmit}>
-        {props.children}
-        {render && render(api)}
-      </form>
+      <FieldContext.Provider value={rootFieldContext}>
+        <form {...formProps} onSubmit={handleSubmit}>
+          {props.children}
+          {render && render(api)}
+        </form>
+      </FieldContext.Provider>
     </FormContext.Provider>
   );
 }

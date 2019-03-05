@@ -1,15 +1,15 @@
-export interface FieldStatusArguments<T = any> {
+export interface FieldStatusArguments {
   dirty: boolean;
   touched: boolean;
 }
 
-export class FieldStatus<T = any> {
+export class FieldStatus {
   public readonly dirty: boolean;
   public readonly pristine: boolean;
   public readonly touched: boolean;
   public readonly untouched: boolean;
 
-  constructor(args: FieldStatusArguments<T>) {
+  constructor(args: FieldStatusArguments) {
     const { dirty, touched } = args;
 
     this.dirty = dirty;
@@ -21,7 +21,7 @@ export class FieldStatus<T = any> {
 
 export const DEFAULT_FIELD_STATUS: FieldStatus = new FieldStatus({ dirty: false, touched: false });
 
-export function cloneFieldStatus<Children = any>(statusToClone: FieldStatus, overrideArgs: Partial<FieldStatusArguments<Children>>): FieldStatus {
+export function cloneFieldStatus<Children = any>(statusToClone: FieldStatus, overrideArgs: Partial<FieldStatusArguments>): FieldStatus {
   return new FieldStatus({
     ...(statusToClone as any),
     ...overrideArgs

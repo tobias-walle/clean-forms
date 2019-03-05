@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { memo, useCallback, useMemo } from 'react';
-import { FieldGroup } from '.';
+import { memo, useCallback } from 'react';
 import { useFieldArrayContext } from '../contexts/field-array-context';
-import { useFieldGroupContext } from '../contexts/field-group-context';
-import { useFormContext } from '../contexts/form-context';
-import { createPath, DELETE, selectDeep } from '../utils';
+import { FieldContext, FieldContextProvider, FieldContextValue, useFieldContext } from '../contexts/field-context';
+import { DELETE } from '../utils';
 
 export type SetArray<Item> = (newArray: Item[]) => void;
 
@@ -24,18 +22,11 @@ export interface FieldArrayItemsProps<Item> {
 }
 
 function _FieldArrayItems<Item = any>(props: FieldArrayItemsProps<Item>) {
-  const { form, ...formContext } = useFormContext();
-  const { path = '', namespace = '' } = useFieldGroupContext();
   const { getKey } = useFieldArrayContext();
-
-  const array: Item[] = useMemo(
-    () => selectDeep({ object: form.model, path }),
-    [form.model, path]
-  );
-
-  const setArray: SetArray<Item> = useCallback((newArray): void => {
-    formContext.onFieldChange(namespace, path, newArray);
-  }, [formContext.onFieldChange, namespace, path]);
+  const {
+    value: array,
+    setValue: setArray
+  } = useFieldContext<Item[]>();
 
   return (
     <>
@@ -67,32 +58,30 @@ function _FieldArrayItem<Item>({
     render
   }
 }: FieldArrayItemProps<Item>) {
-  const formContext = useFormContext();
   const { getKey } = useFieldArrayContext();
-  const groupContext = useFieldGroupContext();
-
-  const name = String(getKey(item, index));
-  const accessor = String(index);
-
-  const path = createPath(groupContext.path, index);
-  const identifier = createPath(groupContext.namespace, name);
-
-  const removeItem = useCallback(() => {
-    formContext.onFieldChange(identifier, path, DELETE);
-  }, [formContext.onFieldChange, identifier, path]);
-
-  return (
-    <FieldGroup
-      name={name}
-      accessor={accessor}
-    >
-      {render({
-        remove: removeItem,
+  const relativeFieldPath = String(getKey(item, index));
+  const relativeModelPath = String(index);
+  const renderItem = useCallback(
+    (fieldContext: FieldContextValue<Item>) => (
+      render({
+        remove: () => fieldContext.setValue(DELETE as any),
         setArray,
         index,
         item
-      })}
-    </FieldGroup>
+      })
+    ),
+    [render, setArray, index, item]
+  );
+
+  return (
+    <FieldContextProvider
+      relativeFieldPath={relativeFieldPath}
+      relativeModelPath={relativeModelPath}
+    >
+      <FieldContext.Consumer>
+        {renderItem as any}
+      </FieldContext.Consumer>
+    </FieldContextProvider>
   );
 }
 

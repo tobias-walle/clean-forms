@@ -1,4 +1,4 @@
-import { wait } from '../../testUtils/wait';
+import { delay } from '../../testUtils/delay';
 import { createDebouncedFunction } from './createDebouncedFunction';
 
 describe('createDebouncedFunction', () => {
@@ -10,11 +10,11 @@ describe('createDebouncedFunction', () => {
 
     expect(myFunction).not.toBeCalled();
 
-    await wait(10);
+    await delay(10);
     debouncedFunction();
     expect(myFunction).not.toBeCalled();
 
-    await wait(100);
+    await delay(100);
 
     expect(myFunction).toHaveBeenCalledTimes(1);
   });
@@ -25,7 +25,7 @@ describe('createDebouncedFunction', () => {
 
     debouncedFunction(123, 'test');
 
-    await wait(100);
+    await delay(100);
 
     expect(myFunction).toHaveBeenCalledWith(123, 'test');
   });

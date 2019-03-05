@@ -1,10 +1,9 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { renderInput } from '../../testUtils/InputField';
-import { FormApi } from '../api';
-import { InputProps } from '../components';
 import { DEFAULT_FIELD_STATUS } from '../statusTracking';
 import { emptyFunction } from '../utils/emptyFunction';
+import { InputProps } from './createField';
 import { createStandaloneField } from './createStandaloneField';
 
 describe('createStandaloneField', () => {
@@ -21,15 +20,13 @@ describe('createStandaloneField', () => {
       value,
       onBlur: emptyFunction,
       onChange: emptyFunction,
-      onFocus: emptyFunction,
       error: undefined,
       valid: true,
-      inValid: false
+      invalid: false
     };
     expect(renderFn).toHaveBeenCalledWith({
       input: expectedInput,
-      custom: expect.objectContaining(customProps),
-      form: expect.any(FormApi),
+      custom: expect.objectContaining(customProps)
     });
   });
 

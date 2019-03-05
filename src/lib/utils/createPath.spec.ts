@@ -12,7 +12,7 @@ describe('createPath', () => {
   });
 
   it('should create a path without name', () => {
-    const path = createPath('group1', null);
-    expect(path).toEqual('group1');
+    expect(createPath('group1', null)).toEqual('group1');
+    expect(createPath('group1', '')).toEqual('group1');
   });
 });
