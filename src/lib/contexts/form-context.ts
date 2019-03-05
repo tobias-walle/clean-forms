@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import * as React from 'react';
-import { FormApi } from '../api';
 import { GetKey } from '../components';
+import { FormReadApi } from '../hooks/useFormReadApi';
 import { assertNotNull, Path } from '../utils';
 
 export type OnFieldMount = (id: string) => void;
@@ -16,8 +16,7 @@ export type OnFieldChange<Model> = (id: string, path: Path, value: any) => void;
 
 export type SetArrayGetKey = (id: Path, getKey: GetKey<any>) => void;
 
-export interface FormContextValue<Model> {
-  form: FormApi<Model>;
+export interface FormContextValue<Model> extends FormReadApi<Model> {
   onFieldMount: OnFieldMount;
   onFieldUnmount: OnFieldUnmount;
   onFieldFocus: OnFieldFocus;

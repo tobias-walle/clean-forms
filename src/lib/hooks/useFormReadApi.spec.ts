@@ -1,30 +1,25 @@
+import { renderHook } from 'react-hooks-testing-library';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../statusTracking/FieldStatusMapping';
-import { FormApi } from './FormApi';
+import { FormReadApi, useFormReadApi } from './useFormReadApi';
 
 describe('FormApi', () => {
   let model: any;
   let status: FieldStatusMapping;
-  let api: FormApi<any>;
+  let api: FormReadApi<any>;
   let aFieldStatus: FieldStatus;
 
   beforeEach(() => {
     model = { a: 1, b: 2 };
     aFieldStatus = new FieldStatus({ dirty: true, touched: true });
     status = { a: aFieldStatus };
-    api = new FormApi<any>(
-      { model, status },
-      {},
-      { a: 'Error' }
-    );
-  });
+    const { result } = renderHook(() => useFormReadApi({
+      state: { model, status },
+      validationDefinition: {},
+      fieldErrorMapping: { a: 'Error' }
+    }));
 
-  it('should provide status', () => {
-    expect(api.status).toBe(status);
-  });
-
-  it('should provide model', () => {
-    expect(api.model).toBe(model);
+    api = result.current;
   });
 
   it('should get value for a specific field', () => {
@@ -45,13 +40,17 @@ describe('FormApi', () => {
   });
 
   it('should get valid/inValid for an invalid form', () => {
-    expect(api.inValid).toBe(true);
+    expect(api.invalid).toBe(true);
     expect(api.valid).toBe(false);
   });
 
   it('should get valid/inValid for an valid form', () => {
-    api = new FormApi({ model });
-    expect(api.inValid).toBe(false);
+    const { result } = renderHook(() => useFormReadApi({
+      state: { model }
+    }));
+    api = result.current;
+
+    expect(api.invalid).toBe(false);
     expect(api.valid).toBe(true);
   });
 });

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { memo, MutableRefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { FormApi, FormState } from '../api';
 import { FieldContext, FieldContextValue } from '../contexts/field-context';
 import {
   FormContext,
@@ -12,7 +11,9 @@ import {
   OnFieldUnmount,
   SetArrayGetKey
 } from '../contexts/form-context';
-import { cloneFieldStatus, FieldStatusMapping } from '../statusTracking';
+import { useFormReadApi } from '../hooks/useFormReadApi';
+import { FormState } from '../models';
+import { cloneFieldStatus } from '../statusTracking';
 import { FieldStatusUpdater } from '../statusTracking/FieldStatusUpdater';
 import { FieldRegister, FieldRegisterChanges, Path } from '../utils';
 import { StateUpdater } from '../utils/StateUpdater';
@@ -21,9 +22,7 @@ import { FieldErrorMapping, validateModel, ValidationDefinition } from '../valid
 import { GetKey } from './FieldArrayItems';
 
 export type OnChange<Model> = (state: FormState<Model>) => void;
-export type OnSubmit<Model> = (form: FormApi<Model>) => void;
-
-export type RenderForm<Model> = React.FunctionComponent<FormApi<Model>>;
+export type OnSubmit<Model> = () => void;
 
 export interface FormProps<Model> {
   state: FormState<Model>;
@@ -32,7 +31,6 @@ export interface FormProps<Model> {
   onValidSubmit?: OnSubmit<Model>;
   onInValidSubmit?: OnSubmit<Model>;
   validation?: ValidationDefinition<Model>;
-  render?: RenderForm<Model>;
   formProps?: JSX.IntrinsicElements['form'];
   children?: React.ReactNode;
 }
@@ -52,14 +50,13 @@ function _Form<Model = any>(props: FormProps<Model>) {
   const {
     state,
     validation,
-    render,
     formProps,
     onChange,
     onSubmit,
     onInValidSubmit,
     onValidSubmit
   } = props;
-  const { model } = state;
+  const { model, status = {} } = state;
 
   const setModel = useCallback(
     (newModel: Model) => onChange && onChange({ model: newModel }),
@@ -68,9 +65,6 @@ function _Form<Model = any>(props: FormProps<Model>) {
 
   const stateRef = useRef(state);
   stateRef.current = state;
-
-  useLayoutEffect(() => {
-  }, [state.status]);
 
   // PropsStateUpdaterRef
   const propsStateUpdaterRef = useRef(new StateUpdater<FormState<Model>>(
@@ -83,28 +77,29 @@ function _Form<Model = any>(props: FormProps<Model>) {
 
   // ArrayGetKeyMapping
   const arrayGetKeyMappingRef = useRef<Map<string, GetKey<any>>>(new Map());
+
   const setArrayGetKey: SetArrayGetKey = useCallback((path, getKey) => {
     arrayGetKeyMappingRef.current.set(path, getKey);
   }, []);
+
   const removeArrayGetKeyFunction = useCallback((path: Path) => {
     arrayGetKeyMappingRef.current.delete(path);
   }, []);
 
   // FieldRegisterRef
   const handleFieldRegisterChanges = useCallback((changes: FieldRegisterChanges): void => {
-    let status = state.status || {};
-
+    let updatedStatus = status;
     changes.registered.forEach((newPath) => {
-      status = fieldStatusUpdaterRef.current.addIfFieldNotExists(status, newPath);
+      updatedStatus = fieldStatusUpdaterRef.current.addIfFieldNotExists(updatedStatus, newPath);
     });
 
     changes.unregistered.forEach((removedPath) => {
-      status = fieldStatusUpdaterRef.current.removeIfFieldExists(status, removedPath);
+      updatedStatus = fieldStatusUpdaterRef.current.removeIfFieldExists(updatedStatus, removedPath);
       removeArrayGetKeyFunction(removedPath);
     });
 
-    propsStateUpdaterRef.current.patch({ status });
-  }, [state.status]);
+    propsStateUpdaterRef.current.patch({ status: updatedStatus });
+  }, [status, removeArrayGetKeyFunction]);
 
   const fieldsRegisterRef = useRef(new FieldRegister());
   useLayoutEffect(() => {
@@ -125,12 +120,13 @@ function _Form<Model = any>(props: FormProps<Model>) {
     [model, validation]
   );
 
-  const api = useMemo(() => new FormApi<Model>(
-    state,
-    validation,
-    fieldErrorMapping
-  ), [state, validation, fieldErrorMapping]);
-  // API End
+  const {
+    valid,
+    invalid,
+    getFieldStatus,
+    getFieldError,
+    getFieldValue
+  } = useFormReadApi({ state, validationDefinition: validation, fieldErrorMapping });
 
   // Callbacks
   const handleFieldMount: OnFieldMount = useCallback((path) => {
@@ -150,7 +146,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
   }, []);
 
   const handleFieldBlur: OnFieldBlur = useCallback((path) => {
-    const newStatus = cloneFieldStatus(api.getFieldStatus(path), { touched: true });
+    const newStatus = cloneFieldStatus(getFieldStatus(path), { touched: true });
     propsStateUpdaterRef.current.update((oldState) => ({
       ...oldState,
       status: {
@@ -158,32 +154,31 @@ function _Form<Model = any>(props: FormProps<Model>) {
         [path]: newStatus
       }
     }));
-  }, [api]);
+  }, [getFieldStatus]);
 
   const handleFieldChange: OnFieldChange<Model> = useCallback((id, path, value) => {
     propsStateUpdaterRef.current.updateDeep(`model.${path}`, value, true);
 
-    let status: FieldStatusMapping = api.status;
-    status = fieldStatusUpdaterRef.current.markAsDirty(status, id);
+    const updatedStatus = fieldStatusUpdaterRef.current.markAsDirty(status, id);
 
-    propsStateUpdaterRef.current.patch({ status });
-  }, [api]);
+    propsStateUpdaterRef.current.patch({ status: updatedStatus });
+  }, [status]);
   // Callbacks End
 
   const markAllAsTouched = useCallback(() => {
-    const status = fieldStatusUpdaterRef.current.markAllAsTouched(api.status);
-    propsStateUpdaterRef.current.patch({ status });
-  }, [api]);
+    const updatedStatus = fieldStatusUpdaterRef.current.markAllAsTouched(status);
+    propsStateUpdaterRef.current.patch({ status: updatedStatus });
+  }, [status]);
 
   const submit = useCallback(() => {
     markAllAsTouched();
-    onSubmit && onSubmit(api);
-    if (api.valid) {
-      onValidSubmit && onValidSubmit(api);
+    onSubmit && onSubmit();
+    if (valid) {
+      onValidSubmit && onValidSubmit();
     } else {
-      onInValidSubmit && onInValidSubmit(api);
+      onInValidSubmit && onInValidSubmit();
     }
-  }, [api, onSubmit, onValidSubmit, onInValidSubmit, markAllAsTouched]);
+  }, [markAllAsTouched, onSubmit, valid, onValidSubmit, onInValidSubmit]);
 
   const handleSubmit = useCallback((event: React.FormEvent<any>) => {
     event.stopPropagation();
@@ -195,7 +190,11 @@ function _Form<Model = any>(props: FormProps<Model>) {
   }, [submit, formProps]);
 
   const formContext: FormContextValue<Model> = {
-    form: api,
+    valid,
+    invalid,
+    getFieldStatus,
+    getFieldError,
+    getFieldValue,
     onFieldBlur: handleFieldBlur,
     onFieldChange: handleFieldChange,
     onFieldFocus: handleFieldFocus,
@@ -204,7 +203,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     setArrayGetKey
   };
 
-  const error = api.getFieldError('');
+  const error = getFieldError('');
   const markAsTouched = useCallback(() => handleFieldBlur(''), [handleFieldBlur]);
 
   const rootFieldContext: FieldContextValue<Model> = {
@@ -217,7 +216,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     error,
     valid: !error,
     invalid: !!error,
-    ...api.getFieldStatus('')
+    ...getFieldStatus('')
   };
 
   return (
@@ -225,7 +224,6 @@ function _Form<Model = any>(props: FormProps<Model>) {
       <FieldContext.Provider value={rootFieldContext}>
         <form {...formProps} onSubmit={handleSubmit}>
           {props.children}
-          {render && render(api)}
         </form>
       </FieldContext.Provider>
     </FormContext.Provider>

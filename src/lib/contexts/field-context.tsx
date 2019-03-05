@@ -69,20 +69,24 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
     return () => formContext.onFieldUnmount(fieldPath);
   }, [formContext.onFieldMount, fieldPath]);
 
-  const form = formContext.form;
+  const {
+    getFieldValue,
+    getFieldStatus,
+    getFieldError
+  } = formContext;
   const value = useMemo(
-    () => form.getFieldValue(modelPath),
-    [form, modelPath]
+    () => getFieldValue(modelPath),
+    [getFieldValue, modelPath]
   );
 
   const error = useMemo(
-    () => form.getFieldError(modelPath),
-    [form, modelPath]
+    () => getFieldError(modelPath),
+    [getFieldError, modelPath]
   );
 
   const fieldStatus = useMemo(
-    () => form.getFieldStatus(fieldPath),
-    [form, fieldPath]
+    () => getFieldStatus(fieldPath),
+    [getFieldStatus, fieldPath]
   );
 
   const setValue: SetFieldValue<Value | DELETE> = useCallback(
