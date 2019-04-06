@@ -1,5 +1,14 @@
 import * as React from 'react';
-import { memo, MutableRefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import {
+  FormEventHandler,
+  memo,
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef
+} from 'react';
 import { FieldContext, FieldContextValue } from '../contexts/field-context';
 import {
   FormContext,
@@ -22,14 +31,14 @@ import { FieldErrorMapping, validateModel, ValidationDefinition } from '../valid
 import { GetKey } from './FieldArrayItems';
 
 export type OnChange<Model> = (state: FormState<Model>) => void;
-export type OnSubmit<Model> = () => void;
+export type OnSubmit = FormEventHandler<HTMLFormElement>;
 
 export interface FormProps<Model> {
   state: FormState<Model>;
   onChange?: OnChange<Model>;
-  onSubmit?: OnSubmit<Model>;
-  onValidSubmit?: OnSubmit<Model>;
-  onInValidSubmit?: OnSubmit<Model>;
+  onSubmit?: OnSubmit;
+  onValidSubmit?: OnSubmit;
+  onInValidSubmit?: OnSubmit;
   validation?: ValidationDefinition<Model>;
   formProps?: JSX.IntrinsicElements['form'];
   children?: React.ReactNode;
@@ -170,23 +179,23 @@ function _Form<Model = any>(props: FormProps<Model>) {
     propsStateUpdaterRef.current.patch({ status: updatedStatus });
   }, [status]);
 
-  const submit = useCallback(() => {
+  const submit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     markAllAsTouched();
-    onSubmit && onSubmit();
+    onSubmit && onSubmit(event);
     if (valid) {
-      onValidSubmit && onValidSubmit();
+      onValidSubmit && onValidSubmit(event);
     } else {
-      onInValidSubmit && onInValidSubmit();
+      onInValidSubmit && onInValidSubmit(event);
     }
   }, [markAllAsTouched, onSubmit, valid, onValidSubmit, onInValidSubmit]);
 
-  const handleSubmit = useCallback((event: React.FormEvent<any>) => {
+  const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.stopPropagation();
     event.preventDefault();
 
     formProps && formProps.onSubmit && formProps.onSubmit(event);
 
-    submit();
+    submit(event);
   }, [submit, formProps]);
 
   const formContext: FormContextValue<Model> = {
