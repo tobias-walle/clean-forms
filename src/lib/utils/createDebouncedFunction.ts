@@ -7,6 +7,6 @@ export function createDebouncedFunction(func: (...args: any[]) => any, debounceT
     };
 
     timeout && clearTimeout(timeout);
-    timeout = setTimeout(toCall, debounceTime);
+    timeout = window.setTimeout(toCall, debounceTime);
   };
 }
