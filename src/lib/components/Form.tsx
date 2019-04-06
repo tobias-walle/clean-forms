@@ -114,7 +114,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
   useLayoutEffect(() => {
     fieldsRegisterRef.current.addListener(handleFieldRegisterChanges);
     return () => fieldsRegisterRef.current.removeListener(handleFieldRegisterChanges);
-  }, []);
+  }, [handleFieldRegisterChanges]);
   // FieldRegisterRef END
 
   const fieldStatusUpdaterRef = useRef(new FieldStatusUpdater(fieldsRegisterRef.current));
@@ -148,7 +148,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
       return;
     }
     fieldsRegisterRef.current.unregister(path);
-  }, []);
+  }, [isMountedRef]);
 
   const handleFieldFocus: OnFieldFocus = useCallback((path) => {
     // Ignore for now

@@ -22,7 +22,7 @@ export function createField<Value, CustomProps = {}>(
         input: createInputProps(fieldContext),
         custom: custom as any
       }),
-      [createInputProps, custom]
+      [custom]
     );
 
     return (

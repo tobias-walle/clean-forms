@@ -67,7 +67,7 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
   useLayoutEffect(() => {
     formContext.onFieldMount(fieldPath);
     return () => formContext.onFieldUnmount(fieldPath);
-  }, [formContext.onFieldMount, fieldPath]);
+  }, [formContext.onFieldMount, fieldPath, formContext]);
 
   const {
     getFieldValue,
@@ -91,12 +91,12 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
 
   const setValue: SetFieldValue<Value | DELETE> = useCallback(
     valueOrUpdate => formContext.onFieldChange(fieldPath, modelPath, valueOrUpdate),
-    [formContext.onFieldChange, fieldPath, modelPath]
+    [formContext, fieldPath, modelPath]
   );
 
   const markAsTouched: MarkAsTouched = useCallback(() => {
     formContext.onFieldBlur(fieldPath);
-  }, [formContext.onFieldBlur, fieldPath]);
+  }, [formContext, fieldPath]);
 
   const contextValue: FieldContextValue<Value> = {
     ...fieldStatus,
