@@ -3,7 +3,7 @@ sudo: required
 language: node_js
 
 node_js:
-  - "node"
+  - '11'
 
 cache:
   directories:
@@ -11,9 +11,6 @@ cache:
 
 notifications:
   email: true
-
-node_js:
-  - '9'
 
 before_install:
   - npm install -g yarn@latest
