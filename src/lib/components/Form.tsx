@@ -7,7 +7,8 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from 'react';
 import { FieldContext, FieldContextValue } from '../contexts/field-context';
 import {
@@ -110,14 +111,14 @@ function _Form<Model = any>(props: FormProps<Model>) {
     propsStateUpdaterRef.current.patch({ status: updatedStatus });
   }, [status, removeArrayGetKeyFunction]);
 
-  const fieldsRegisterRef = useRef(new FieldRegister());
+  const [fieldRegister, setFieldRegister] = useState(new FieldRegister());
   useLayoutEffect(() => {
-    fieldsRegisterRef.current.addListener(handleFieldRegisterChanges);
-    return () => fieldsRegisterRef.current.removeListener(handleFieldRegisterChanges);
-  }, [handleFieldRegisterChanges]);
+    fieldRegister.addListener(handleFieldRegisterChanges);
+    return () => fieldRegister.removeListener(handleFieldRegisterChanges);
+  }, [fieldRegister, handleFieldRegisterChanges]);
   // FieldRegisterRef END
 
-  const fieldStatusUpdaterRef = useRef(new FieldStatusUpdater(fieldsRegisterRef.current));
+  const fieldStatusUpdaterRef = useRef(new FieldStatusUpdater(fieldRegister));
 
   const isMountedRef = useIsMounted();
 
@@ -139,16 +140,16 @@ function _Form<Model = any>(props: FormProps<Model>) {
 
   // Callbacks
   const handleFieldMount: OnFieldMount = useCallback((path) => {
-    fieldsRegisterRef.current.register(path);
-  }, []);
+    fieldRegister.register(path);
+  }, [fieldRegister]);
 
   const handleFieldUnmount: OnFieldUnmount = useCallback((path) => {
     if (!isMountedRef.current) {
       // Cancel if the form is not mounted anymore
       return;
     }
-    fieldsRegisterRef.current.unregister(path);
-  }, [isMountedRef]);
+    fieldRegister.unregister(path);
+  }, [fieldRegister, isMountedRef]);
 
   const handleFieldFocus: OnFieldFocus = useCallback((path) => {
     // Ignore for now

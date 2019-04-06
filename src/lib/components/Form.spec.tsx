@@ -36,12 +36,12 @@ describe('Form', () => {
   }
 
   function ModelFields(inputProps: Partial<InputFieldProps>) {
-    const renderChildItem: FieldArrayItemsRender<Model> = ({ remove }) => (
+    const renderChildItem: FieldArrayItemsRender<Model> = useCallback(({ remove }) => (
       <div>
         <ModelFields {...inputProps}/>
         <button type="button" onClick={remove}>Remove</button>
       </div>
-    );
+    ), [inputProps]);
 
     const renderChildren: FieldArrayRender<Model> = useCallback(({ addItem }) => (
       <>
