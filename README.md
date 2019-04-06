@@ -5,123 +5,90 @@
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![npm version](https://badge.fury.io/js/clean-forms.svg)](https://badge.fury.io/js/clean-forms)
 
-React Forms solved ✔
+Forms can be complex and React does not provide a build-in solution to solve this
+problem. This library provides components to write readable forms that focus
+on maintainability.
 
 ## Features
 
-* Input Validation
-* Dirty/Touched state tracking
-* Full Typescript support
-* Controlled Forms
-* Clean Interface
-* Can be used with React State, Redux, etc...
+- Input Validation
+- Dirty/Touched state tracking
+- Full Typescript support
+- Controlled data flow
 
-## Example
+## Getting Started
 
-![Example](media/example.gif)
+In `Clean Forms` every form is composed of `Field`s. A `Field` wraps an component
+to connect it to the api. Let's create a simple `Field` for an text input.
+We define how the given value is rendered and updated and how errors are displayed.
 
-```typescript
-import * as React from 'react';
-import {
-  FormState, FieldGroup, Form, createField,
-  ValidationDefinition, ValidationFunction
-} from 'clean-forms';
+```typescript jsx
+// InputField.tsx
+import React from 'react';
+import { createField } from 'clean-forms';
 
-interface Model {
-  username: string;
-  password: string;
-  realName: {
-    first: string;
-    last: string;
-  };
-}
-
-type MyFormState = FormState<Model>;
-
-export class MyForm extends React.Component<{}, MyFormState> {
-  public state: MyFormState = {
-    model: {
-      username: '',
-      password: '',
-      realName: {
-        first: '',
-        last: '',
-      }
-    }
-  };
-  private validation: ValidationDefinition<Model> = {
-    username: required,
-    password: required,
-    realName: {
-      first: required,
-      last: required,
-    }
-  };
-
-  public render() {
-    return (
-      <Form
-        state={this.state}
-        validation={this.validation}
-        onChange={this.onChange}
-        onValidSubmit={() => console.log('Submit Successful')}
-      >
-        <Input name={'username'} label={'Username'}/>
-        <Input name={'password'} label={'Password'} type={'password'}/>
-        <FieldGroup name={'realName'}>
-          <Input name={'first'} label={'First Name'}/>
-          <Input name={'last'} label={'Last Name'}/>
-        </FieldGroup>
-        <div>
-          <button>Submit</button>
-        </div>
-      </Form>
-    );
-  }
-
-  private onChange = (newState: MyFormState): void => {
-    this.setState(newState);
-  };
-}
-
-// Validation Functions
-const required: ValidationFunction<string> =
-  ({ value }) => value === ''
-    ? 'The field is required'
-    : null;
-
-// Create the Input
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputFieldProps {
   label: string;
 }
 
-export const Input = createField<string | number, InputProps>(({
-  input: {
-    name,
-    onFocus,
-    onChange,
-    onBlur,
-    error,
-    touched
-  },
-  custom
-}) => {
-  return (
-    <div>
-      <label>
-        <span>{custom.label}: </span>
+export const InputField = createField<
+  string,
+  InputFieldProps & JSX.IntrinsicElements['input']
+>(
+  ({
+    input: { value, name, onChange, onBlur },
+    custom: { label, ...other },
+  }) => {
+    return (
+      <div>
         <input
+          value={value}
           name={name}
           onChange={event => onChange(event.target.value)}
-          onFocus={onFocus}
           onBlur={onBlur}
-          {...custom}
+          placeholder={label}
+          {...other}
         />
-        <span>{touched ? error : ''}</span>
-      </label>
-    </div>
-  );
-});
-
+      </div>
+    );
+  }
+);
 ```
 
+Next, let's build our actual form! We use the "name" property on our fields to define which
+value is mapped to the field.
+
+```typescript jsx
+// LoginForm.tsx
+import React, { useState, useCallback } from 'react';
+import { Form } from 'clean-forms';
+import { InputField } from './InputField';
+
+const initialValue = {
+  username: '',
+  password: '',
+};
+
+export function LoginForm() {
+  const [formState, setFormState] = useState({
+    model: initialValue,
+  });
+
+  const handleSubmit = () => {
+    alert(JSON.stringify(formState.model, null, 2));
+  };
+
+  return (
+    <Form state={formState} onChange={setFormState} onSubmit={handleSubmit}>
+      <InputField label="Username" name="username" />
+      <InputField label="Password" name="password" type="password" />
+      <div>
+        <button type="submit">Submit</button>
+      </div>
+    </Form>
+  );
+}
+```
+
+Thats it! We created a simple login form. You can checkout the example
+on [Code Sandbox](https://codesandbox.io/s/2p692n3y2r).
