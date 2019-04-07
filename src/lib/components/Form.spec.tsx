@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { act, cleanup, fireEvent, render } from 'react-testing-library';
 import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup } from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
 import { useFormState } from '../hooks/useFormState';
+import { FormState } from '../models';
 import { ArrayValidation, ValidationDefinition, ValidationFunction } from '../validation';
 import { Form, FormProps } from './Form';
 
@@ -182,6 +183,41 @@ describe('Form', () => {
     fireEvent.click(getByText('Submit'));
 
     expect(props.onSubmit).toHaveBeenCalled();
+  });
+
+  it('should use the "accessor" on the FieldGroup as a key to access the value', () => {
+    function MyForm() {
+      const [state, setState] = useState<FormState<any>>({
+        model: {
+          items: [
+            { a: 'x' },
+            { a: 'y' },
+          ],
+        },
+      });
+
+      return (
+        <Form
+          state={state}
+          onChange={setState}
+        >
+          <FieldArray
+            name="items"
+            getKey={i => i.a}
+            render={() => (
+              <FieldGroup
+                name="x"
+                accessor="0"
+              >
+                <InputField name="a"/>
+              </FieldGroup>
+            )}
+          />
+        </Form>
+      );
+    }
+
+    expect(() => render(<MyForm/>)).not.toThrowError();
   });
 
   describe('Validation', () => {

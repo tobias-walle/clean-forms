@@ -9,13 +9,13 @@ export interface FieldGroupProps {
 
 function _FieldGroup({
   name,
-  accessor = '',
+  accessor = name,
   children
 }: FieldGroupProps) {
   return (
     <FieldContextProvider
-      relativeModelPath={name}
-      relativeFieldPath={accessor}
+      relativeModelPath={accessor}
+      relativeFieldPath={name}
     >
       {children}
     </FieldContextProvider>
