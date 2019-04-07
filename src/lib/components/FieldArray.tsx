@@ -42,4 +42,5 @@ function _FieldArray<Item = any>({
   );
 }
 
-export const FieldArray: typeof _FieldArray = memo(_FieldArray) as any;
+export type FieldArray = typeof _FieldArray;
+export const FieldArray: FieldArray = memo(_FieldArray) as any;

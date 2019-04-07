@@ -23,3 +23,4 @@ function _FieldGroup({
 }
 
 export const FieldGroup = React.memo(_FieldGroup);
+export type FieldGroup = typeof FieldGroup;

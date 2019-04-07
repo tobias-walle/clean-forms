@@ -41,7 +41,8 @@ function _FieldArrayItems<Item = any>(props: FieldArrayItemsProps<Item>) {
   );
 }
 
-export const FieldArrayItems: typeof _FieldArrayItems = memo(_FieldArrayItems) as any;
+export type FieldArrayItems = typeof _FieldArrayItems;
+export const FieldArrayItems: FieldArrayItems = memo(_FieldArrayItems) as any;
 
 interface FieldArrayItemProps<Item> {
   index: number;

@@ -240,4 +240,5 @@ function _Form<Model = any>(props: FormProps<Model>) {
   );
 }
 
-export const Form: typeof _Form = memo(_Form) as any;
+export type Form = typeof _Form;
+export const Form: Form = memo(_Form) as any;
