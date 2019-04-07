@@ -74,6 +74,6 @@ export function LoginForm() {
 }
 
 function Logger(props: { name: string, children: React.ReactElement }) {
-  console.log('R', props.name);
+  console.info('R', props.name);
   return props.children;
 }
