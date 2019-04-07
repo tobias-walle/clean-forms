@@ -20,9 +20,9 @@ export function createField<Value, CustomProps = {}>(
     const renderChildren = useCallback(
       (fieldContext: FieldContextValue<Value>) => render({
         input: createInputProps(fieldContext),
-        custom: custom as any
+        custom: custom as any,
       }),
-      [custom]
+      [custom],
     );
 
     return (
@@ -40,18 +40,32 @@ export function createField<Value, CustomProps = {}>(
 }
 
 function createInputProps<Value>(
-  fieldContext: FieldContextValue<Value>
+  fieldContext: FieldContextValue<Value>,
 ): InputProps<Value> {
   const {
     markAsTouched,
     setValue,
-    ...fieldContextRest
+    value,
+    error,
+    valid,
+    invalid,
+    touched,
+    untouched,
+    pristine,
+    dirty,
   } = fieldContext;
 
   return {
     onBlur: markAsTouched,
     onChange: setValue,
-    ...fieldContextRest
+    value,
+    error,
+    valid,
+    invalid,
+    touched,
+    untouched,
+    pristine,
+    dirty,
   };
 }
 
