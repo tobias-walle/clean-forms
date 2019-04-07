@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useFieldArrayContext } from '../contexts/field-array-context';
 import { FieldContext, FieldContextProvider, FieldContextValue, useFieldContext } from '../contexts/field-context';
 import { DELETE } from '../utils';
@@ -15,7 +15,7 @@ export interface InnerFieldArrayItemProps<Item> {
 
 export type GetKey<Item> = (item: Item, index: number) => any;
 
-export type FieldArrayItemsRender<Item> = (props: InnerFieldArrayItemProps<Item>) => React.ReactNode;
+export type FieldArrayItemsRender<Item> = (props: InnerFieldArrayItemProps<Item>) => React.ReactElement;
 
 export interface FieldArrayItemsProps<Item> {
   render: FieldArrayItemsRender<Item>;
@@ -25,18 +25,25 @@ function _FieldArrayItems<Item = any>(props: FieldArrayItemsProps<Item>) {
   const { getKey } = useFieldArrayContext();
   const {
     value: array,
-    setValue: setArray
+    setValue: setArray,
   } = useFieldContext<Item[]>();
+  const { render } = props;
 
-  return (
-    <>
-      {array.map((item, index) => <FieldArrayItem<Item>
+  const elements = useMemo(() => {
+    return (
+      array.map((item, index) => <FieldArrayItem<Item>
         setArray={setArray}
         key={getKey(item, index)}
         item={item}
         index={index}
-        fieldArrayItemsProps={props}
-      />)}
+        render={render}
+      />)
+    );
+  }, [array, getKey, render, setArray]);
+
+  return (
+    <>
+      {elements}
     </>
   );
 }
@@ -48,16 +55,14 @@ interface FieldArrayItemProps<Item> {
   index: number;
   item: Item;
   setArray: SetArray<Item>;
-  fieldArrayItemsProps: FieldArrayItemsProps<Item>;
+  render: FieldArrayItemsRender<Item>;
 }
 
 function _FieldArrayItem<Item>({
   index,
   item,
   setArray,
-  fieldArrayItemsProps: {
-    render
-  }
+  render,
 }: FieldArrayItemProps<Item>) {
   const { getKey } = useFieldArrayContext();
   const relativeFieldPath = String(getKey(item, index));
@@ -68,10 +73,10 @@ function _FieldArrayItem<Item>({
         remove: () => fieldContext.setValue(DELETE as any),
         setArray,
         index,
-        item
+        item,
       })
     ),
-    [render, setArray, index, item]
+    [render, setArray, index, item],
   );
 
   return (
