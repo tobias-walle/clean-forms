@@ -54,6 +54,7 @@ function createInputProps<Value>(
 ): InputProps<Value> {
   const {
     markAsTouched,
+    name,
     setValue,
     value,
     error,
@@ -68,6 +69,7 @@ function createInputProps<Value>(
   return {
     onBlur: markAsTouched,
     onChange: setValue,
+    name,
     value,
     error,
     valid,
