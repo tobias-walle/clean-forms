@@ -6,10 +6,10 @@ type ArrayItemType<T> = T extends Array<infer U> ? U : never;
 export type ValidationFunction<Value = unknown> =
   (value: Value) => ValidationError | ValidationErrors;
 
-export class ArrayValidation<Value = Array<unknown>> {
+export class ArrayValidation<Value = unknown[]> {
   constructor(
     public readonly itemValidation: ValidationEntry<ArrayItemType<Value>> | null,
-    public readonly arrayValidation?: ValidationFunction<Value>
+    public readonly arrayValidation?: ValidationFunction<Value>,
   ) {
   }
 }

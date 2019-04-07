@@ -50,6 +50,9 @@ export class StateUpdater<S> {
   }
 
   private applyUpdates() {
+    if (!this.onChange) {
+      return;
+    }
     const newState = flush(this.getState(), this.updates);
     this.onChange && this.onChange(newState);
     this.updates = [];
@@ -57,6 +60,7 @@ export class StateUpdater<S> {
 
   public registerOnChange(onChange?: (state: S) => void): void {
     this.onChange = onChange;
+    this.applyUpdates();
   }
 }
 

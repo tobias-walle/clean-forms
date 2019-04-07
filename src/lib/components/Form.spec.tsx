@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useCallback } from 'react';
-import { cleanup, fireEvent, render } from 'react-testing-library';
+import { act, cleanup, fireEvent, render } from 'react-testing-library';
 import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup } from '.';
+import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
 import { useFormState } from '../hooks/useFormState';
 import { ArrayValidation, ValidationDefinition, ValidationFunction } from '../validation';
@@ -23,9 +24,9 @@ describe('Form', () => {
     name: '',
     country: '',
     address: {
-      street: ''
+      street: '',
     },
-    children: []
+    children: [],
   };
 
   interface TestComponentProps {
@@ -66,12 +67,12 @@ describe('Form', () => {
     initialModel,
     formProps = {},
     onModelChange: handleModelChange,
-    showErrorIfDirty
+    showErrorIfDirty,
   }: TestComponentProps) {
     const [form, setForm] = useFormState<Model>(initialModel);
     handleModelChange && handleModelChange(form.model);
     const inputProps: Partial<InputFieldProps> = {
-      showErrorIfDirty
+      showErrorIfDirty,
     };
 
     return (
@@ -94,17 +95,17 @@ describe('Form', () => {
         name: 'Paul',
         country: 'Germany',
         address: {
-          street: 'Sesamstreet'
+          street: 'Sesamstreet',
         },
         children: [
           {
             ...defaultModel,
             name: 'Kristine',
             address: {
-              street: 'Other Street'
-            }
-          }
-        ]
+              street: 'Other Street',
+            },
+          },
+        ],
       }}
     />);
 
@@ -121,12 +122,12 @@ describe('Form', () => {
     const {
       getByLabelText,
       getAllByLabelText,
-      getByText
+      getByText,
     } = render(<TestComponent
       initialModel={{
         ...defaultModel,
         name: '',
-        country: ''
+        country: '',
       }}
       onModelChange={handleModelChange}
     />);
@@ -143,7 +144,7 @@ describe('Form', () => {
       name: 'Christian',
       country: 'Spain',
       address: {
-        street: 'Street1'
+        street: 'Street1',
       },
       children: [
         {
@@ -151,10 +152,10 @@ describe('Form', () => {
           country: 'England',
           children: [],
           address: {
-            street: 'Street2'
-          }
-        }
-      ]
+            street: 'Street2',
+          },
+        },
+      ],
     });
 
     fireEvent.click(getByText('Remove'));
@@ -163,9 +164,9 @@ describe('Form', () => {
       name: 'Christian',
       country: 'Spain',
       address: {
-        street: 'Street1'
+        street: 'Street1',
       },
-      children: []
+      children: [],
     });
   });
 
@@ -192,14 +193,14 @@ describe('Form', () => {
     const validation: ValidationDefinition<Model> = {
       name: minLength(3),
       address: {
-        street: minLength(3)
+        street: minLength(3),
       },
       children: new ArrayValidation<Model[]>(
         {
-          name: minLength(4)
+          name: minLength(4),
         },
-        minLength(1)
-      )
+        minLength(1),
+      ),
     };
 
     it('should call invalidSubmit if invalid', () => {
@@ -207,7 +208,7 @@ describe('Form', () => {
         validation,
         onSubmit: jest.fn(),
         onValidSubmit: jest.fn(),
-        onInValidSubmit: jest.fn()
+        onInValidSubmit: jest.fn(),
       };
       const { getByText } = render(<TestComponent
         initialModel={defaultModel}
@@ -226,21 +227,21 @@ describe('Form', () => {
         validation,
         onSubmit: jest.fn(),
         onValidSubmit: jest.fn(),
-        onInValidSubmit: jest.fn()
+        onInValidSubmit: jest.fn(),
       };
       const { getByText } = render(<TestComponent
         initialModel={{
           ...defaultModel,
           name: '123',
           address: {
-            street: '123'
+            street: '123',
           },
           children: [
             {
               ...defaultModel,
-              name: '1234'
-            }
-          ]
+              name: '1234',
+            },
+          ],
         }}
         formProps={props}
       />);
@@ -254,7 +255,7 @@ describe('Form', () => {
 
     it('should not display error if not touched', () => {
       const props: Partial<FormProps<Model>> = {
-        validation
+        validation,
       };
       const { queryByText } = render(<TestComponent
         initialModel={defaultModel}
@@ -264,46 +265,56 @@ describe('Form', () => {
       expect(queryByText(minLengthErrorMessage)).toBeNull();
     });
 
-    it('should display error if touched', () => {
+    it('should display error if touched', async () => {
       const props: Partial<FormProps<Model>> = {
-        validation
+        validation,
       };
-      const { getByLabelText, getAllByLabelText, getByText, debug } = render(<TestComponent
+      const handleModelChange = jest.fn();
+      const { getAllByLabelText, getByText } = render(<TestComponent
         initialModel={{
           ...defaultModel,
           children: [
-            defaultModel
-          ]
+            defaultModel,
+          ],
         }}
+        onModelChange={handleModelChange}
         formProps={props}
       />);
       const nameInput = getAllByLabelText('Name')[0];
       const streetInput = getAllByLabelText('Street')[0];
       const childNameInput = getAllByLabelText('Name')[1];
 
-      fireEvent.blur(nameInput);
+      act(() => {
+        fireEvent.blur(nameInput);
+      });
 
       expect(nameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(streetInput.parentNode).not.toHaveTextContent(minLengthErrorMessage);
       expect(childNameInput.parentNode).not.toHaveTextContent(minLengthErrorMessage);
 
       // Submit touches all
-      fireEvent.click(getByText('Submit'));
+      act(() => {
+        fireEvent.click(getByText('Submit'));
+      });
 
       expect(nameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(streetInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(childNameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
+
+      // It should not update in an endless loop
+      await act(() => delay(1000));
+      expect(handleModelChange.mock.calls.length < 10).toBe(true);
     });
 
     it('should display error if dirty and option is set', () => {
       const props: Partial<FormProps<Model>> = {
-        validation
+        validation,
       };
       const { queryByText, getByLabelText } = render(<TestComponent
         initialModel={{
           ...defaultModel,
           name: '',
-          country: ''
+          country: '',
         }}
         formProps={props}
         showErrorIfDirty={true}
@@ -316,7 +327,7 @@ describe('Form', () => {
 
     it('should not display error if error is fixed', () => {
       const props: Partial<FormProps<Model>> = {
-        validation
+        validation,
       };
       const { getByLabelText } = render(<TestComponent
         initialModel={defaultModel}

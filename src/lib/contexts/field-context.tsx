@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
+import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { FieldStatus } from '../statusTracking';
 import { assertNotNull, createPath, DELETE, Path } from '../utils';
 import { FieldError } from '../validation';
@@ -64,10 +64,13 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
   const modelPath = createPath(parentFieldContext.modelPath, props.relativeModelPath);
 
   /** Register the field to the form */
+  const formContextRef = useRef(formContext);
+  formContextRef.current = formContext;
   useLayoutEffect(() => {
-    formContext.onFieldMount(fieldPath);
-    return () => formContext.onFieldUnmount(fieldPath);
-  }, [formContext.onFieldMount, fieldPath, formContext]);
+    formContextRef.current.onFieldMount(fieldPath);
+    return () => formContextRef.current.onFieldUnmount(fieldPath);
+    // eslint-disable-next-line
+  }, []);
 
   const {
     getFieldValue,
