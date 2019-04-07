@@ -90,5 +90,116 @@ export function LoginForm() {
 }
 ```
 
-Thats it! We created a simple login form. You can checkout the example
-on [Code Sandbox](https://codesandbox.io/s/2p692n3y2r).
+That's it! We created a simple login form. 
+
+## Validation
+Currently the user can 
+submit even if he leaves some of the fields empty.
+
+First let's create a function, that checks if the value is set.
+If this is the case it should return null and an error message otherwise.
+
+```typescript
+// validators.ts
+export function required(value: any) {
+  if (value == null || value === '') {
+    return 'Required';
+  }
+  return null;
+}
+```
+
+We also need to update our field, so it displays validation errors.
+We don't want to show these errors at the beginning, as this would be
+overwhelming for the user. Instead we only want to show the error
+if the user has focused the field. We can use the `touched` flag for this.
+
+
+```typescript jsx
+// InputField.tsx
+import React from 'react';
+import { createField } from 'clean-forms';
+
+interface InputFieldProps {
+  label: string;
+}
+
+export const InputField = createField<
+  string,
+  InputFieldProps & JSX.IntrinsicElements['input']
+>(
+  ({
+    input: { value, name, onChange, onBlur, error, touched },
+    custom: { label, ...other },
+  }) => {
+    return (
+      <div>
+        <input
+          value={value}
+          name={name}
+          onChange={event => onChange(event.target.value)}
+          onBlur={onBlur}
+          placeholder={label}
+          {...other}
+        />
+        {touched && <div>{error}</div>}
+      </div>
+    );
+  }
+);
+```
+
+Now we can use our validator in our form.
+
+```typescript jsx
+// LoginForm.tsx
+import React, { useState, useCallback } from 'react';
+import { Form, ValidationDefinition } from 'clean-forms';
+import { InputField } from './InputField';
+import { required } from './validators';
+
+
+const initialValue = {
+  username: '',
+  password: '',
+};
+
+// We define the validation here
+const validation: ValidationDefinition<typeof initialValue> = {
+  username: required,
+  password: required,
+};
+
+export function LoginForm() {
+  const [formState, setFormState] = useState({
+    model: initialValue,
+  });
+
+  const handleSubmit = () => {
+    alert(JSON.stringify(formState.model, null, 2));
+  };
+
+  return (
+    <Form
+      state={formState}
+      onChange={setFormState}
+      // and just pass it to our form
+      validation={validation}
+      // We only want to trigger the submit on a valid form
+      onValidSubmit={handleSubmit}
+    >
+      <InputField label="Username" name="username" />
+      <InputField label="Password" name="password" type="password" />
+      <div>
+        <button type="submit">Submit</button>
+      </div>
+    </Form>
+  );
+}
+```
+
+The validation definition has the same shape as our data. If you use typescript
+you get a type error if your definition does not match. We also change the callback
+from `onSubmit` to `onValidSubmit`, so it only gets triggered if our form is valid.
+
+You can checkout the example on [Code Sandbox](https://codesandbox.io/s/2p692n3y2r).
