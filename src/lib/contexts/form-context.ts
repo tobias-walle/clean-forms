@@ -8,8 +8,6 @@ export type OnFieldMount = (id: string) => void;
 
 export type OnFieldUnmount = (id: string) => void;
 
-export type OnFieldFocus = (id: string) => void;
-
 export type OnFieldBlur = (id: string) => void;
 
 export type OnFieldChange<Model> = (id: string, path: Path, value: any) => void;
@@ -19,7 +17,6 @@ export type SetArrayGetKey = (id: Path, getKey: GetKey<any>) => void;
 export interface FormContextValue<Model> extends FormReadApi<Model> {
   onFieldMount: OnFieldMount;
   onFieldUnmount: OnFieldUnmount;
-  onFieldFocus: OnFieldFocus;
   onFieldBlur: OnFieldBlur;
   onFieldChange: OnFieldChange<Model>;
   setArrayGetKey: SetArrayGetKey;

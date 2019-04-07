@@ -16,12 +16,12 @@ import {
   FormContextValue,
   OnFieldBlur,
   OnFieldChange,
-  OnFieldFocus,
   OnFieldMount,
   OnFieldUnmount,
   SetArrayGetKey
 } from '../contexts/form-context';
 import { useFormReadApi } from '../hooks/useFormReadApi';
+import { useShallowMemo } from '../hooks/useShallowMemo';
 import { FormState } from '../models';
 import { cloneFieldStatus } from '../statusTracking';
 import { FieldStatusUpdater } from '../statusTracking/FieldStatusUpdater';
@@ -111,7 +111,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     propsStateUpdaterRef.current.patch({ status: updatedStatus });
   }, [status, removeArrayGetKeyFunction]);
 
-  const [fieldRegister, setFieldRegister] = useState(new FieldRegister());
+  const [fieldRegister] = useState(new FieldRegister());
   useLayoutEffect(() => {
     fieldRegister.addListener(handleFieldRegisterChanges);
     return () => fieldRegister.removeListener(handleFieldRegisterChanges);
@@ -150,10 +150,6 @@ function _Form<Model = any>(props: FormProps<Model>) {
     }
     fieldRegister.unregister(path);
   }, [fieldRegister, isMountedRef]);
-
-  const handleFieldFocus: OnFieldFocus = useCallback((path) => {
-    // Ignore for now
-  }, []);
 
   const handleFieldBlur: OnFieldBlur = useCallback((path) => {
     const newStatus = cloneFieldStatus(getFieldStatus(path), { touched: true });
@@ -199,7 +195,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     submit(event);
   }, [submit, formProps]);
 
-  const formContext: FormContextValue<Model> = {
+  const formContext: FormContextValue<Model> = useShallowMemo({
     valid,
     invalid,
     getFieldStatus,
@@ -207,16 +203,15 @@ function _Form<Model = any>(props: FormProps<Model>) {
     getFieldValue,
     onFieldBlur: handleFieldBlur,
     onFieldChange: handleFieldChange,
-    onFieldFocus: handleFieldFocus,
     onFieldMount: handleFieldMount,
     onFieldUnmount: handleFieldUnmount,
     setArrayGetKey
-  };
+  });
 
   const error = getFieldError('');
   const markAsTouched = useCallback(() => handleFieldBlur(''), [handleFieldBlur]);
 
-  const rootFieldContext: FieldContextValue<Model> = {
+  const rootFieldContext: FieldContextValue<Model> = useShallowMemo({
     fieldPath: '',
     modelPath: '',
     name: '',
@@ -227,7 +222,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     valid: !error,
     invalid: !!error,
     ...getFieldStatus('')
-  };
+  });
 
   return (
     <FormContext.Provider value={formContext}>

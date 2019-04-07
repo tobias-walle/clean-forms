@@ -21,7 +21,7 @@ export interface FormReadApi<Model> {
 export function useFormReadApi<Model>({
   state,
   validationDefinition = {},
-  fieldErrorMapping = {}
+  fieldErrorMapping = {},
 }: UseFormReadApiProps<Model>): FormReadApi<Model> {
   const { status = {}, model } = state;
 
@@ -38,7 +38,7 @@ export function useFormReadApi<Model>({
       }
       return true;
     },
-    [fieldErrorMapping]
+    [fieldErrorMapping],
   );
   const invalid = !valid;
 

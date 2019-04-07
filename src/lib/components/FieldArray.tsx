@@ -11,7 +11,7 @@ export interface InnerFieldArrayProps<Item> {
   addItem: AddItem<Item>;
 }
 
-export type FieldArrayRender<Item> = (props: InnerFieldArrayProps<Item>) => React.ReactNode;
+export type FieldArrayRender<Item> = (props: InnerFieldArrayProps<Item>) => React.ReactElement;
 
 export interface FieldArrayProps<Item> {
   name: string;
@@ -22,7 +22,7 @@ export interface FieldArrayProps<Item> {
 function _FieldArray<Item = any>({
   name,
   render,
-  getKey
+  getKey,
 }: FieldArrayProps<Item>) {
   const getIndexKey: GetKey<Item> = useCallback((_, index) => index, []);
 

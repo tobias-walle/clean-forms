@@ -1,10 +1,11 @@
 import { FieldRegister, Path } from '../utils/FieldRegister';
-import { cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatus, FieldStatusArguments } from './FieldStatus';
+import { isShallowEqual } from '../utils/isShallowEqual';
+import { cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatusArguments } from './FieldStatus';
 import { FieldStatusMapping } from './FieldStatusMapping';
 
 export class FieldStatusUpdater {
   constructor(
-    private fieldRegister: FieldRegister
+    private fieldRegister: FieldRegister,
   ) {
   }
 
@@ -26,20 +27,24 @@ export class FieldStatusUpdater {
   private updateField(
     status: FieldStatusMapping,
     path: Path,
-    update: Partial<FieldStatusArguments>
+    update: Partial<FieldStatusArguments>,
   ): FieldStatusMapping {
     if (!this.fieldRegister.includesPath(path)) {
       return status;
     }
     const oldStatus = status[path] || DEFAULT_FIELD_STATUS;
-    return { ...status, [path]: cloneFieldStatus(oldStatus, update) };
+    const newStatus = cloneFieldStatus(oldStatus, update);
+    if (!isShallowEqual(oldStatus, newStatus)) {
+      return { ...status, [path]: newStatus };
+    }
+    return status;
   }
 
   public addIfFieldNotExists(status: FieldStatusMapping, path: Path): FieldStatusMapping {
     if (status[path] == null) {
       return {
         ...status,
-        [path]: DEFAULT_FIELD_STATUS
+        [path]: DEFAULT_FIELD_STATUS,
       };
     } else {
       return status;
@@ -47,6 +52,9 @@ export class FieldStatusUpdater {
   }
 
   public removeIfFieldExists(status: FieldStatusMapping, path: Path): FieldStatusMapping {
+    if (status[path] == null) {
+      return status;
+    }
     const copy = { ...status };
     delete copy[path];
     return copy;

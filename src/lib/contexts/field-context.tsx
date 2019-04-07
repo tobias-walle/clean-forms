@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from 'react';
+import { useShallowMemo } from '../hooks/useShallowMemo';
 import { FieldStatus } from '../statusTracking';
 import { assertNotNull, createPath, DELETE, Path } from '../utils';
 import { FieldError } from '../validation';
@@ -45,7 +46,7 @@ export const FieldContext = React.createContext<FieldContextValue<any> | null>(n
 export function useFieldContext<T>(): FieldContextValue<T> {
   return assertNotNull(
     useContext(FieldContext),
-    'You can only use the FieldContext inside a Form'
+    'You can only use the FieldContext inside a Form',
   );
 }
 
@@ -57,6 +58,13 @@ interface FieldContextProviderProps {
 
 export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
   const formContext = useFormContext();
+  const {
+    getFieldValue,
+    getFieldStatus,
+    getFieldError,
+    onFieldBlur,
+    onFieldChange,
+  } = formContext;
   const parentFieldContext = useFieldContext();
 
   const fieldPath = createPath(parentFieldContext.fieldPath, props.relativeFieldPath);
@@ -72,36 +80,31 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
     // eslint-disable-next-line
   }, []);
 
-  const {
-    getFieldValue,
-    getFieldStatus,
-    getFieldError
-  } = formContext;
   const value = useMemo(
     () => getFieldValue(modelPath),
-    [getFieldValue, modelPath]
+    [getFieldValue, modelPath],
   );
 
   const error = useMemo(
     () => getFieldError(modelPath),
-    [getFieldError, modelPath]
+    [getFieldError, modelPath],
   );
 
   const fieldStatus = useMemo(
     () => getFieldStatus(fieldPath),
-    [getFieldStatus, fieldPath]
+    [getFieldStatus, fieldPath],
   );
 
   const setValue: SetFieldValue<Value | DELETE> = useCallback(
-    valueOrUpdate => formContext.onFieldChange(fieldPath, modelPath, valueOrUpdate),
-    [formContext, fieldPath, modelPath]
+    valueOrUpdate => onFieldChange(fieldPath, modelPath, valueOrUpdate),
+    [fieldPath, modelPath, onFieldChange],
   );
 
   const markAsTouched: MarkAsTouched = useCallback(() => {
-    formContext.onFieldBlur(fieldPath);
-  }, [formContext, fieldPath]);
+    onFieldBlur(fieldPath);
+  }, [fieldPath, onFieldBlur]);
 
-  const contextValue: FieldContextValue<Value> = {
+  const contextValue: FieldContextValue<Value> = useShallowMemo({
     ...fieldStatus,
     name: fieldPath,
     fieldPath,
@@ -111,8 +114,8 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
     valid: !error,
     invalid: !!error,
     setValue,
-    markAsTouched
-  };
+    markAsTouched,
+  });
 
   return <FieldContext.Provider value={contextValue}>{props.children}</FieldContext.Provider>;
 }
