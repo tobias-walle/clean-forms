@@ -34,6 +34,7 @@ import { GetKey } from './FieldArrayItems';
 
 export type OnChange<Model> = (state: FormState<Model>) => void;
 export type OnSubmit = FormEventHandler<HTMLFormElement>;
+export type OnErrorsChange = (errors: FieldErrorMapping) => void;
 
 export interface FormProps<Model> {
   state: FormState<Model>;
@@ -41,6 +42,7 @@ export interface FormProps<Model> {
   onSubmit?: OnSubmit;
   onValidSubmit?: OnSubmit;
   onInValidSubmit?: OnSubmit;
+  onErrorsChange?: OnErrorsChange;
   validation?: ValidationDefinition<Model>;
   formProps?: JSX.IntrinsicElements['form'];
   children?: React.ReactNode;
@@ -64,6 +66,7 @@ function _Form<Model = any>(props: FormProps<Model>) {
     formProps,
     onChange,
     onSubmit,
+    onErrorsChange,
     onInValidSubmit,
     onValidSubmit,
   } = props;
@@ -130,6 +133,10 @@ function _Form<Model = any>(props: FormProps<Model>) {
       : {},
     [model, validation],
   );
+
+  useEffect(() => {
+    onErrorsChange && onErrorsChange(fieldErrorMapping);
+  }, [fieldErrorMapping, onErrorsChange]);
 
   const {
     valid,

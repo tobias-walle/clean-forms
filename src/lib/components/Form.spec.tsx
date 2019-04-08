@@ -221,7 +221,7 @@ describe('Form', () => {
   });
 
   describe('Validation', () => {
-    const minLengthErrorMessage = 'The value has to have more characters';
+    const minLengthErrorMessage = 'More items required';
     const minLength = (length: number): ValidationFunction<{ length: number }> => value => value.length < length
       ? minLengthErrorMessage
       : null;
@@ -378,6 +378,23 @@ describe('Form', () => {
       fireInputEvent(nameInput, '123');
 
       expect(nameInput.parentNode).not.toHaveTextContent(minLengthErrorMessage);
+    });
+
+    it('should pass errors to onErrorsChange', () => {
+      const props: Partial<FormProps<Model>> = {
+        validation,
+        onErrorsChange: jest.fn()
+      };
+      render(<TestComponent
+        initialModel={defaultModel}
+        formProps={props}
+      />);
+
+      expect(props.onErrorsChange).toHaveBeenCalledWith({
+        name: minLengthErrorMessage,
+        'address.street': minLengthErrorMessage,
+        children: minLengthErrorMessage,
+      });
     });
   });
 });
