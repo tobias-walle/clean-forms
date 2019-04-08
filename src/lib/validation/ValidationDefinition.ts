@@ -18,14 +18,18 @@ export type ValidationResolver<Value> = Value extends any[]
   ? ArrayValidation<Value>
   : ValidationFunction<Value>;
 
-export type ValidationEntry<Value> = Value extends any[]
-  ? ArrayValidation<Value>
-  : Value extends object
-    ? ValidationFunction<Value> | ValidationMapping<Value>
-    : ValidationFunction<Value>;
+export type ValidationEntry<Value> = Value extends object
+  ? Value extends any[]
+    ? ValidationFunction<Value> | ArrayValidationMapping<Value> | ArrayValidation<Value>
+    : ValidationFunction<Value> | ValidationMapping<Value>
+  : ValidationFunction<Value>;
 
 export type ValidationMapping<Model> = {
   [K in keyof Model]?: ValidationEntry<Model[K]>;
+};
+
+export type ArrayValidationMapping<Model extends any[]> = {
+  [K in number]?: ValidationEntry<Model[K]>;
 };
 
 export type ValidationDefinition<Model> = ValidationResolver<Model> | ValidationMapping<Model>;
