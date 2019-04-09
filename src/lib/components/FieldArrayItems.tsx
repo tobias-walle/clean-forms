@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { memo, useCallback, useMemo } from 'react';
-import { useFieldArrayContext } from '../contexts/field-array-context';
-import { FieldContext, FieldContextProvider, FieldContextValue, useFieldContext } from '../contexts/field-context';
+import { useFieldArrayContext } from '../contexts/fieldArrayContext';
+import { FieldContext, FieldContextProvider, FieldContextValue, useFieldContext } from '../contexts/fieldContext';
 import { DELETE } from '../utils';
 
 export type SetArray<Item> = (newArray: Item[]) => void;

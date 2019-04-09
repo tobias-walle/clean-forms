@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useCallback, useContext } from 'react';
 import { AddItem, GetKey } from '../components';
 import { assertNotNull } from '../utils';
-import { useFieldContext } from './field-context';
+import { useFieldContext } from './fieldContext';
 
 export interface FieldArrayContextValue<Item> {
   getKey: GetKey<Item>;

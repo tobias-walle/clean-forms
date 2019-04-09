@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { memo, useCallback } from 'react';
 import { GetKey } from '.';
-import { FieldArrayContext, FieldArrayContextProvider } from '../contexts/field-array-context';
-import { FieldContextProvider } from '../contexts/field-context';
+import { FieldArrayContext, FieldArrayContextProvider } from '../contexts/fieldArrayContext';
+import { FieldContextProvider } from '../contexts/fieldContext';
 
 export type AddItem<Item> = (item: Item) => void;
 

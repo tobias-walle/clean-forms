@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FieldContext, FieldContextValue } from '../contexts/field-context';
+import { FieldContext, FieldContextValue } from '../contexts/fieldContext';
 import {
   FormContext,
   FormContextValue,
@@ -19,7 +19,7 @@ import {
   OnFieldMount,
   OnFieldUnmount,
   SetArrayGetKey,
-} from '../contexts/form-context';
+} from '../contexts/formContext';
 import { useAsRef } from '../hooks/useAsRef';
 import { useFormReadApi } from '../hooks/useFormReadApi';
 import { useShallowMemo } from '../hooks/useShallowMemo';

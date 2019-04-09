@@ -4,7 +4,7 @@ import { useShallowMemo } from '../hooks/useShallowMemo';
 import { FieldStatus } from '../statusTracking';
 import { assertNotNull, createPath, DELETE, Path } from '../utils';
 import { FieldError } from '../validation';
-import { useFormContext } from './form-context';
+import { useFormContext } from './formContext';
 
 export type SetFieldValueWithValue<Value> = (value: Value) => void;
 export type SetFieldValueWithFunction<Value> = (update: (old: Value) => Value) => void;

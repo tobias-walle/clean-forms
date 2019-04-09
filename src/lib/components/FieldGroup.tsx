@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FieldContextProvider } from '../contexts/field-context';
+import { FieldContextProvider } from '../contexts/fieldContext';
 
 export interface FieldGroupProps {
   name: string;
