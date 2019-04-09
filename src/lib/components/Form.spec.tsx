@@ -220,6 +220,31 @@ describe('Form', () => {
     expect(() => render(<MyForm/>)).not.toThrowError();
   });
 
+  it('should provide the "onValueChange" callback on fields', () => {
+    const handleChange = jest.fn();
+    function MyForm() {
+      const [state, setState] = useState<FormState<any>>({
+        model: {
+          a: 0
+        },
+      });
+
+      return (
+        <Form
+          state={state}
+          onChange={setState}
+        >
+          <InputField label="A" name="a" onValueChange={handleChange}/>
+        </Form>
+      );
+    }
+    const { getByLabelText } = render(<MyForm/>);
+
+    fireInputEvent(getByLabelText('A'), 'Hello');
+
+    expect(handleChange).toHaveBeenCalledWith('Hello');
+  });
+
   describe('Validation', () => {
     const minLengthErrorMessage = 'More items required';
     const minLength = (length: number): ValidationFunction<{ length: number }> => value => value.length < length

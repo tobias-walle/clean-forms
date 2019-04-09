@@ -1,44 +1,43 @@
 import * as React from 'react';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { FieldContext, FieldContextProvider, FieldContextValue } from '../contexts/fieldContext';
 import { useShallowMemo } from '../hooks/useShallowMemo';
 import { FieldStatus } from '../statusTracking';
 import { Omit } from '../types';
+import { composeFunctions } from '../utils/composeFunctions';
 import { FieldError } from '../validation';
 import { createStandaloneField, StandaloneFieldComponent } from './createStandaloneField';
 
-export type FieldComponentProps<CustomProps> = Omit<CustomProps, 'name'> & FieldComponentPropsWithoutCustomProps;
+export type FieldComponentProps<Value, CustomProps> =
+  Omit<CustomProps, keyof FieldComponentPropsWithoutCustomProps<Value>>
+  & FieldComponentPropsWithoutCustomProps<Value>;
 
-export type FieldComponent<Value, CustomProps> = React.FunctionComponent<FieldComponentProps<CustomProps>>
+export type FieldComponent<Value, CustomProps> = React.FunctionComponent<FieldComponentProps<Value, CustomProps>>
   & { standalone: StandaloneFieldComponent<Value, CustomProps> };
 
 export function createField<Value, CustomProps = {}>(
   render: FieldRenderFunction<Value, CustomProps>,
 ): FieldComponent<Value, CustomProps> {
-  const Component: FieldComponent<Value, CustomProps> = memo(({ name, ...custom }: FieldComponentProps<CustomProps>) => {
+  const Component: FieldComponent<Value, CustomProps> = memo(({
+    name,
+    onValueChange,
+    ...custom
+  }: FieldComponentProps<Value, CustomProps>) => {
     name = name || '';
-
-    const Field = useCallback(
-      (context: FieldContextValue<Value>) => {
-        let inputProps = useMemo(() => {
-          return createInputProps(context!);
-        }, [context]);
-        inputProps = useShallowMemo(inputProps);
-
-        return useMemo(() => {
-          return render({
-            input: inputProps,
-            custom: custom as any,
-          });
-        }, [inputProps]);
-      },
-      [custom],
-    );
+    const ownProps: FieldComponentPropsWithoutCustomProps<Value> = useShallowMemo({
+      name,
+      onValueChange,
+    });
 
     return (
       <FieldContextProvider relativeFieldPath={name} relativeModelPath={name}>
         <FieldContext.Consumer>
-          {context => <Field {...context!}/>}
+          {context => <Field<Value, CustomProps>
+            context={context!}
+            customProps={custom as any}
+            ownProps={ownProps}
+            render={render}
+          />}
         </FieldContext.Consumer>
       </FieldContextProvider>
     );
@@ -49,8 +48,34 @@ export function createField<Value, CustomProps = {}>(
   return Component;
 }
 
-function createInputProps<Value>(
+interface FieldProps<Value, CustomProps> {
+  context: FieldContextValue<Value>;
+  customProps: CustomProps;
+  ownProps: FieldComponentPropsWithoutCustomProps<Value>;
+  render: FieldRenderFunction<Value, CustomProps>;
+}
+
+function _Field<Value, CustomProps>({
+  context,
+  render,
+  customProps,
+  ownProps,
+}: FieldProps<Value, CustomProps>) {
+  const inputProps = useInputProps(context!, ownProps);
+
+  return useMemo(() => {
+    return render({
+      input: inputProps,
+      custom: customProps,
+    });
+  }, [customProps, inputProps, render]);
+}
+
+const Field: typeof _Field = memo(_Field) as any;
+
+function useInputProps<Value>(
   fieldContext: FieldContextValue<Value>,
+  ownProps: FieldComponentPropsWithoutCustomProps<Value>,
 ): InputProps<Value> {
   const {
     markAsTouched,
@@ -66,9 +91,17 @@ function createInputProps<Value>(
     dirty,
   } = fieldContext;
 
-  return {
+  const onChange = useMemo(
+    () => composeFunctions(
+      setValue,
+      ownProps.onValueChange,
+    ),
+    [ownProps.onValueChange, setValue],
+  );
+
+  return useShallowMemo({
     onBlur: markAsTouched,
-    onChange: setValue,
+    onChange,
     name,
     value,
     error,
@@ -78,7 +111,7 @@ function createInputProps<Value>(
     untouched,
     pristine,
     dirty,
-  };
+  });
 }
 
 export interface InputProps<Value> extends FieldStatus {
@@ -99,6 +132,7 @@ export interface InnerFieldProps<Value, CustomProps = {}> {
 export type FieldRenderFunction<Value = any, RenderProps = {}> =
   React.FunctionComponent<InnerFieldProps<Value, RenderProps>>;
 
-export interface FieldComponentPropsWithoutCustomProps {
+export interface FieldComponentPropsWithoutCustomProps<Value> {
   name: string | null;
+  onValueChange?: (value: Value) => void;
 }
