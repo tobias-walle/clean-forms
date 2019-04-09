@@ -43,7 +43,7 @@ export interface FieldContextValue<Value> extends FieldStatus {
 
 export const FieldContext = React.createContext<FieldContextValue<any> | null>(null);
 
-function useComputedFieldContext<Value>(
+export function useComputedFieldContext<Value>(
   relativeModelPath: string,
   relativeFieldPath: string
 ): FieldContextValue<Value> {
