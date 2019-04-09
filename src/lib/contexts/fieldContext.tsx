@@ -43,20 +43,10 @@ export interface FieldContextValue<Value> extends FieldStatus {
 
 export const FieldContext = React.createContext<FieldContextValue<any> | null>(null);
 
-export function useFieldContext<T>(): FieldContextValue<T> {
-  return assertNotNull(
-    useContext(FieldContext),
-    'You can only use the FieldContext inside a Form',
-  );
-}
-
-interface FieldContextProviderProps {
-  relativeFieldPath: Path;
-  relativeModelPath: Path;
-  children?: React.ReactNode;
-}
-
-export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
+function useComputedFieldContext<Value>(
+  relativeModelPath: string,
+  relativeFieldPath: string
+): FieldContextValue<Value> {
   const formContext = useFormContext();
   const {
     getFieldValue,
@@ -67,9 +57,9 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
   } = formContext;
   const parentFieldContext = useFieldContext();
 
-  const fieldPath = createPath(parentFieldContext.fieldPath, props.relativeFieldPath);
+  const fieldPath = createPath(parentFieldContext.fieldPath, relativeFieldPath);
 
-  const modelPath = createPath(parentFieldContext.modelPath, props.relativeModelPath);
+  const modelPath = createPath(parentFieldContext.modelPath, relativeModelPath);
 
   /** Register the field to the form */
   const formContextRef = useRef(formContext);
@@ -104,7 +94,7 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
     onFieldBlur(fieldPath);
   }, [fieldPath, onFieldBlur]);
 
-  const contextValue: FieldContextValue<Value> = useShallowMemo({
+  return useShallowMemo({
     ...fieldStatus,
     name: fieldPath,
     fieldPath,
@@ -116,6 +106,24 @@ export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
     setValue,
     markAsTouched,
   });
+}
 
-  return <FieldContext.Provider value={contextValue}>{props.children}</FieldContext.Provider>;
+interface FieldContextProviderProps {
+  relativeFieldPath: Path;
+  relativeModelPath: Path;
+  children?: React.ReactNode;
+}
+
+export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
+  return <FieldContext.Provider value={useComputedFieldContext(
+    props.relativeModelPath,
+    props.relativeFieldPath
+  )}>{props.children}</FieldContext.Provider>;
+}
+
+export function useFieldContext<Value>(): FieldContextValue<Value> {
+  return assertNotNull(
+    useContext(FieldContext),
+    'You can only use the FieldContext inside a Form',
+  );
 }
