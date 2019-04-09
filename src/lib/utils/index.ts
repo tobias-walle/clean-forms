@@ -5,6 +5,7 @@ export * from './FieldRegister';
 export * from './getByPath';
 export * from './removeItemFromArray';
 export * from './selectDeep';
+export * from './setByPath';
 export * from './updateDeep';
 export * from './transformPathToArray';
 export * from './updateDeep';
