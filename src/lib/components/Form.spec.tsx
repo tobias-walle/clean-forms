@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { useCallback, useState } from 'react';
+import { MutableRefObject, useCallback, useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render } from 'react-testing-library';
-import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup } from '.';
+import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup, FormRef } from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
 import { useFormState } from '../hooks/useFormState';
@@ -243,6 +243,24 @@ describe('Form', () => {
     fireInputEvent(getByLabelText('A'), 'Hello');
 
     expect(handleChange).toHaveBeenCalledWith('Hello');
+  });
+
+  it('should provide "submit" over imperative API', () => {
+    const ref: MutableRefObject<FormRef | null> = { current: null };
+    const props: Partial<FormProps<Model>> = {
+      onSubmit: jest.fn(),
+      ref
+    };
+    render(<TestComponent
+      initialModel={defaultModel}
+      formProps={props}
+    />);
+
+    act(() => {
+      ref.current!.submit();
+    });
+
+    expect(props.onSubmit).toHaveBeenCalled();
   });
 
   describe('Validation', () => {

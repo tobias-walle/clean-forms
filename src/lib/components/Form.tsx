@@ -1,10 +1,13 @@
 import * as React from 'react';
 import {
-  FormEventHandler,
+  FormEvent,
+  forwardRef,
   memo,
   MutableRefObject,
+  Ref, RefAttributes,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -28,15 +31,24 @@ import { cloneFieldStatus } from '../statusTracking';
 import { FieldStatusUpdater } from '../statusTracking/FieldStatusUpdater';
 import { FieldRegister, FieldRegisterChanges, Path } from '../utils';
 import { StateUpdater } from '../utils/StateUpdater';
-import { FieldErrorMapping, validateModel, ValidationDefinition } from '../validation';
+import {
+  FieldErrorMapping,
+  validateModel,
+  ValidationDefinition,
+} from '../validation';
 
 import { GetKey } from './FieldArrayItems';
 
 export type OnChange<Model> = (state: FormState<Model>) => void;
-export type OnSubmit = FormEventHandler<HTMLFormElement>;
+export type OnSubmit = (event?: FormEvent<HTMLFormElement>) => void;
 export type OnErrorsChange = (errors: FieldErrorMapping) => void;
 
-export interface FormProps<Model> {
+export interface FormRef {
+  /** Trigger a form submit */
+  submit: () => void;
+}
+
+export type FormProps<Model> = {
   state: FormState<Model>;
   onChange?: OnChange<Model>;
   onSubmit?: OnSubmit;
@@ -46,7 +58,7 @@ export interface FormProps<Model> {
   validation?: ValidationDefinition<Model>;
   formProps?: JSX.IntrinsicElements['form'];
   children?: React.ReactNode;
-}
+} & RefAttributes<FormRef>;
 
 function useIsMounted(): Readonly<MutableRefObject<boolean>> {
   const mounted = useRef(false);
@@ -59,7 +71,7 @@ function useIsMounted(): Readonly<MutableRefObject<boolean>> {
   return mounted;
 }
 
-function _Form<Model = any>(props: FormProps<Model>) {
+function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   const {
     state,
     validation,
@@ -74,17 +86,19 @@ function _Form<Model = any>(props: FormProps<Model>) {
 
   const setModel = useCallback(
     (newModel: Model) => onChange && onChange({ model: newModel }),
-    [onChange],
+    [onChange]
   );
 
   const stateRef = useRef(state);
   stateRef.current = state;
 
   // PropsStateUpdaterRef
-  const propsStateUpdaterRef = useRef(new StateUpdater<FormState<Model>>(
-    () => stateRef.current,
-    () => isMountedRef.current,
-  ));
+  const propsStateUpdaterRef = useRef(
+    new StateUpdater<FormState<Model>>(
+      () => stateRef.current,
+      () => isMountedRef.current
+    )
+  );
   useEffect(() => {
     propsStateUpdaterRef.current.registerOnChange(onChange);
   }, [onChange]);
@@ -101,19 +115,28 @@ function _Form<Model = any>(props: FormProps<Model>) {
   }, []);
 
   // FieldRegisterRef
-  const handleFieldRegisterChanges = useCallback((changes: FieldRegisterChanges): void => {
-    let updatedStatus = status;
-    changes.registered.forEach((newPath) => {
-      updatedStatus = fieldStatusUpdaterRef.current.addIfFieldNotExists(updatedStatus, newPath);
-    });
+  const handleFieldRegisterChanges = useCallback(
+    (changes: FieldRegisterChanges): void => {
+      let updatedStatus = status;
+      changes.registered.forEach(newPath => {
+        updatedStatus = fieldStatusUpdaterRef.current.addIfFieldNotExists(
+          updatedStatus,
+          newPath
+        );
+      });
 
-    changes.unregistered.forEach((removedPath) => {
-      updatedStatus = fieldStatusUpdaterRef.current.removeIfFieldExists(updatedStatus, removedPath);
-      removeArrayGetKeyFunction(removedPath);
-    });
+      changes.unregistered.forEach(removedPath => {
+        updatedStatus = fieldStatusUpdaterRef.current.removeIfFieldExists(
+          updatedStatus,
+          removedPath
+        );
+        removeArrayGetKeyFunction(removedPath);
+      });
 
-    propsStateUpdaterRef.current.patch({ status: updatedStatus });
-  }, [status, removeArrayGetKeyFunction]);
+      propsStateUpdaterRef.current.patch({ status: updatedStatus });
+    },
+    [status, removeArrayGetKeyFunction]
+  );
 
   const [fieldRegister] = useState(new FieldRegister());
   useLayoutEffect(() => {
@@ -128,10 +151,11 @@ function _Form<Model = any>(props: FormProps<Model>) {
 
   // API
   const fieldErrorMapping = useMemo<FieldErrorMapping>(
-    () => validation
-      ? validateModel({ model, validationDefinition: validation })
-      : {},
-    [model, validation],
+    () =>
+      validation
+        ? validateModel({ model, validationDefinition: validation })
+        : {},
+    [model, validation]
   );
 
   useEffect(() => {
@@ -144,66 +168,95 @@ function _Form<Model = any>(props: FormProps<Model>) {
     getFieldStatus,
     getFieldError,
     getFieldValue,
-  } = useFormReadApi({ state, validationDefinition: validation, fieldErrorMapping });
+  } = useFormReadApi({
+    state,
+    validationDefinition: validation,
+    fieldErrorMapping,
+  });
 
   // Callbacks
-  const handleFieldMount: OnFieldMount = useCallback((path) => {
-    fieldRegister.register(path);
-  }, [fieldRegister]);
+  const handleFieldMount: OnFieldMount = useCallback(
+    path => {
+      fieldRegister.register(path);
+    },
+    [fieldRegister]
+  );
 
-  const handleFieldUnmount: OnFieldUnmount = useCallback((path) => {
-    if (!isMountedRef.current) {
-      // Cancel if the form is not mounted anymore
-      return;
-    }
-    fieldRegister.unregister(path);
-  }, [fieldRegister, isMountedRef]);
+  const handleFieldUnmount: OnFieldUnmount = useCallback(
+    path => {
+      if (!isMountedRef.current) {
+        // Cancel if the form is not mounted anymore
+        return;
+      }
+      fieldRegister.unregister(path);
+    },
+    [fieldRegister, isMountedRef]
+  );
 
   const getFieldStatusRef = useAsRef(getFieldStatus);
-  const handleFieldBlur: OnFieldBlur = useCallback((path) => {
-    const newStatus = cloneFieldStatus(getFieldStatusRef.current(path), { touched: true });
-    propsStateUpdaterRef.current.update((oldState) => ({
-      ...oldState,
-      status: {
-        ...oldState.status,
-        [path]: newStatus,
-      },
-    }));
-  }, [getFieldStatusRef]);
+  const handleFieldBlur: OnFieldBlur = useCallback(
+    path => {
+      const newStatus = cloneFieldStatus(getFieldStatusRef.current(path), {
+        touched: true,
+      });
+      propsStateUpdaterRef.current.update(oldState => ({
+        ...oldState,
+        status: {
+          ...oldState.status,
+          [path]: newStatus,
+        },
+      }));
+    },
+    [getFieldStatusRef]
+  );
 
   const statusRef = useAsRef(status);
-  const handleFieldChange: OnFieldChange<Model> = useCallback((id, path, value) => {
-    propsStateUpdaterRef.current.updateDeep(`model.${path}`, value, true);
+  const handleFieldChange: OnFieldChange<Model> = useCallback(
+    (id, path, value) => {
+      propsStateUpdaterRef.current.updateDeep(`model.${path}`, value, true);
 
-    const updatedStatus = fieldStatusUpdaterRef.current.markAsDirty(statusRef.current, id);
+      const updatedStatus = fieldStatusUpdaterRef.current.markAsDirty(
+        statusRef.current,
+        id
+      );
 
-    propsStateUpdaterRef.current.patch({ status: updatedStatus });
-  }, [statusRef]);
+      propsStateUpdaterRef.current.patch({ status: updatedStatus });
+    },
+    [statusRef]
+  );
   // Callbacks End
 
   const markAllAsTouched = useCallback(() => {
-    const updatedStatus = fieldStatusUpdaterRef.current.markAllAsTouched(statusRef.current);
+    const updatedStatus = fieldStatusUpdaterRef.current.markAllAsTouched(
+      statusRef.current
+    );
     propsStateUpdaterRef.current.patch({ status: updatedStatus });
   }, [statusRef]);
 
-  const submit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    markAllAsTouched();
-    onSubmit && onSubmit(event);
-    if (valid) {
-      onValidSubmit && onValidSubmit(event);
-    } else {
-      onInValidSubmit && onInValidSubmit(event);
-    }
-  }, [markAllAsTouched, onSubmit, valid, onValidSubmit, onInValidSubmit]);
+  const submit = useCallback(
+    (event?: React.FormEvent<HTMLFormElement>) => {
+      markAllAsTouched();
+      onSubmit && onSubmit(event);
+      if (valid) {
+        onValidSubmit && onValidSubmit(event);
+      } else {
+        onInValidSubmit && onInValidSubmit(event);
+      }
+    },
+    [markAllAsTouched, onSubmit, valid, onValidSubmit, onInValidSubmit]
+  );
 
-  const handleSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    event.stopPropagation();
-    event.preventDefault();
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.stopPropagation();
+      event.preventDefault();
 
-    formProps && formProps.onSubmit && formProps.onSubmit(event);
+      formProps && formProps.onSubmit && formProps.onSubmit(event);
 
-    submit(event);
-  }, [submit, formProps]);
+      submit(event);
+    },
+    [submit, formProps]
+  );
 
   const formContext: FormContextValue<Model> = useShallowMemo({
     valid,
@@ -219,7 +272,9 @@ function _Form<Model = any>(props: FormProps<Model>) {
   });
 
   const error = getFieldError('');
-  const markAsTouched = useCallback(() => handleFieldBlur(''), [handleFieldBlur]);
+  const markAsTouched = useCallback(() => handleFieldBlur(''), [
+    handleFieldBlur,
+  ]);
 
   const rootFieldContext: FieldContextValue<Model> = useShallowMemo({
     fieldPath: '',
@@ -234,6 +289,8 @@ function _Form<Model = any>(props: FormProps<Model>) {
     ...getFieldStatus(''),
   });
 
+  useImperativeHandle(ref, () => ({ submit }), [submit]);
+
   return (
     <FormContext.Provider value={formContext}>
       <FieldContext.Provider value={rootFieldContext}>
@@ -246,4 +303,4 @@ function _Form<Model = any>(props: FormProps<Model>) {
 }
 
 export type Form = typeof _Form;
-export const Form: Form = memo(_Form) as any;
+export const Form: Form = memo(forwardRef(_Form)) as any;
