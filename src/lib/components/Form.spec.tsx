@@ -1,12 +1,23 @@
 import * as React from 'react';
 import { MutableRefObject, useCallback, useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render } from 'react-testing-library';
-import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup, FormRef } from '.';
+import {
+  FieldArray,
+  FieldArrayItems,
+  FieldArrayItemsRender,
+  FieldArrayRender,
+  FieldGroup,
+  FormRef,
+} from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
 import { useFormState } from '../hooks/useFormState';
 import { FormState } from '../models';
-import { ArrayValidation, ValidationDefinition, ValidationFunction } from '../validation';
+import {
+  ArrayValidation,
+  ValidationDefinition,
+  ValidationFunction,
+} from '../validation';
 import { Form, FormProps } from './Form';
 
 afterEach(cleanup);
@@ -38,28 +49,38 @@ describe('Form', () => {
   }
 
   function ModelFields(inputProps: Partial<InputFieldProps>) {
-    const renderChildItem: FieldArrayItemsRender<Model> = useCallback(({ remove }) => (
-      <div>
-        <ModelFields {...inputProps}/>
-        <button type="button" onClick={remove}>Remove</button>
-      </div>
-    ), [inputProps]);
+    const renderChildItem: FieldArrayItemsRender<Model> = useCallback(
+      ({ remove }) => (
+        <div>
+          <ModelFields {...inputProps} />
+          <button type="button" onClick={remove}>
+            Remove
+          </button>
+        </div>
+      ),
+      [inputProps]
+    );
 
-    const renderChildren: FieldArrayRender<Model> = useCallback(({ addItem }) => (
-      <>
-        <FieldArrayItems render={renderChildItem}/>
-        <button type="button" onClick={() => addItem(defaultModel)}>Add Child</button>
-      </>
-    ), [renderChildItem]);
+    const renderChildren: FieldArrayRender<Model> = useCallback(
+      ({ addItem }) => (
+        <>
+          <FieldArrayItems render={renderChildItem} />
+          <button type="button" onClick={() => addItem(defaultModel)}>
+            Add Child
+          </button>
+        </>
+      ),
+      [renderChildItem]
+    );
 
     return (
       <>
-        <InputField label="Name" name="name" {...inputProps}/>
-        <InputField label="Country" name="country" {...inputProps}/>
+        <InputField label="Name" name="name" {...inputProps} />
+        <InputField label="Country" name="country" {...inputProps} />
         <FieldGroup name="address">
-          <InputField label="Street" name="street" {...inputProps}/>
+          <InputField label="Street" name="street" {...inputProps} />
         </FieldGroup>
-        <FieldArray name="children" render={renderChildren}/>
+        <FieldArray name="children" render={renderChildren} />
       </>
     );
   }
@@ -84,54 +105,56 @@ describe('Form', () => {
         }}
         {...formProps}
       >
-        <ModelFields {...inputProps}/>
+        <ModelFields {...inputProps} />
         <button type="submit">Submit</button>
       </Form>
     );
   }
 
   it('should render values', () => {
-    const { getByLabelText, getAllByLabelText } = render(<TestComponent
-      initialModel={{
-        name: 'Paul',
-        country: 'Germany',
-        address: {
-          street: 'Sesamstreet',
-        },
-        children: [
-          {
-            ...defaultModel,
-            name: 'Kristine',
-            address: {
-              street: 'Other Street',
-            },
+    const { getByLabelText, getAllByLabelText } = render(
+      <TestComponent
+        initialModel={{
+          name: 'Paul',
+          country: 'Germany',
+          address: {
+            street: 'Sesamstreet',
           },
-        ],
-      }}
-    />);
+          children: [
+            {
+              ...defaultModel,
+              name: 'Kristine',
+              address: {
+                street: 'Other Street',
+              },
+            },
+          ],
+        }}
+      />
+    );
 
     expect(getByLabelText('Name')).toMatchObject({ value: 'Paul' });
     expect(getByLabelText('Country')).toMatchObject({ value: 'Germany' });
     expect(getByLabelText('Street')).toMatchObject({ value: 'Sesamstreet' });
     expect(getAllByLabelText('Name')[1]).toMatchObject({ value: 'Kristine' });
     expect(getAllByLabelText('Country')[1]).toMatchObject({ value: '' });
-    expect(getAllByLabelText('Street')[1]).toMatchObject({ value: 'Other Street' });
+    expect(getAllByLabelText('Street')[1]).toMatchObject({
+      value: 'Other Street',
+    });
   });
 
   it('should update values if input changes', () => {
     const handleModelChange = jest.fn();
-    const {
-      getByLabelText,
-      getAllByLabelText,
-      getByText,
-    } = render(<TestComponent
-      initialModel={{
-        ...defaultModel,
-        name: '',
-        country: '',
-      }}
-      onModelChange={handleModelChange}
-    />);
+    const { getByLabelText, getAllByLabelText, getByText } = render(
+      <TestComponent
+        initialModel={{
+          ...defaultModel,
+          name: '',
+          country: '',
+        }}
+        onModelChange={handleModelChange}
+      />
+    );
 
     fireInputEvent(getByLabelText('Name'), 'Christian');
     fireInputEvent(getByLabelText('Country'), 'Spain');
@@ -175,10 +198,9 @@ describe('Form', () => {
     const props: Partial<FormProps<Model>> = {
       onSubmit: jest.fn(),
     };
-    const { getByText } = render(<TestComponent
-      initialModel={defaultModel}
-      formProps={props}
-    />);
+    const { getByText } = render(
+      <TestComponent initialModel={defaultModel} formProps={props} />
+    );
 
     fireEvent.click(getByText('Submit'));
 
@@ -189,27 +211,18 @@ describe('Form', () => {
     function MyForm() {
       const [state, setState] = useState<FormState<any>>({
         model: {
-          items: [
-            { a: 'x' },
-            { a: 'y' },
-          ],
+          items: [{ a: 'x' }, { a: 'y' }],
         },
       });
 
       return (
-        <Form
-          state={state}
-          onChange={setState}
-        >
+        <Form state={state} onChange={setState}>
           <FieldArray
             name="items"
             getKey={i => i.a}
             render={() => (
-              <FieldGroup
-                name="x"
-                accessor="0"
-              >
-                <InputField name="a"/>
+              <FieldGroup name="x" accessor="0">
+                <InputField name="a" />
               </FieldGroup>
             )}
           />
@@ -217,7 +230,7 @@ describe('Form', () => {
       );
     }
 
-    expect(() => render(<MyForm/>)).not.toThrowError();
+    expect(() => render(<MyForm />)).not.toThrowError();
   });
 
   it('should provide the "onValueChange" callback on fields', () => {
@@ -225,20 +238,17 @@ describe('Form', () => {
     function MyForm() {
       const [state, setState] = useState<FormState<any>>({
         model: {
-          a: 0
+          a: 0,
         },
       });
 
       return (
-        <Form
-          state={state}
-          onChange={setState}
-        >
-          <InputField label="A" name="a" onValueChange={handleChange}/>
+        <Form state={state} onChange={setState}>
+          <InputField label="A" name="a" onValueChange={handleChange} />
         </Form>
       );
     }
-    const { getByLabelText } = render(<MyForm/>);
+    const { getByLabelText } = render(<MyForm />);
 
     fireInputEvent(getByLabelText('A'), 'Hello');
 
@@ -249,12 +259,9 @@ describe('Form', () => {
     const ref: MutableRefObject<FormRef | null> = { current: null };
     const props: Partial<FormProps<Model>> = {
       onSubmit: jest.fn(),
-      ref
+      ref,
     };
-    render(<TestComponent
-      initialModel={defaultModel}
-      formProps={props}
-    />);
+    render(<TestComponent initialModel={defaultModel} formProps={props} />);
 
     act(() => {
       ref.current!.submit();
@@ -263,11 +270,50 @@ describe('Form', () => {
     expect(props.onSubmit).toHaveBeenCalled();
   });
 
+  it('should throw an error if model does not match', () => {
+    function MyForm() {
+      const [state, setState] = useState<FormState<any>>({
+        model: {
+          a: 0,
+        },
+      });
+
+      return (
+        <Form state={state} onChange={setState}>
+          <InputField label="B" name="b" />
+        </Form>
+      );
+    }
+    console.error = jest.fn();
+    expect(() => render(<MyForm />)).toThrowErrorMatchingInlineSnapshot(
+      `"The key \\"b\\" does not exits on item {\\"a\\":0}."`
+    );
+  });
+
+  it('should not throw an error if model does not match and strict mode is disabled', () => {
+    function MyForm() {
+      const [state, setState] = useState<FormState<any>>({
+        model: {
+          a: 0,
+        },
+      });
+
+      return (
+        <Form state={state} onChange={setState} strict={false}>
+          <InputField label="B" name="b"/>
+        </Form>
+      );
+    }
+
+    expect(() => render(<MyForm/>)).not.toThrowError();
+  });
+
   describe('Validation', () => {
     const minLengthErrorMessage = 'More items required';
-    const minLength = (length: number): ValidationFunction<{ length: number }> => value => value.length < length
-      ? minLengthErrorMessage
-      : null;
+    const minLength = (
+      length: number
+    ): ValidationFunction<{ length: number }> => value =>
+      value.length < length ? minLengthErrorMessage : null;
 
     const validation: ValidationDefinition<Model> = {
       name: minLength(3),
@@ -278,7 +324,7 @@ describe('Form', () => {
         {
           name: minLength(4),
         },
-        minLength(1),
+        minLength(1)
       ),
     };
 
@@ -289,10 +335,9 @@ describe('Form', () => {
         onValidSubmit: jest.fn(),
         onInValidSubmit: jest.fn(),
       };
-      const { getByText } = render(<TestComponent
-        initialModel={defaultModel}
-        formProps={props}
-      />);
+      const { getByText } = render(
+        <TestComponent initialModel={defaultModel} formProps={props} />
+      );
 
       fireEvent.click(getByText('Submit'));
 
@@ -308,22 +353,24 @@ describe('Form', () => {
         onValidSubmit: jest.fn(),
         onInValidSubmit: jest.fn(),
       };
-      const { getByText } = render(<TestComponent
-        initialModel={{
-          ...defaultModel,
-          name: '123',
-          address: {
-            street: '123',
-          },
-          children: [
-            {
-              ...defaultModel,
-              name: '1234',
+      const { getByText } = render(
+        <TestComponent
+          initialModel={{
+            ...defaultModel,
+            name: '123',
+            address: {
+              street: '123',
             },
-          ],
-        }}
-        formProps={props}
-      />);
+            children: [
+              {
+                ...defaultModel,
+                name: '1234',
+              },
+            ],
+          }}
+          formProps={props}
+        />
+      );
 
       fireEvent.click(getByText('Submit'));
 
@@ -336,10 +383,9 @@ describe('Form', () => {
       const props: Partial<FormProps<Model>> = {
         validation,
       };
-      const { queryByText } = render(<TestComponent
-        initialModel={defaultModel}
-        formProps={props}
-      />);
+      const { queryByText } = render(
+        <TestComponent initialModel={defaultModel} formProps={props} />
+      );
 
       expect(queryByText(minLengthErrorMessage)).toBeNull();
     });
@@ -349,16 +395,16 @@ describe('Form', () => {
         validation,
       };
       const handleModelChange = jest.fn();
-      const { getAllByLabelText, getByText } = render(<TestComponent
-        initialModel={{
-          ...defaultModel,
-          children: [
-            defaultModel,
-          ],
-        }}
-        onModelChange={handleModelChange}
-        formProps={props}
-      />);
+      const { getAllByLabelText, getByText } = render(
+        <TestComponent
+          initialModel={{
+            ...defaultModel,
+            children: [defaultModel],
+          }}
+          onModelChange={handleModelChange}
+          formProps={props}
+        />
+      );
       const nameInput = getAllByLabelText('Name')[0];
       const streetInput = getAllByLabelText('Street')[0];
       const childNameInput = getAllByLabelText('Name')[1];
@@ -368,8 +414,12 @@ describe('Form', () => {
       });
 
       expect(nameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
-      expect(streetInput.parentNode).not.toHaveTextContent(minLengthErrorMessage);
-      expect(childNameInput.parentNode).not.toHaveTextContent(minLengthErrorMessage);
+      expect(streetInput.parentNode).not.toHaveTextContent(
+        minLengthErrorMessage
+      );
+      expect(childNameInput.parentNode).not.toHaveTextContent(
+        minLengthErrorMessage
+      );
 
       // Submit touches all
       act(() => {
@@ -378,7 +428,9 @@ describe('Form', () => {
 
       expect(nameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(streetInput.parentNode).toHaveTextContent(minLengthErrorMessage);
-      expect(childNameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
+      expect(childNameInput.parentNode).toHaveTextContent(
+        minLengthErrorMessage
+      );
 
       // It should not update in an endless loop
       await act(() => delay(1000));
@@ -389,15 +441,17 @@ describe('Form', () => {
       const props: Partial<FormProps<Model>> = {
         validation,
       };
-      const { queryByText, getByLabelText } = render(<TestComponent
-        initialModel={{
-          ...defaultModel,
-          name: '',
-          country: '',
-        }}
-        formProps={props}
-        showErrorIfDirty={true}
-      />);
+      const { queryByText, getByLabelText } = render(
+        <TestComponent
+          initialModel={{
+            ...defaultModel,
+            name: '',
+            country: '',
+          }}
+          formProps={props}
+          showErrorIfDirty={true}
+        />
+      );
 
       fireEvent.input(getByLabelText('Name'), { target: { value: '1' } });
 
@@ -408,10 +462,9 @@ describe('Form', () => {
       const props: Partial<FormProps<Model>> = {
         validation,
       };
-      const { getByLabelText } = render(<TestComponent
-        initialModel={defaultModel}
-        formProps={props}
-      />);
+      const { getByLabelText } = render(
+        <TestComponent initialModel={defaultModel} formProps={props} />
+      );
       const nameInput = getByLabelText('Name');
 
       fireEvent.blur(nameInput);
@@ -426,12 +479,9 @@ describe('Form', () => {
     it('should pass errors to onErrorsChange', () => {
       const props: Partial<FormProps<Model>> = {
         validation,
-        onErrorsChange: jest.fn()
+        onErrorsChange: jest.fn(),
       };
-      render(<TestComponent
-        initialModel={defaultModel}
-        formProps={props}
-      />);
+      render(<TestComponent initialModel={defaultModel} formProps={props} />);
 
       expect(props.onErrorsChange).toHaveBeenCalledWith({
         name: minLengthErrorMessage,
