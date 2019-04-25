@@ -1,23 +1,12 @@
 import * as React from 'react';
-import { MutableRefObject, useCallback, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useState } from 'react';
 import { act, cleanup, fireEvent, render } from 'react-testing-library';
-import {
-  FieldArray,
-  FieldArrayItems,
-  FieldArrayItemsRender,
-  FieldArrayRender,
-  FieldGroup,
-  FormRef,
-} from '.';
+import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup, FormRef } from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
 import { useFormState } from '../hooks/useFormState';
 import { FormState } from '../models';
-import {
-  ArrayValidation,
-  ValidationDefinition,
-  ValidationFunction,
-} from '../validation';
+import { ArrayValidation, ValidationDefinition, ValidationFunction } from '../validation';
 import { Form, FormProps } from './Form';
 
 afterEach(cleanup);
@@ -58,19 +47,19 @@ describe('Form', () => {
           </button>
         </div>
       ),
-      [inputProps]
+      [inputProps],
     );
 
     const renderChildren: FieldArrayRender<Model> = useCallback(
       ({ addItem }) => (
         <>
-          <FieldArrayItems render={renderChildItem} />
+          <FieldArrayItems render={renderChildItem}/>
           <button type="button" onClick={() => addItem(defaultModel)}>
             Add Child
           </button>
         </>
       ),
-      [renderChildItem]
+      [renderChildItem],
     );
 
     return (
@@ -80,7 +69,7 @@ describe('Form', () => {
         <FieldGroup name="address">
           <InputField label="Street" name="street" {...inputProps} />
         </FieldGroup>
-        <FieldArray name="children" render={renderChildren} />
+        <FieldArray name="children" render={renderChildren}/>
       </>
     );
   }
@@ -130,7 +119,7 @@ describe('Form', () => {
             },
           ],
         }}
-      />
+      />,
     );
 
     expect(getByLabelText('Name')).toMatchObject({ value: 'Paul' });
@@ -153,7 +142,7 @@ describe('Form', () => {
           country: '',
         }}
         onModelChange={handleModelChange}
-      />
+      />,
     );
 
     fireInputEvent(getByLabelText('Name'), 'Christian');
@@ -199,7 +188,7 @@ describe('Form', () => {
       onSubmit: jest.fn(),
     };
     const { getByText } = render(
-      <TestComponent initialModel={defaultModel} formProps={props} />
+      <TestComponent initialModel={defaultModel} formProps={props}/>,
     );
 
     fireEvent.click(getByText('Submit'));
@@ -222,7 +211,7 @@ describe('Form', () => {
             getKey={i => i.a}
             render={() => (
               <FieldGroup name="x" accessor="0">
-                <InputField name="a" />
+                <InputField name="a"/>
               </FieldGroup>
             )}
           />
@@ -230,11 +219,12 @@ describe('Form', () => {
       );
     }
 
-    expect(() => render(<MyForm />)).not.toThrowError();
+    expect(() => render(<MyForm/>)).not.toThrowError();
   });
 
   it('should provide the "onValueChange" callback on fields', () => {
     const handleChange = jest.fn();
+
     function MyForm() {
       const [state, setState] = useState<FormState<any>>({
         model: {
@@ -244,11 +234,12 @@ describe('Form', () => {
 
       return (
         <Form state={state} onChange={setState}>
-          <InputField label="A" name="a" onValueChange={handleChange} />
+          <InputField label="A" name="a" onValueChange={handleChange}/>
         </Form>
       );
     }
-    const { getByLabelText } = render(<MyForm />);
+
+    const { getByLabelText } = render(<MyForm/>);
 
     fireInputEvent(getByLabelText('A'), 'Hello');
 
@@ -261,7 +252,7 @@ describe('Form', () => {
       onSubmit: jest.fn(),
       ref,
     };
-    render(<TestComponent initialModel={defaultModel} formProps={props} />);
+    render(<TestComponent initialModel={defaultModel} formProps={props}/>);
 
     act(() => {
       ref.current!.submit();
@@ -280,13 +271,14 @@ describe('Form', () => {
 
       return (
         <Form state={state} onChange={setState}>
-          <InputField label="B" name="b" />
+          <InputField label="B" name="b"/>
         </Form>
       );
     }
+
     console.error = jest.fn();
-    expect(() => render(<MyForm />)).toThrowErrorMatchingInlineSnapshot(
-      `"The key \\"b\\" does not exits on item {\\"a\\":0}."`
+    expect(() => render(<MyForm/>)).toThrowErrorMatchingInlineSnapshot(
+      `"The key \\"b\\" does not exits on item {\\"a\\":0}."`,
     );
   });
 
@@ -308,10 +300,32 @@ describe('Form', () => {
     expect(() => render(<MyForm/>)).not.toThrowError();
   });
 
+  it('should not throw an error if model does not match and is updated', () => {
+    function MyForm() {
+      const [state, setState] = useState<FormState<any>>({
+        model: {
+          a: 0,
+        },
+      });
+
+      return (
+        <Form state={state} onChange={setState} strict={false}>
+          <InputField label="B" name="b"/>
+        </Form>
+      );
+    }
+
+    const { getByLabelText } = render(<MyForm/>);
+
+    expect(() => {
+      fireInputEvent(getByLabelText('B'), 'New Value');
+    }).not.toThrowError();
+  });
+
   describe('Validation', () => {
     const minLengthErrorMessage = 'More items required';
     const minLength = (
-      length: number
+      length: number,
     ): ValidationFunction<{ length: number }> => value =>
       value.length < length ? minLengthErrorMessage : null;
 
@@ -324,7 +338,7 @@ describe('Form', () => {
         {
           name: minLength(4),
         },
-        minLength(1)
+        minLength(1),
       ),
     };
 
@@ -336,7 +350,7 @@ describe('Form', () => {
         onInValidSubmit: jest.fn(),
       };
       const { getByText } = render(
-        <TestComponent initialModel={defaultModel} formProps={props} />
+        <TestComponent initialModel={defaultModel} formProps={props}/>,
       );
 
       fireEvent.click(getByText('Submit'));
@@ -369,7 +383,7 @@ describe('Form', () => {
             ],
           }}
           formProps={props}
-        />
+        />,
       );
 
       fireEvent.click(getByText('Submit'));
@@ -384,7 +398,7 @@ describe('Form', () => {
         validation,
       };
       const { queryByText } = render(
-        <TestComponent initialModel={defaultModel} formProps={props} />
+        <TestComponent initialModel={defaultModel} formProps={props}/>,
       );
 
       expect(queryByText(minLengthErrorMessage)).toBeNull();
@@ -403,7 +417,7 @@ describe('Form', () => {
           }}
           onModelChange={handleModelChange}
           formProps={props}
-        />
+        />,
       );
       const nameInput = getAllByLabelText('Name')[0];
       const streetInput = getAllByLabelText('Street')[0];
@@ -415,10 +429,10 @@ describe('Form', () => {
 
       expect(nameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(streetInput.parentNode).not.toHaveTextContent(
-        minLengthErrorMessage
+        minLengthErrorMessage,
       );
       expect(childNameInput.parentNode).not.toHaveTextContent(
-        minLengthErrorMessage
+        minLengthErrorMessage,
       );
 
       // Submit touches all
@@ -429,7 +443,7 @@ describe('Form', () => {
       expect(nameInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(streetInput.parentNode).toHaveTextContent(minLengthErrorMessage);
       expect(childNameInput.parentNode).toHaveTextContent(
-        minLengthErrorMessage
+        minLengthErrorMessage,
       );
 
       // It should not update in an endless loop
@@ -450,7 +464,7 @@ describe('Form', () => {
           }}
           formProps={props}
           showErrorIfDirty={true}
-        />
+        />,
       );
 
       fireEvent.input(getByLabelText('Name'), { target: { value: '1' } });
@@ -463,7 +477,7 @@ describe('Form', () => {
         validation,
       };
       const { getByLabelText } = render(
-        <TestComponent initialModel={defaultModel} formProps={props} />
+        <TestComponent initialModel={defaultModel} formProps={props}/>,
       );
       const nameInput = getByLabelText('Name');
 
@@ -481,7 +495,7 @@ describe('Form', () => {
         validation,
         onErrorsChange: jest.fn(),
       };
-      render(<TestComponent initialModel={defaultModel} formProps={props} />);
+      render(<TestComponent initialModel={defaultModel} formProps={props}/>);
 
       expect(props.onErrorsChange).toHaveBeenCalledWith({
         name: minLengthErrorMessage,

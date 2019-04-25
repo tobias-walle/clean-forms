@@ -27,7 +27,7 @@ export const renderInput: FieldRenderFunction<string | number, InputFieldProps> 
       {custom.label}
       <input
         name={name}
-        value={value}
+        value={value == null ? '' : value}
         onChange={event => {
           let newValue: string | number = event.target.value;
           if (custom.type === 'number') {

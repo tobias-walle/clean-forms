@@ -22,13 +22,13 @@ export class StateUpdater<S> {
   private onChange?: (state: S) => void;
   private updates: Array<Update<S>> = [];
 
-  constructor(
-    private getState: () => S,
-    private isMounted: () => boolean,
-  ) {
-  }
+  constructor(private getState: () => S, private isMounted: () => boolean) {}
 
-  public updateDeep(path: string, value: any | DELETE, noCallback = false): void {
+  public updateDeep(
+    path: string,
+    value: any | DELETE,
+    noCallback = false
+  ): void {
     this.updates.push({ type: 'DEEP', path, value });
     this.triggerUpdate(noCallback);
   }
@@ -68,7 +68,12 @@ function flush<S>(state: S, updates: Array<Update<S>>): S {
   let newState: S = state;
   for (const update of updates) {
     if (update.type === 'DEEP') {
-      newState = updateDeep({ object: newState, path: update.path, value: update.value });
+      newState = updateDeep({
+        object: newState,
+        path: update.path,
+        value: update.value,
+        assert: false,
+      });
     } else if (update.type === 'PATCH') {
       newState = { ...(newState as any), ...update.patch };
     } else if (update.type === 'SYNC') {
