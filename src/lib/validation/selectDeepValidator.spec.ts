@@ -61,7 +61,16 @@ describe('selectDeepValidator', () => {
 
   it('should select from a nested item array definition', () => {
     const validator = () => null;
-    const object: ValidationDefinition<any> = {
+    type Model = {
+      a: {
+        b: Array<{
+          c: {
+            d: 1
+          }
+        }>
+      }
+    };
+    const object: ValidationDefinition<Model> = {
       a: {
         b: new ArrayValidation({
           c: {

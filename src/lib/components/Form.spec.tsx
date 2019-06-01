@@ -1,6 +1,6 @@
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 import { MutableRefObject, useCallback, useState } from 'react';
-import { act, cleanup, fireEvent, render } from 'react-testing-library';
 import { FieldArray, FieldArrayItems, FieldArrayItemsRender, FieldArrayRender, FieldGroup, FormRef } from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
@@ -122,9 +122,9 @@ describe('Form', () => {
       />,
     );
 
-    expect(getByLabelText('Name')).toMatchObject({ value: 'Paul' });
-    expect(getByLabelText('Country')).toMatchObject({ value: 'Germany' });
-    expect(getByLabelText('Street')).toMatchObject({ value: 'Sesamstreet' });
+    expect(getAllByLabelText('Name')[0]).toMatchObject({ value: 'Paul' });
+    expect(getAllByLabelText('Country')[0]).toMatchObject({ value: 'Germany' });
+    expect(getAllByLabelText('Street')[0]).toMatchObject({ value: 'Sesamstreet' });
     expect(getAllByLabelText('Name')[1]).toMatchObject({ value: 'Kristine' });
     expect(getAllByLabelText('Country')[1]).toMatchObject({ value: '' });
     expect(getAllByLabelText('Street')[1]).toMatchObject({

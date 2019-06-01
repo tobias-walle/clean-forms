@@ -93,7 +93,7 @@ describe('getValidationDefinitionPaths', () => {
 
   it('should work with array validators in objects', () => {
     const model = { array: [{ a: '' }] };
-    const arrayValidation = new ArrayValidation<any>(
+    const arrayValidation = new ArrayValidation<typeof model['array']>(
       { a: () => null },
       () => null
     );
