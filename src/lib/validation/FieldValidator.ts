@@ -1,13 +1,23 @@
-import { Path } from '../utils/FieldRegister';
+import {
+  asPath,
+  combinePaths,
+  getPathAsString,
+  Path,
+  path as createPath,
+} from '../models/Path';
 import { selectDeep } from '../utils/selectDeep';
 import { getValidationDefinitionPaths } from './getValidationDefinitionPaths';
 import { selectDeepValidator } from './selectDeepValidator';
-import { ValidationDefinition, ValidationError, ValidationFunction } from './ValidationDefinition';
+import {
+  ValidationDefinition,
+  ValidationError,
+  ValidationFunction,
+} from './ValidationDefinition';
 
 interface ValidateFieldArguments<Model> {
   model: Model;
   validationDefinition: ValidationDefinition<Model>;
-  path: Path;
+  path: Path<Model>;
 }
 
 export interface ValidateModelArguments<Model> {
@@ -17,79 +27,113 @@ export interface ValidateModelArguments<Model> {
 
 export type FieldError = string | undefined;
 
-type FieldErrors = Array<[string, FieldError]>;
+type FieldErrors<Model> = Array<[Path<Model>, FieldError]>;
 
 export interface FieldErrorMapping {
   [path: string]: FieldError;
 }
 
-export function validateModel<Model = any>({ model, validationDefinition }: ValidateModelArguments<Model>): FieldErrorMapping {
-  return getValidationDefinitionPaths(validationDefinition, model)
-    .reduce((result, path) => {
-      validateField({ model, validationDefinition, path }).forEach(([errorPath, error]) => {
-        result[joinPaths(path, errorPath)] = error;
-      });
+export function validateModel<Model = any>({
+  model,
+  validationDefinition,
+}: ValidateModelArguments<Model>): FieldErrorMapping {
+  return getValidationDefinitionPaths(validationDefinition, model).reduce(
+    (result, path) => {
+      validateField({ model, validationDefinition, path }).forEach(
+        ([errorPath, error]) => {
+          result[getPathAsString(combinePaths(path, errorPath))] = error;
+        }
+      );
       return result;
-    }, {} as FieldErrorMapping);
+    },
+    {} as FieldErrorMapping
+  );
 }
 
-function validateField<Model>({ model, validationDefinition, path }: ValidateFieldArguments<Model>): FieldErrors {
+function validateField<Model>({
+  model,
+  validationDefinition,
+  path,
+}: ValidateFieldArguments<Model>): FieldErrors<Model> {
   const value = selectDeep({ object: model, path, assert: false });
-  const validation = selectDeepValidator({ object: validationDefinition, path, assert: false });
+  const validation = selectDeepValidator({
+    object: validationDefinition,
+    path,
+    assert: false,
+  });
   if (!validation) {
     return [];
   } else {
-    return runValidationFunctionInTryCatchAndCheckType(path, value, model, validation);
+    return runValidationFunctionInTryCatchAndCheckType(
+      path,
+      value,
+      model,
+      validation
+    );
   }
 }
 
-function runValidationFunctionInTryCatchAndCheckType<Model>(path: string, value: any, model: Model, validationFunction: any): FieldErrors {
+function runValidationFunctionInTryCatchAndCheckType<Model>(
+  path: Path<Model>,
+  value: any,
+  model: Model,
+  validationFunction: any
+): FieldErrors<Model> {
   if (typeof validationFunction === 'function') {
-    return runValidationFunctionInTryCatch(path, value, model, validationFunction);
+    return runValidationFunctionInTryCatch(
+      path,
+      value,
+      model,
+      validationFunction
+    );
   } else {
-    const pathAsString = JSON.stringify(path);
+    const pathAsString = getPathAsString(path);
     const errorMessage = `Invalid validation type "${typeof validationFunction}" for path "${pathAsString}"`;
     console.error(errorMessage);
-    return [['', errorMessage]];
+    return [[createPath(), errorMessage]];
   }
 }
 
-function runValidationFunctionInTryCatch<Model>(path: string, value: any, model: Model, validationFunction: ValidationFunction | undefined | null): FieldErrors {
+function runValidationFunctionInTryCatch<Model>(
+  path: Path<Model>,
+  value: any,
+  model: Model,
+  validationFunction: ValidationFunction | undefined | null
+): FieldErrors<Model> {
   try {
     return runValidationFunctionIfDefined(value, model, validationFunction);
   } catch (e) {
     value = JSON.stringify(value);
-    const errorMessage = `Error while running validation function for value ${value} in path ${path}:`;
+    const pathAsString = getPathAsString(path);
+    const errorMessage = `Error while running validation function for value ${value} in path ${pathAsString}:`;
     console.error(errorMessage, e);
-    return [['', errorMessage]];
+    return [[createPath(), errorMessage]];
   }
 }
 
-function runValidationFunctionIfDefined<Model>(value: any, model: Model, validationFunction: ValidationFunction | undefined | null): FieldErrors {
+function runValidationFunctionIfDefined<Model>(
+  value: any,
+  model: Model,
+  validationFunction: ValidationFunction | undefined | null
+): FieldErrors<Model> {
   if (validationFunction == null) {
     return [];
   }
   const validationResult = validationFunction(value);
   if (validationResult instanceof Array) {
-    return validationResult
-      .map(([path, error]): [string, FieldError] =>
-        [path, validationErrorToFieldError(error)]
-      );
+    return validationResult.map(
+      ([pathLike, error]): [Path<Model>, FieldError] => [
+        asPath(pathLike) as Path<Model>,
+        validationErrorToFieldError(error),
+      ]
+    );
   } else {
-    return [['', validationErrorToFieldError(validationResult)]];
+    return [[createPath(), validationErrorToFieldError(validationResult)]];
   }
 }
 
-function validationErrorToFieldError(validationError: ValidationError): FieldError {
+function validationErrorToFieldError(
+  validationError: ValidationError
+): FieldError {
   return validationError || undefined;
-}
-
-function joinPaths(path1: string, path2: string): string {
-  if (path1 === '') {
-    return path2;
-  }
-  if (path2 === '') {
-    return path1;
-  }
-  return `${path1}.${path2}`;
 }

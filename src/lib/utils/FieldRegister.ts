@@ -1,8 +1,6 @@
+import { getPathAsString, Path, Paths } from '../models/Path';
 import { createDebouncedFunction } from './createDebouncedFunction';
 import { removeItemFromArray } from './removeItemFromArray';
-
-export type Path = string;
-export type Paths = string[];
 
 export interface FieldRegisterChanges {
   registered: Paths;
@@ -30,19 +28,21 @@ export class FieldRegister {
     this.resetChanges();
   }
 
-  public includesPath(path: Path): boolean {
-    return this.paths.includes(path);
+  public includesPath(path: Path<unknown>): boolean {
+    const pathAsString = getPathAsString(path);
+    return this.paths.find(p => pathAsString === getPathAsString(p)) != null;
   }
 
-  public register(path: Path): void {
+  public register(path: Path<unknown>): void {
     this._paths.push(path);
 
     this.changes.registered.push(path);
     this.triggerListeners();
   }
 
-  public unregister(path: Path): void {
-    const index = this.paths.indexOf(path);
+  public unregister(path: Path<unknown>): void {
+    const pathAsString = getPathAsString(path);
+    const index = this.paths.findIndex(p => pathAsString === getPathAsString(p));
 
     this._paths.splice(index, 1);
 

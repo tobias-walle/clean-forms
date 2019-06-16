@@ -4,7 +4,8 @@ import {
   forwardRef,
   memo,
   MutableRefObject,
-  Ref, RefAttributes,
+  Ref,
+  RefAttributes,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -26,10 +27,16 @@ import {
 import { useAsRef } from '../hooks/useAsRef';
 import { useFormReadApi } from '../hooks/useFormReadApi';
 import { useShallowMemo } from '../hooks/useShallowMemo';
-import { FormState } from '../models';
+import {
+  fieldPath as createFieldPath,
+  FormState,
+  getPathAsString,
+  Path,
+  path as createPath,
+} from '../models';
 import { cloneFieldStatus } from '../statusTracking';
 import { FieldStatusUpdater } from '../statusTracking/FieldStatusUpdater';
-import { FieldRegister, FieldRegisterChanges, Path } from '../utils';
+import { FieldRegister, FieldRegisterChanges } from '../utils';
 import { StateUpdater } from '../utils/StateUpdater';
 import {
   FieldErrorMapping,
@@ -85,7 +92,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     onErrorsChange,
     onInValidSubmit,
     onValidSubmit,
-    strict
+    strict,
   } = props;
   const { model, status = {} } = state;
 
@@ -111,12 +118,12 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   // ArrayGetKeyMapping
   const arrayGetKeyMappingRef = useRef<Map<string, GetKey<any>>>(new Map());
 
-  const setArrayGetKey: SetArrayGetKey = useCallback((path, getKey) => {
-    arrayGetKeyMappingRef.current.set(path, getKey);
+  const setArrayGetKey: SetArrayGetKey<Model> = useCallback((path, getKey) => {
+    arrayGetKeyMappingRef.current.set(getPathAsString(path), getKey);
   }, []);
 
-  const removeArrayGetKeyFunction = useCallback((path: Path) => {
-    arrayGetKeyMappingRef.current.delete(path);
+  const removeArrayGetKeyFunction = useCallback((path: Path<Model>) => {
+    arrayGetKeyMappingRef.current.delete(getPathAsString(path));
   }, []);
 
   // FieldRegisterRef
@@ -177,18 +184,18 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     state,
     validationDefinition: validation,
     fieldErrorMapping,
-    strict
+    strict,
   });
 
   // Callbacks
-  const handleFieldMount: OnFieldMount = useCallback(
+  const handleFieldMount: OnFieldMount<Model> = useCallback(
     path => {
       fieldRegister.register(path);
     },
     [fieldRegister]
   );
 
-  const handleFieldUnmount: OnFieldUnmount = useCallback(
+  const handleFieldUnmount: OnFieldUnmount<Model> = useCallback(
     path => {
       if (!isMountedRef.current) {
         // Cancel if the form is not mounted anymore
@@ -200,7 +207,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   );
 
   const getFieldStatusRef = useAsRef(getFieldStatus);
-  const handleFieldBlur: OnFieldBlur = useCallback(
+  const handleFieldBlur: OnFieldBlur<Model> = useCallback(
     path => {
       const newStatus = cloneFieldStatus(getFieldStatusRef.current(path), {
         touched: true,
@@ -209,7 +216,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
         ...oldState,
         status: {
           ...oldState.status,
-          [path]: newStatus,
+          [getPathAsString(path)]: newStatus,
         },
       }));
     },
@@ -219,7 +226,11 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   const statusRef = useAsRef(status);
   const handleFieldChange: OnFieldChange<Model> = useCallback(
     (id, path, value) => {
-      propsStateUpdaterRef.current.updateDeep(`model.${path}`, value, true);
+      propsStateUpdaterRef.current.updateDeep(
+        `model.${getPathAsString(path)}`,
+        value,
+        true
+      );
 
       const updatedStatus = fieldStatusUpdaterRef.current.markAsDirty(
         statusRef.current,
@@ -277,14 +288,14 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     setArrayGetKey,
   });
 
-  const error = getFieldError('');
-  const markAsTouched = useCallback(() => handleFieldBlur(''), [
+  const error = getFieldError(createPath());
+  const markAsTouched = useCallback(() => handleFieldBlur(createPath()), [
     handleFieldBlur,
   ]);
 
   const rootFieldContext: FieldContextValue<Model> = useShallowMemo({
-    fieldPath: '',
-    modelPath: '',
+    fieldPath: createFieldPath<Model>(),
+    modelPath: createPath<Model>(),
     name: '',
     value: model,
     setValue: setModel,
@@ -292,7 +303,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     error,
     valid: !error,
     invalid: !!error,
-    ...getFieldStatus(''),
+    ...getFieldStatus(createPath()),
   });
 
   useImperativeHandle(ref, () => ({ submit }), [submit]);

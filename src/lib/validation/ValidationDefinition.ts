@@ -1,5 +1,7 @@
+import { Path, PathLike } from '../models/Path';
+
 export type ValidationError = string | null;
-export type ValidationErrors = Array<[string, ValidationError]>;
+export type ValidationErrors<T = unknown> = Array<[PathLike<T>, ValidationError]>;
 
 type ArrayItemType<T> = T extends Array<infer U> ? U : never;
 

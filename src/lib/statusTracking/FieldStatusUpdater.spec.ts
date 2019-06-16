@@ -1,3 +1,4 @@
+import { asPath, Path } from '../models/Path';
 import { FieldRegister } from '../utils/FieldRegister';
 import { cloneFieldStatus, DEFAULT_FIELD_STATUS } from './FieldStatus';
 import { FieldStatusMapping } from './FieldStatusMapping';
@@ -26,7 +27,7 @@ describe('FieldStatusUpdater', () => {
         c: DEFAULT_FIELD_STATUS,
       };
 
-      const result = fieldStatusUpdater.markAsDirty(statusBefore, 'b');
+      const result = fieldStatusUpdater.markAsDirty(statusBefore, asPath('b'));
 
       expect(result).toEqual(expectedStatus);
     });
@@ -39,16 +40,15 @@ describe('FieldStatusUpdater', () => {
       };
       const expectedStatus: FieldStatusMapping = statusBefore;
 
-      const result = fieldStatusUpdater.markAsDirty(statusBefore, 'b');
+      const result = fieldStatusUpdater.markAsDirty(statusBefore, asPath('b'));
 
       expect(result).toEqual(expectedStatus);
     });
 
     it('should not throw an error if the field does not exits but is registered', () => {
-      fieldRegister.register('x');
-      expect(() => fieldStatusUpdater.markAsDirty({}, 'x')).not.toThrowError();
+      fieldRegister.register(asPath('x'));
+      expect(() => fieldStatusUpdater.markAsDirty({}, asPath('x'))).not.toThrowError();
     });
-
   });
 
   describe('markAsTouched', () => {
@@ -65,7 +65,7 @@ describe('FieldStatusUpdater', () => {
         c: DEFAULT_FIELD_STATUS,
       };
 
-      const result = fieldStatusUpdater.markAsTouched(statusBefore, 'b');
+      const result = fieldStatusUpdater.markAsTouched(statusBefore, asPath('b'));
 
       expect(result).toEqual(expectedStatus);
     });
@@ -79,7 +79,9 @@ describe('FieldStatusUpdater', () => {
         b: DEFAULT_FIELD_STATUS,
         c: DEFAULT_FIELD_STATUS,
       };
-      const TOUCHED_STATUS = cloneFieldStatus(DEFAULT_FIELD_STATUS, { touched: true });
+      const TOUCHED_STATUS = cloneFieldStatus(DEFAULT_FIELD_STATUS, {
+        touched: true,
+      });
       const expectedStatus: FieldStatusMapping = {
         a: TOUCHED_STATUS,
         b: TOUCHED_STATUS,
@@ -104,7 +106,7 @@ describe('FieldStatusUpdater', () => {
         c: DEFAULT_FIELD_STATUS,
       };
 
-      const result = fieldStatusUpdater.addIfFieldNotExists(statusBefore, 'c');
+      const result = fieldStatusUpdater.addIfFieldNotExists(statusBefore, asPath('c'));
 
       expect(result).toEqual(expectedStatus);
     });
@@ -113,12 +115,12 @@ describe('FieldStatusUpdater', () => {
       const statusBefore: FieldStatusMapping = {
         a: cloneFieldStatus(DEFAULT_FIELD_STATUS, {
           dirty: true,
-          touched: true
+          touched: true,
         }),
       };
       const expectedStatus: FieldStatusMapping = statusBefore;
 
-      const result = fieldStatusUpdater.addIfFieldNotExists(statusBefore, 'a');
+      const result = fieldStatusUpdater.addIfFieldNotExists(statusBefore, asPath('a'));
 
       expect(result).toEqual(expectedStatus);
     });
@@ -136,18 +138,24 @@ describe('FieldStatusUpdater', () => {
         b: DEFAULT_FIELD_STATUS,
       };
 
-      const result = fieldStatusUpdater.removeIfFieldExists(statusBefore, 'c');
+      const result = fieldStatusUpdater.removeIfFieldExists(
+        statusBefore,
+        asPath('c')
+      );
 
       expect(result).toEqual(expectedStatus);
     });
 
     it('should do nothing if field not exists', () => {
       const statusBefore: FieldStatusMapping = {
-        a: DEFAULT_FIELD_STATUS
+        a: DEFAULT_FIELD_STATUS,
       };
       const expectedStatus: FieldStatusMapping = statusBefore;
 
-      const result = fieldStatusUpdater.removeIfFieldExists(statusBefore, 'b');
+      const result = fieldStatusUpdater.removeIfFieldExists(
+        statusBefore,
+        asPath('b')
+      );
 
       expect(result).toEqual(expectedStatus);
     });
@@ -155,7 +163,7 @@ describe('FieldStatusUpdater', () => {
 
   function registerFields(...fields: string[]): void {
     fields.forEach(field => {
-      fieldRegister.register(field);
+      fieldRegister.register(asPath(field));
     });
   }
 });

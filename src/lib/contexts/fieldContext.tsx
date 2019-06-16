@@ -1,23 +1,39 @@
 import * as React from 'react';
-import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from 'react';
+import {
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import { useShallowMemo } from '../hooks/useShallowMemo';
+import { FieldPath, FieldPathLike } from '../models';
+import {
+  asPath,
+  combinePaths,
+  getPathAsString,
+  Path,
+  PathLike,
+} from '../models/Path';
 import { FieldStatus } from '../statusTracking';
-import { assertNotNull, createPath, DELETE, Path } from '../utils';
+import { assertNotNull, DELETE } from '../utils';
 import { FieldError } from '../validation';
 import { useFormContext } from './formContext';
 
 export type SetFieldValueWithValue<Value> = (value: Value) => void;
-export type SetFieldValueWithFunction<Value> = (update: (old: Value) => Value) => void;
+export type SetFieldValueWithFunction<Value> = (
+  update: (old: Value) => Value
+) => void;
 export type SetFieldValue<Value> = SetFieldValueWithValue<Value>;
 
 export type MarkAsTouched = () => void;
 
 export interface FieldContextValue<Value> extends FieldStatus {
   /** The path to the field. Used for example for storing the error message */
-  fieldPath: Path;
+  fieldPath: FieldPath<unknown, Value>;
 
   /** The path on the file model */
-  modelPath: Path;
+  modelPath: Path<unknown, Value>;
 
   /** The name of the field */
   name: string;
@@ -41,11 +57,13 @@ export interface FieldContextValue<Value> extends FieldStatus {
   markAsTouched: MarkAsTouched;
 }
 
-export const FieldContext = React.createContext<FieldContextValue<any> | null>(null);
+export const FieldContext = React.createContext<FieldContextValue<any> | null>(
+  null
+);
 
-export function useComputedFieldContext<Value>(
-  relativeModelPath: string,
-  relativeFieldPath: string
+export function useComputedFieldContext<ContextValue, Value>(
+  relativeModelPath: PathLike<ContextValue, Value>,
+  relativeFieldPath: FieldPathLike<ContextValue, Value>
 ): FieldContextValue<Value> {
   const formContext = useFormContext();
   const {
@@ -55,11 +73,17 @@ export function useComputedFieldContext<Value>(
     onFieldBlur,
     onFieldChange,
   } = formContext;
-  const parentFieldContext = useFieldContext();
+  const parentFieldContext = useFieldContext<ContextValue>();
 
-  const fieldPath = createPath(parentFieldContext.fieldPath, relativeFieldPath);
+  const fieldPath = combinePaths(
+    parentFieldContext.fieldPath,
+    asPath(relativeFieldPath)
+  );
 
-  const modelPath = createPath(parentFieldContext.modelPath, relativeModelPath);
+  const modelPath = combinePaths(
+    parentFieldContext.modelPath,
+    asPath(relativeModelPath)
+  );
 
   /** Register the field to the form */
   const formContextRef = useRef(formContext);
@@ -70,24 +94,24 @@ export function useComputedFieldContext<Value>(
     // eslint-disable-next-line
   }, []);
 
-  const value = useMemo(
-    () => getFieldValue(modelPath),
-    [getFieldValue, modelPath],
-  );
+  const value = useMemo(() => getFieldValue(modelPath), [
+    getFieldValue,
+    modelPath,
+  ]);
 
-  const error = useMemo(
-    () => getFieldError(modelPath),
-    [getFieldError, modelPath],
-  );
+  const error = useMemo(() => getFieldError(modelPath), [
+    getFieldError,
+    modelPath,
+  ]);
 
-  const fieldStatus = useMemo(
-    () => getFieldStatus(fieldPath),
-    [getFieldStatus, fieldPath],
-  );
+  const fieldStatus = useMemo(() => getFieldStatus(fieldPath), [
+    getFieldStatus,
+    fieldPath,
+  ]);
 
   const setValue: SetFieldValue<Value | DELETE> = useCallback(
     valueOrUpdate => onFieldChange(fieldPath, modelPath, valueOrUpdate),
-    [fieldPath, modelPath, onFieldChange],
+    [fieldPath, modelPath, onFieldChange]
   );
 
   const markAsTouched: MarkAsTouched = useCallback(() => {
@@ -96,7 +120,7 @@ export function useComputedFieldContext<Value>(
 
   return useShallowMemo({
     ...fieldStatus,
-    name: fieldPath,
+    name: getPathAsString(fieldPath),
     fieldPath,
     modelPath,
     value,
@@ -108,22 +132,30 @@ export function useComputedFieldContext<Value>(
   });
 }
 
-interface FieldContextProviderProps {
-  relativeFieldPath: Path;
-  relativeModelPath: Path;
+interface FieldContextProviderProps<ContextValue, Value> {
+  relativeModelPath: PathLike<ContextValue, Value>;
+  relativeFieldPath: FieldPathLike<ContextValue, Value>;
   children?: React.ReactNode;
 }
 
-export function FieldContextProvider<Value>(props: FieldContextProviderProps) {
-  return <FieldContext.Provider value={useComputedFieldContext(
-    props.relativeModelPath,
-    props.relativeFieldPath
-  )}>{props.children}</FieldContext.Provider>;
+export function FieldContextProvider<ContextValue, Value>(
+  props: FieldContextProviderProps<ContextValue, Value>
+) {
+  return (
+    <FieldContext.Provider
+      value={useComputedFieldContext(
+        props.relativeModelPath,
+        props.relativeFieldPath
+      )}
+    >
+      {props.children}
+    </FieldContext.Provider>
+  );
 }
 
 export function useFieldContext<Value>(): FieldContextValue<Value> {
   return assertNotNull(
     useContext(FieldContext),
-    'You can only use the FieldContext inside a Form',
-  );
+    'You can only use the FieldContext inside a Form'
+  ) as FieldContextValue<Value>;
 }

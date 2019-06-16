@@ -1,6 +1,12 @@
-import { Paths } from '../utils/FieldRegister';
-import { getValidationDefinitionPaths } from './getValidationDefinitionPaths';
+import { getPathAsString, path, Paths } from '../models/Path';
+import {
+  getValidationDefinitionPaths,
+} from './getValidationDefinitionPaths';
 import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
+
+function getPathsAsString(paths: Paths): string[] {
+  return paths.map(p => getPathAsString(p));
+}
 
 describe('getValidationDefinitionPaths', () => {
   it('should get paths', () => {
@@ -9,86 +15,92 @@ describe('getValidationDefinitionPaths', () => {
       b: {
         c: 2,
         d: {
-          e: []
-        }
-      }
+          e: [],
+        },
+      },
     };
     const validationDefinition: ValidationDefinition<any> = {
       a: () => null,
       b: {
         c: () => null,
         d: {
-          e: new ArrayValidation(null, () => null)
-        }
-      }
+          e: new ArrayValidation(null, () => null),
+        },
+      },
     };
     const expectedPaths: Paths = [
-      'a',
-      'b.c',
-      'b.d.e',
+      path<typeof value>().a,
+      path<typeof value>().b.c,
+      path<typeof value>().b.d.e,
     ];
 
-    expect(getValidationDefinitionPaths(validationDefinition, value)).toEqual(expectedPaths);
+    expect(
+      getPathsAsString(
+        getValidationDefinitionPaths(validationDefinition, value)
+      )
+    ).toEqual(getPathsAsString(expectedPaths));
   });
 
   it('should get paths if value is empty', () => {
     const value = {
       b: {
-        c: 12
-      }
+        c: 12,
+      },
     };
     const validationDefinition: ValidationDefinition<any> = {
       a: () => null,
       b: {
         c: () => null,
         d: {
-          e: new ArrayValidation(null, () => null)
-        }
-      }
+          e: new ArrayValidation(null, () => null),
+        },
+      },
     };
-    const expectedPaths: Paths = [
-      'a',
-      'b.c'
-    ];
+    const expectedPaths: Paths = [path<any>().a, path<typeof value>().b.c];
 
-    expect(getValidationDefinitionPaths(validationDefinition, value)).toEqual(expectedPaths);
+    expect(
+      getPathsAsString(
+        getValidationDefinitionPaths(validationDefinition, value)
+      )
+    ).toEqual(getPathsAsString(expectedPaths));
   });
 
   it('should work with value arrays', () => {
     const model = [0];
-    const arrayValidation = new ArrayValidation<any>(
-      () => null
-    );
-    const expectedPaths: Paths = [
-      '0',
-    ];
+    const arrayValidation = new ArrayValidation<any>(() => null);
+    const expectedPaths: Paths = [path<typeof model>()[0]];
 
-    expect(getValidationDefinitionPaths(arrayValidation, model)).toEqual(expectedPaths);
+    expect(
+      getPathsAsString(
+        getValidationDefinitionPaths(arrayValidation, model)
+      )
+    ).toEqual(getPathsAsString(expectedPaths));
   });
 
   it('should work with object arrays', () => {
     const model = [{ a: '' }];
-    const arrayValidation = new ArrayValidation<typeof model>(
-      { a: () => null },
-    );
-    const expectedPaths: Paths = [
-      '0.a',
-    ];
+    const arrayValidation = new ArrayValidation<typeof model>({
+      a: () => null,
+    });
+    const expectedPaths: Paths = [path<typeof model>()[0].a];
 
-    expect(getValidationDefinitionPaths(arrayValidation, model)).toEqual(expectedPaths);
+    expect(
+      getPathsAsString(
+        getValidationDefinitionPaths(arrayValidation, model)
+      )
+    ).toEqual(getPathsAsString(expectedPaths));
   });
 
   it('should work with array validators', () => {
     const model = [{ a: '' }];
-    const arrayValidation = new ArrayValidation(
-      null,
-      () => null
-    );
-    const expectedPaths: Paths = [
-      ''
-    ];
+    const arrayValidation = new ArrayValidation(null, () => null);
+    const expectedPaths: Paths = [path<typeof model>()];
 
-    expect(getValidationDefinitionPaths(arrayValidation, model)).toEqual(expectedPaths);
+    expect(
+      getPathsAsString(
+        getValidationDefinitionPaths(arrayValidation, model)
+      )
+    ).toEqual(getPathsAsString(expectedPaths));
   });
 
   it('should work with array validators in objects', () => {
@@ -98,10 +110,14 @@ describe('getValidationDefinitionPaths', () => {
       () => null
     );
     const expectedPaths: Paths = [
-      'array',
-      'array.0.a'
+      path<typeof model>().array,
+      path<typeof model>().array[0].a,
     ];
 
-    expect(getValidationDefinitionPaths({ array: arrayValidation }, model)).toEqual(expectedPaths);
+    expect(
+      getPathsAsString(
+        getValidationDefinitionPaths({ array: arrayValidation }, model)
+      )
+    ).toEqual(getPathsAsString(expectedPaths));
   });
 });

@@ -1,3 +1,4 @@
+import { path } from '../models/Path';
 import { validateModel, ValidateModelArguments } from './FieldValidator';
 import { ArrayValidation, ValidationDefinition } from './ValidationDefinition';
 
@@ -256,7 +257,7 @@ it('should work if the validator returns multiple errors', () => {
     a: (value) => value !== 0 ? null : 'Value cannot be 0',
     b: (value) => [
       ['c.d', value.c.d > 1000 ? null : 'Value has to be greater than 1000'],
-      ['c.e', value.c.e === 0 ? null : 'Value has to be 0'],
+      [path<Model['b']>().c.e, value.c.e === 0 ? null : 'Value has to be 0'],
       ['', 'Error'],
     ]
   };

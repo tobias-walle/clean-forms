@@ -1,42 +1,56 @@
 import { renderHook } from 'react-hooks-testing-library';
-import { DEFAULT_FIELD_STATUS, FieldStatus } from '../statusTracking/FieldStatus';
+import { fieldPath } from '../models';
+import { path } from '../models/Path';
+import {
+  DEFAULT_FIELD_STATUS,
+  FieldStatus,
+} from '../statusTracking/FieldStatus';
 import { FieldStatusMapping } from '../statusTracking/FieldStatusMapping';
 import { FormReadApi, useFormReadApi } from './useFormReadApi';
 
+interface Model {
+  a: number;
+  b: number;
+}
+
 describe('FormApi', () => {
-  let model: any;
+  let model: Model;
   let status: FieldStatusMapping;
-  let api: FormReadApi<any>;
+  let api: FormReadApi<Model>;
   let aFieldStatus: FieldStatus;
 
   beforeEach(() => {
     model = { a: 1, b: 2 };
     aFieldStatus = new FieldStatus({ dirty: true, touched: true });
     status = { a: aFieldStatus };
-    const { result } = renderHook(() => useFormReadApi({
-      state: { model, status },
-      validationDefinition: {},
-      fieldErrorMapping: { a: 'Error' }
-    }));
+    const { result } = renderHook(() =>
+      useFormReadApi({
+        state: { model, status },
+        validationDefinition: {},
+        fieldErrorMapping: { a: 'Error' },
+      })
+    );
 
     api = result.current;
   });
 
   it('should get value for a specific field', () => {
-    expect(api.getFieldValue('a')).toBe(1);
-    expect(api.getFieldValue('b')).toBe(2);
-    expect(() => api.getFieldValue('c')).toThrowErrorMatchingSnapshot();
+    expect(api.getFieldValue(path<Model>().a)).toBe(1);
+    expect(api.getFieldValue(path<Model>().b)).toBe(2);
+    expect(() =>
+      api.getFieldValue(path<any>().c)
+    ).toThrowErrorMatchingSnapshot();
   });
 
   it('should get status for a specific field', () => {
-    expect(api.getFieldStatus('a')).toBe(aFieldStatus);
-    expect(api.getFieldStatus('b')).toBe(DEFAULT_FIELD_STATUS);
-    expect(api.getFieldStatus('c')).toBe(DEFAULT_FIELD_STATUS);
+    expect(api.getFieldStatus(fieldPath<Model>().a)).toBe(aFieldStatus);
+    expect(api.getFieldStatus(fieldPath<Model>().b)).toBe(DEFAULT_FIELD_STATUS);
+    expect(api.getFieldStatus(fieldPath<any>().c)).toBe(DEFAULT_FIELD_STATUS);
   });
 
   it('should get error for a specific field', () => {
-    expect(api.getFieldError('a')).toBe('Error');
-    expect(api.getFieldError('b')).toBe(undefined);
+    expect(api.getFieldError(path<Model>().a)).toBe('Error');
+    expect(api.getFieldError(path<Model>().b)).toBe(undefined);
   });
 
   it('should get valid/inValid for an invalid form', () => {
@@ -45,9 +59,11 @@ describe('FormApi', () => {
   });
 
   it('should get valid/inValid for an valid form', () => {
-    const { result } = renderHook(() => useFormReadApi({
-      state: { model }
-    }));
+    const { result } = renderHook(() =>
+      useFormReadApi({
+        state: { model },
+      })
+    );
     api = result.current;
 
     expect(api.invalid).toBe(false);

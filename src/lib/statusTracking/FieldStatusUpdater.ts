@@ -1,4 +1,5 @@
-import { FieldRegister, Path } from '../utils/FieldRegister';
+import { asPath, getPathAsString, Path } from '../models/Path';
+import { FieldRegister } from '../utils/FieldRegister';
 import { isShallowEqual } from '../utils/isShallowEqual';
 import { cloneFieldStatus, DEFAULT_FIELD_STATUS, FieldStatusArguments } from './FieldStatus';
 import { FieldStatusMapping } from './FieldStatusMapping';
@@ -9,54 +10,57 @@ export class FieldStatusUpdater {
   ) {
   }
 
-  public markAsDirty(status: FieldStatusMapping, path: Path): FieldStatusMapping {
+  public markAsDirty(status: FieldStatusMapping, path: Path<unknown>): FieldStatusMapping {
     return this.updateField(status, path, { dirty: true });
   }
 
-  public markAsTouched(status: FieldStatusMapping, path: Path): FieldStatusMapping {
+  public markAsTouched(status: FieldStatusMapping, path: Path<unknown>): FieldStatusMapping {
     return this.updateField(status, path, { touched: true });
   }
 
   public markAllAsTouched(status: FieldStatusMapping): FieldStatusMapping {
     return Object.keys(status)
       .reduce((result, path) => {
-        return this.markAsTouched(result, path);
+        return this.markAsTouched(result, asPath(path));
       }, status);
   }
 
   private updateField(
     status: FieldStatusMapping,
-    path: Path,
+    path: Path<unknown>,
     update: Partial<FieldStatusArguments>,
   ): FieldStatusMapping {
     if (!this.fieldRegister.includesPath(path)) {
       return status;
     }
-    const oldStatus = status[path] || DEFAULT_FIELD_STATUS;
+    const pathAsString = getPathAsString(path);
+    const oldStatus = status[pathAsString] || DEFAULT_FIELD_STATUS;
     const newStatus = cloneFieldStatus(oldStatus, update);
     if (!isShallowEqual(oldStatus, newStatus)) {
-      return { ...status, [path]: newStatus };
+      return { ...status, [pathAsString]: newStatus };
     }
     return status;
   }
 
-  public addIfFieldNotExists(status: FieldStatusMapping, path: Path): FieldStatusMapping {
-    if (status[path] == null) {
+  public addIfFieldNotExists(status: FieldStatusMapping, path: Path<unknown>): FieldStatusMapping {
+    const pathAsString = getPathAsString(path);
+    if (status[pathAsString] == null) {
       return {
         ...status,
-        [path]: DEFAULT_FIELD_STATUS,
+        [pathAsString]: DEFAULT_FIELD_STATUS,
       };
     } else {
       return status;
     }
   }
 
-  public removeIfFieldExists(status: FieldStatusMapping, path: Path): FieldStatusMapping {
-    if (status[path] == null) {
+  public removeIfFieldExists(status: FieldStatusMapping, path: Path<unknown>): FieldStatusMapping {
+    const pathAsString = getPathAsString(path);
+    if (status[pathAsString] == null) {
       return status;
     }
     const copy = { ...status };
-    delete copy[path];
+    delete copy[pathAsString];
     return copy;
   }
 }

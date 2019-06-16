@@ -1,19 +1,20 @@
 import * as React from 'react';
 import { FieldContextProvider } from '../contexts/fieldContext';
+import { FieldPathLike, PathLike } from '../models';
 
-export interface FieldGroupProps {
-  name: string;
-  accessor?: string;
+export interface FieldGroupProps<Model = any, Value = any> {
+  name: FieldPathLike<Model, Value>;
+  accessor?: PathLike<Model, Value>;
   children?: React.ReactNode;
 }
 
-function _FieldGroup({
+function _FieldGroup<Model = any, Value = any>({
   name,
-  accessor = name,
-  children
-}: FieldGroupProps) {
+  accessor = name as any,
+  children,
+}: FieldGroupProps<Model, Value>) {
   return (
-    <FieldContextProvider
+    <FieldContextProvider<Model, Value>
       relativeModelPath={accessor}
       relativeFieldPath={name}
     >

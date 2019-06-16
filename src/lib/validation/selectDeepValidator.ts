@@ -1,20 +1,25 @@
+import { getPathSegments, Path } from '../models/Path';
 import { SelectDeepArgs } from '../utils/selectDeep';
-import { transformPathToArray } from '../utils/transformPathToArray';
-import { ArrayValidation, ValidationFunction } from './ValidationDefinition';
+import { ArrayValidation, ValidationDefinition, ValidationFunction } from './ValidationDefinition';
 
-export function selectDeepValidator({ object, path }: SelectDeepArgs): ValidationFunction | undefined {
-  const pathAsArray = transformPathToArray(path);
-  object = pathAsArray.reduce((item, key: string) => {
+type ValidationDefintionValue<V> = V extends ValidationDefinition<infer T> ? T : never;
+
+export function selectDeepValidator<V extends ValidationDefinition<any>>({
+  object,
+  path,
+}: SelectDeepArgs<V, Path<ValidationDefintionValue<V>, any>>): ValidationFunction | undefined {
+  const pathAsArray = getPathSegments(path);
+  object = pathAsArray.reduce((item, key) => {
     if (item === undefined) {
       return;
     }
     if (item instanceof ArrayValidation) {
       return item.itemValidation;
     }
-    return item[key];
+    return (item as any)[key];
   }, object);
   if (object instanceof ArrayValidation) {
     return object.arrayValidation;
   }
-  return object;
+  return object as any;
 }

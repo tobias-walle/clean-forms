@@ -1,23 +1,23 @@
+import { getPathSegments, Path, PathValue } from '../models/Path';
 import { assertPropertyInObject } from './assertPropertyInObject';
-import { transformPathToArray } from './transformPathToArray';
 
 export type GetNext = (object: any) => any;
 
-export interface SelectDeepArgs {
-  object: any;
-  path: string;
+export interface SelectDeepArgs<T, P extends Path<T, any>> {
+  object: T;
+  path: P;
   assert?: boolean;
   getNext?: GetNext;
 }
 
-export function selectDeep({
+export function selectDeep<T, P extends Path<T, any>>({
   object,
   path,
   assert = true,
   getNext = obj => obj,
-}: SelectDeepArgs): any {
-  const pathAsArray = transformPathToArray(path);
-  return pathAsArray.reduce((item, key: string) => {
+}: SelectDeepArgs<T, P>): PathValue<P> {
+  const pathAsArray = getPathSegments(path);
+  return pathAsArray.reduce((item, key) => {
     assert && assertPropertyInObject(item, key);
     if (item === undefined) {
       return;

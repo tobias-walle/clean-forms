@@ -3,6 +3,7 @@ import { memo, useCallback } from 'react';
 import { GetKey } from '.';
 import { FieldArrayContext, FieldArrayContextProvider } from '../contexts/fieldArrayContext';
 import { FieldContextProvider } from '../contexts/fieldContext';
+import { FieldPathLike } from '../models';
 
 export type AddItem<Item> = (item: Item) => void;
 
@@ -14,7 +15,7 @@ export interface InnerFieldArrayProps<Item> {
 export type FieldArrayRender<Item> = (props: InnerFieldArrayProps<Item>) => React.ReactElement;
 
 export interface FieldArrayProps<Item> {
-  name: string;
+  name: FieldPathLike<unknown, Item[]>;
   render: FieldArrayRender<Item>;
   getKey?: GetKey<Item>;
 }
