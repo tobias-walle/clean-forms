@@ -33,6 +33,7 @@
     "travis-deploy-once": "travis-deploy-once"
   },
   "devDependencies": {
+    "@testing-library/react": "^8.0.1",
     "@types/enzyme": "^3.9.3",
     "@types/jest": "^24.0.13",
     "@types/node": "^12.0.4",

@@ -1,6 +1,6 @@
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 import { memo, useState } from 'react';
-import { cleanup, fireEvent, render } from '@testing-library/react';
 
 import { useShallowMemo } from './useShallowMemo';
 
@@ -22,12 +22,12 @@ describe('useShallowMemo', () => {
         <div>
           <button onClick={() => setState({ other: 'value' })}>Change</button>
           <button onClick={() => setState({})}>Not Change</button>
-          <ChildComponent value={state}/>
+          <ChildComponent value={state} />
         </div>
       );
     }
 
-    const { getByText } = render(<TestComponent/>);
+    const { getByText } = render(<TestComponent />);
 
     expect(renderChildComponent).toHaveBeenCalledTimes(1);
 
@@ -48,12 +48,12 @@ describe('useShallowMemo', () => {
         <div>
           <button onClick={() => setState({ other: 'value' })}>Change</button>
           <button onClick={() => setState({})}>Not Change</button>
-          <ChildComponent value={state}/>
+          <ChildComponent value={state} />
         </div>
       );
     }
 
-    const { getByText } = render(<TestComponent/>);
+    const { getByText } = render(<TestComponent />);
 
     expect(renderChildComponent).toHaveBeenCalledTimes(1);
 
@@ -74,12 +74,12 @@ describe('useShallowMemo', () => {
         <div>
           <button onClick={() => setState([1])}>Change</button>
           <button onClick={() => setState([])}>Not Change</button>
-          <ChildComponent value={state}/>
+          <ChildComponent value={state} />
         </div>
       );
     }
 
-    const { getByText } = render(<TestComponent/>);
+    const { getByText } = render(<TestComponent />);
 
     expect(renderChildComponent).toHaveBeenCalledTimes(1);
 
