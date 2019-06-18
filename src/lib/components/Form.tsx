@@ -24,6 +24,7 @@ import {
   OnFieldUnmount,
   SetArrayGetKey,
 } from '../contexts/formContext';
+import { useMemorizedPath } from '../hooks';
 import { useAsRef } from '../hooks/useAsRef';
 import { useFormReadApi } from '../hooks/useFormReadApi';
 import { useShallowMemo } from '../hooks/useShallowMemo';
@@ -288,14 +289,14 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     setArrayGetKey,
   });
 
-  const error = getFieldError(createPath());
+  const error = getFieldError();
   const markAsTouched = useCallback(() => handleFieldBlur(createPath()), [
     handleFieldBlur,
   ]);
 
   const rootFieldContext: FieldContextValue<Model> = useShallowMemo({
-    fieldPath: createFieldPath<Model>(),
-    modelPath: createPath<Model>(),
+    fieldPath: useMemorizedPath(createFieldPath<Model>()),
+    modelPath: useMemorizedPath(createPath<Model>()),
     name: '',
     value: model,
     setValue: setModel,
@@ -303,7 +304,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     error,
     valid: !error,
     invalid: !!error,
-    ...getFieldStatus(createPath()),
+    ...getFieldStatus(),
   });
 
   useImperativeHandle(ref, () => ({ submit }), [submit]);

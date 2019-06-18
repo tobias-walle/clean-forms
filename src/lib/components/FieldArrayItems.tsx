@@ -1,7 +1,12 @@
 import * as React from 'react';
 import { memo, useCallback, useMemo } from 'react';
 import { useFieldArrayContext } from '../contexts/fieldArrayContext';
-import { FieldContext, FieldContextProvider, FieldContextValue, useFieldContext } from '../contexts/fieldContext';
+import {
+  FieldContext,
+  FieldContextProvider,
+  FieldContextValue,
+  useFieldContext,
+} from '../contexts/fieldContext';
 import { DELETE } from '../utils';
 
 export type SetArray<Item> = (newArray: Item[]) => void;
@@ -15,7 +20,9 @@ export interface InnerFieldArrayItemProps<Item> {
 
 export type GetKey<Item> = (item: Item, index: number) => any;
 
-export type FieldArrayItemsRender<Item> = (props: InnerFieldArrayItemProps<Item>) => React.ReactElement;
+export type FieldArrayItemsRender<Item> = (
+  props: InnerFieldArrayItemProps<Item>
+) => React.ReactElement;
 
 export interface FieldArrayItemsProps<Item> {
   render: FieldArrayItemsRender<Item>;
@@ -23,29 +30,22 @@ export interface FieldArrayItemsProps<Item> {
 
 function _FieldArrayItems<Item = any>(props: FieldArrayItemsProps<Item>) {
   const { getKey } = useFieldArrayContext();
-  const {
-    value: array,
-    setValue: setArray,
-  } = useFieldContext<Item[]>();
+  const { value: array, setValue: setArray } = useFieldContext<Item[]>();
   const { render } = props;
 
   const elements = useMemo(() => {
-    return (
-      array.map((item, index) => <FieldArrayItem<Item>
+    return array.map((item, index) => (
+      <FieldArrayItem<Item>
         setArray={setArray}
         key={getKey(item, index)}
         item={item}
         index={index}
         render={render}
-      />)
-    );
+      />
+    ));
   }, [array, getKey, render, setArray]);
 
-  return (
-    <>
-      {elements}
-    </>
-  );
+  return <>{elements}</>;
 }
 
 export type FieldArrayItems = typeof _FieldArrayItems;
@@ -68,26 +68,26 @@ function _FieldArrayItem<Item>({
   const relativeFieldPath = String(getKey(item, index));
   const relativeModelPath = String(index);
   const renderItem = useCallback(
-    (fieldContext: FieldContextValue<Item>) => (
+    (fieldContext: FieldContextValue<Item>) =>
       render({
         remove: () => fieldContext.setValue(DELETE as any),
         setArray,
         index,
         item,
-      })
-    ),
-    [render, setArray, index, item],
+      }),
+    [render, setArray, index, item]
   );
 
-  return (
-    <FieldContextProvider
-      relativeFieldPath={relativeFieldPath}
-      relativeModelPath={relativeModelPath}
-    >
-      <FieldContext.Consumer>
-        {renderItem as any}
-      </FieldContext.Consumer>
-    </FieldContextProvider>
+  return useMemo(
+    () => (
+      <FieldContextProvider
+        relativeFieldPath={relativeFieldPath}
+        relativeModelPath={relativeModelPath}
+      >
+        <FieldContext.Consumer>{renderItem as any}</FieldContext.Consumer>
+      </FieldContextProvider>
+    ),
+    [relativeFieldPath, relativeModelPath, renderItem]
   );
 }
 

@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
+import { useMemorizedPath } from '../hooks';
 import { useShallowMemo } from '../hooks/useShallowMemo';
 import { FieldPath, FieldPathLike } from '../models';
 import {
@@ -75,15 +76,15 @@ export function useComputedFieldContext<ContextValue, Value>(
   } = formContext;
   const parentFieldContext = useFieldContext<ContextValue>();
 
-  const fieldPath = combinePaths(
+  const fieldPath = useMemorizedPath(combinePaths(
     parentFieldContext.fieldPath,
     asPath(relativeFieldPath)
-  );
+  ));
 
-  const modelPath = combinePaths(
+  const modelPath = useMemorizedPath(combinePaths(
     parentFieldContext.modelPath,
     asPath(relativeModelPath)
-  );
+  ));
 
   /** Register the field to the form */
   const formContextRef = useRef(formContext);

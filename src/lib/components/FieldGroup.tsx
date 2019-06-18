@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { FieldContextProvider } from '../contexts/fieldContext';
+import { useMemorizedPath } from '../hooks';
 import { FieldPathLike, PathLike } from '../models';
 
 export interface FieldGroupProps<Model = any, Value = any> {
@@ -13,6 +14,8 @@ function _FieldGroup<Model = any, Value = any>({
   accessor = name as any,
   children,
 }: FieldGroupProps<Model, Value>) {
+  name = useMemorizedPath(name);
+  accessor = useMemorizedPath(accessor);
   return (
     <FieldContextProvider<Model, Value>
       relativeModelPath={accessor}

@@ -5,6 +5,7 @@ import {
   FieldContextProvider,
   FieldContextValue,
 } from '../contexts/fieldContext';
+import { useMemorizedPath } from '../hooks';
 import { useShallowMemo } from '../hooks/useShallowMemo';
 import { FieldPathLike } from '../models';
 import { PathLike } from '../models/Path';
@@ -37,6 +38,8 @@ export function createField<Value, CustomProps = {}>(
       ...custom
     }: FieldComponentProps<Value, CustomProps>) => {
       name = name || '';
+      name = useMemorizedPath(name);
+
       const ownProps: FieldComponentPropsWithoutCustomProps<
         Value
       > = useShallowMemo({

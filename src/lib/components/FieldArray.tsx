@@ -1,8 +1,12 @@
 import * as React from 'react';
 import { memo, useCallback } from 'react';
 import { GetKey } from '.';
-import { FieldArrayContext, FieldArrayContextProvider } from '../contexts/fieldArrayContext';
+import {
+  FieldArrayContext,
+  FieldArrayContextProvider,
+} from '../contexts/fieldArrayContext';
 import { FieldContextProvider } from '../contexts/fieldContext';
+import { useMemorizedPath } from '../hooks';
 import { FieldPathLike } from '../models';
 
 export type AddItem<Item> = (item: Item) => void;
@@ -12,7 +16,9 @@ export interface InnerFieldArrayProps<Item> {
   addItem: AddItem<Item>;
 }
 
-export type FieldArrayRender<Item> = (props: InnerFieldArrayProps<Item>) => React.ReactElement;
+export type FieldArrayRender<Item> = (
+  props: InnerFieldArrayProps<Item>
+) => React.ReactElement;
 
 export interface FieldArrayProps<Item> {
   name: FieldPathLike<unknown, Item[]>;
@@ -25,13 +31,11 @@ function _FieldArray<Item = any>({
   render,
   getKey,
 }: FieldArrayProps<Item>) {
+  name = useMemorizedPath(name);
   const getIndexKey: GetKey<Item> = useCallback((_, index) => index, []);
 
   return (
-    <FieldContextProvider
-      relativeFieldPath={name}
-      relativeModelPath={name}
-    >
+    <FieldContextProvider relativeFieldPath={name} relativeModelPath={name}>
       <FieldArrayContextProvider getKey={getKey || getIndexKey}>
         <FieldArrayContext.Consumer>
           {context => {

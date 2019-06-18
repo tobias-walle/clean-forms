@@ -1,4 +1,4 @@
-export function isShallowEqual(o1: any, o2: any): boolean {
+export function isShallowEqual(o1: any, o2: any, debug: boolean = false): boolean {
   if (oneIsNull(o1, o2)) {
     return compareIfOneIsNull(o1, o2);
   }
@@ -9,6 +9,9 @@ export function isShallowEqual(o1: any, o2: any): boolean {
   }
   for (const key of o1Keys) {
     if (o1[key] !== o2[key]) {
+      if (debug) {
+        console.info(key, o1[key], o2[key], o1);
+      }
       return false;
     }
   }
