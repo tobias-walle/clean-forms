@@ -1,7 +1,6 @@
 import { mount, shallow } from 'enzyme';
 import * as React from 'react';
 import { renderInput } from '../../testUtils/InputField';
-import { DEFAULT_FIELD_STATUS } from '../statusTracking';
 import { emptyFunction } from '../utils/emptyFunction';
 import { InputProps } from './createField';
 import { createStandaloneField } from './createStandaloneField';
@@ -13,20 +12,30 @@ describe('createStandaloneField', () => {
     const value = 'my-value';
     const customProps = { a: 1, b: 2 };
 
-    shallow(<MyField value={value} {...customProps}/>);
+    shallow(<MyField
+      value={value}
+      valid={true}
+      touched={true}
+      dirty={true}
+      {...customProps}
+    />);
 
     const expectedInput: InputProps<string> = {
-      ...DEFAULT_FIELD_STATUS,
       value,
+      name: undefined,
       onBlur: emptyFunction,
       onChange: emptyFunction,
       error: undefined,
       valid: true,
-      invalid: false
+      invalid: false,
+      touched: true,
+      untouched: false,
+      dirty: true,
+      pristine: false
     };
     expect(renderFn).toHaveBeenCalledWith({
       input: expectedInput,
-      custom: expect.objectContaining(customProps)
+      custom: customProps
     });
   });
 

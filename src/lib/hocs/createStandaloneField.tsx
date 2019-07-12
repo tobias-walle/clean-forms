@@ -5,7 +5,7 @@ import { FieldRenderFunction, InputProps } from './createField';
 
 export type StandaloneFieldProps<Value, CustomProps> =
   Omit<CustomProps, keyof InputProps<Value>>
-  & Partial<Omit<InputProps<Value>, 'value'>>
+  & Partial<Omit<InputProps<Value>, 'value' | 'invalid' | 'pristine' | 'untouched'>>
   & Pick<InputProps<Value>, 'value'>;
 
 export type StandaloneFieldComponent<Value, CustomProps> =
@@ -27,18 +27,17 @@ function splitStandaloneFieldProps<Value, CustomProps>(props: StandaloneFieldPro
   custom: CustomProps
 } {
   const input: InputProps<Value> = {
-    ...props,
     name: props.name,
     value: props.value,
     onChange: props.onChange || emptyFunction,
     onBlur: props.onBlur || emptyFunction,
     error: props.error,
     valid: !!props.valid,
-    invalid: !!props.invalid,
+    invalid: !props.valid,
     dirty: !!props.dirty,
-    pristine: !!props.pristine,
+    pristine: !props.dirty,
     touched: !!props.touched,
-    untouched: !!props.untouched
+    untouched: !props.touched
   };
 
   const custom: any = {};
