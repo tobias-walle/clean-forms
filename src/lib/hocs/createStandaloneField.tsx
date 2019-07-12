@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { DEFAULT_FIELD_STATUS } from '../statusTracking';
 import { Omit } from '../types';
 import { emptyFunction } from '../utils/emptyFunction';
 import { FieldRenderFunction, InputProps } from './createField';
@@ -15,7 +14,7 @@ export type StandaloneFieldComponent<Value, CustomProps> =
 export function createStandaloneField<Value, CustomProps = {}>(
   render: FieldRenderFunction<Value, CustomProps>
 ): StandaloneFieldComponent<Value, CustomProps> {
-  const result: React.StatelessComponent<StandaloneFieldProps<Value, CustomProps>> =
+  const result: React.FunctionComponent<StandaloneFieldProps<Value, CustomProps>> =
     (props) => render({
       ...splitStandaloneFieldProps(props)
     });
@@ -28,14 +27,18 @@ function splitStandaloneFieldProps<Value, CustomProps>(props: StandaloneFieldPro
   custom: CustomProps
 } {
   const input: InputProps<Value> = {
-    ...DEFAULT_FIELD_STATUS,
+    ...props,
     name: props.name,
     value: props.value,
     onChange: props.onChange || emptyFunction,
     onBlur: props.onBlur || emptyFunction,
-    error: undefined,
-    valid: true,
-    invalid: false
+    error: props.error,
+    valid: !!props.valid,
+    invalid: !!props.invalid,
+    dirty: !!props.dirty,
+    pristine: !!props.pristine,
+    touched: !!props.touched,
+    untouched: !!props.untouched
   };
 
   const custom: any = {};
