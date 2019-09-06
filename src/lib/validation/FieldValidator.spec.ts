@@ -344,3 +344,19 @@ it('should combine multiple validators', () => {
     'a.c': undefined
   });
 });
+
+it('should not override result on multiple validators', () => {
+  const validationDefinition = combineValidationDefinitions<number>(
+    a => a > 0 ? null : 'greater 0',
+    a => a != null ? null : 'required',
+  );
+
+  expect(
+    validateModel({
+      model: 0,
+      validationDefinition,
+    })
+  ).toEqual({
+    '': 'greater 0'
+  });
+});

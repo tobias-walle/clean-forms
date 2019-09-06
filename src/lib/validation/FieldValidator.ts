@@ -61,7 +61,9 @@ export function validateModel<Model = any>({
     (result, path) => {
       validateField({ model, validationDefinition, path }).forEach(
         ([errorPath, error]) => {
-          result[getPathAsString(combinePaths(path, errorPath))] = error;
+          if (error != null) {
+            result[getPathAsString(combinePaths(path, errorPath))] = error;
+          }
         }
       );
       return result;
