@@ -11,6 +11,7 @@ import { selectDeepValidator } from './selectDeepValidator';
 import {
   ValidationDefinition,
   ValidationError,
+  ValidationErrors,
   ValidationFunction,
 } from './ValidationDefinition';
 
@@ -31,6 +32,25 @@ type FieldErrors<Model> = Array<[Path<Model>, FieldError]>;
 
 export interface FieldErrorMapping {
   [path: string]: FieldError;
+}
+
+export function combineValidationDefinitions<Value>(
+  ...validators: Array<ValidationDefinition<Value>>
+): ValidationFunction<Value> {
+  return value => {
+    return validators.reduce(
+      (allErrors, validationDefinition) => {
+        const validationResult: ValidationErrors = Object.entries(
+          validateModel({
+            model: value,
+            validationDefinition,
+          })
+        ).map(([path, error]) => [path, error || null]);
+        return [...allErrors, ...validationResult];
+      },
+      [] as ValidationErrors
+    );
+  };
 }
 
 export function validateModel<Model = any>({
