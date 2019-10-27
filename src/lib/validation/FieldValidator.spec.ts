@@ -292,14 +292,21 @@ it('should combine multiple validators', () => {
   const aValidator2: ValidationDefinition<Model['a']> = (
     value: Model['a']
   ): ValidationErrors => [
-    ['b', !value || value.b <= 0 ? null : 'Value has to smaller than or equal 0'],
+    [
+      'b',
+      !value || value.b <= 0 ? null : 'Value has to smaller than or equal 0',
+    ],
   ];
   const aValidator3: ValidationDefinition<Model['a']> = {
     c: (value: Model['a']) => (value == null ? 'Value is required' : null),
   };
 
   const validationDefinition = {
-    a: combineValidationDefinitions(aValidator1, aValidator2, aValidator3),
+    a: combineValidationDefinitions<Model['a']>(
+      aValidator1,
+      aValidator2,
+      aValidator3
+    ),
   };
 
   expect(
@@ -333,7 +340,7 @@ it('should combine multiple validators', () => {
       model: {
         a: {
           b: -100,
-          c: 0
+          c: 0,
         },
       },
       validationDefinition,
@@ -341,14 +348,14 @@ it('should combine multiple validators', () => {
   ).toEqual({
     a: undefined,
     'a.b': undefined,
-    'a.c': undefined
+    'a.c': undefined,
   });
 });
 
 it('should not override result on multiple validators', () => {
   const validationDefinition = combineValidationDefinitions<number>(
-    a => a > 0 ? null : 'greater 0',
-    a => a != null ? null : 'required',
+    a => (a > 0 ? null : 'greater 0'),
+    a => (a != null ? null : 'required')
   );
 
   expect(
@@ -357,6 +364,6 @@ it('should not override result on multiple validators', () => {
       validationDefinition,
     })
   ).toEqual({
-    '': 'greater 0'
+    '': 'greater 0',
   });
 });
