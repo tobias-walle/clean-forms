@@ -26,16 +26,16 @@ import {
 } from '../contexts/formContext';
 import { useMemorizedPath } from '../hooks';
 import { useAsRef } from '../hooks/useAsRef';
+import { useControllableState } from '../hooks/useControllableState';
 import { useFormReadApi } from '../hooks/useFormReadApi';
 import { useShallowMemo } from '../hooks/useShallowMemo';
 import {
   fieldPath as createFieldPath,
-  FormState,
   getPathAsString,
   Path,
   path as createPath,
 } from '../models';
-import { cloneFieldStatus } from '../statusTracking';
+import { cloneFieldStatus, FieldStatusMapping } from '../statusTracking';
 import { FieldStatusUpdater } from '../statusTracking/FieldStatusUpdater';
 import { FieldRegister, FieldRegisterChanges } from '../utils';
 import { StateUpdater } from '../utils/StateUpdater';
@@ -47,7 +47,8 @@ import {
 
 import { GetKey } from './FieldArrayItems';
 
-export type OnChange<Model> = (state: FormState<Model>) => void;
+export type OnChange<Model> = (value: Model) => void;
+export type OnStatusMappingChange = (mapping: FieldStatusMapping) => void;
 export type OnSubmit = (event?: FormEvent<HTMLFormElement>) => void;
 export type OnErrorsChange = (errors: FieldErrorMapping) => void;
 
@@ -57,8 +58,12 @@ export interface FormRef {
 }
 
 export type FormProps<Model> = {
-  state: FormState<Model>;
+  value: Model;
   onChange?: OnChange<Model>;
+
+  status?: FieldStatusMapping;
+  onStatusChange?: OnStatusMappingChange;
+
   onSubmit?: OnSubmit;
   onValidSubmit?: OnSubmit;
   onInValidSubmit?: OnSubmit;
@@ -85,7 +90,8 @@ function useIsMounted(): Readonly<MutableRefObject<boolean>> {
 
 function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   const {
-    state,
+    value,
+    onStatusChange,
     validation,
     formProps,
     onChange,
@@ -95,26 +101,35 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     onValidSubmit,
     strict,
   } = props;
-  const { model, status = {} } = state;
+  const [status, setStatus] = useControllableState<FieldStatusMapping>({
+    initialStateIfNotControlled: {},
+    onChange: onStatusChange,
+    controlledState: props.status,
+  });
 
-  const setModel = useCallback(
-    (newModel: Model) => onChange && onChange({ model: newModel }),
+  const setValue = useCallback(
+    (newModel: Model) => onChange && onChange(newModel),
     [onChange]
   );
 
-  const stateRef = useRef(state);
-  stateRef.current = state;
+  const valueRef = useAsRef(value);
+  const valueUpdaterRef = useRef(
+    new StateUpdater<Model>(() => valueRef.current, () => isMountedRef.current)
+  );
+  useEffect(() => {
+    valueUpdaterRef.current.registerOnChange(onChange);
+  }, [onChange]);
 
-  // PropsStateUpdaterRef
-  const propsStateUpdaterRef = useRef(
-    new StateUpdater<FormState<Model>>(
-      () => stateRef.current,
+  const statusRef = useAsRef(status);
+  const statusUpdaterRef = useRef(
+    new StateUpdater<FieldStatusMapping>(
+      () => statusRef.current,
       () => isMountedRef.current
     )
   );
   useEffect(() => {
-    propsStateUpdaterRef.current.registerOnChange(onChange);
-  }, [onChange]);
+    statusUpdaterRef.current.registerOnChange(setStatus);
+  }, [setStatus]);
 
   // ArrayGetKeyMapping
   const arrayGetKeyMappingRef = useRef<Map<string, GetKey<any>>>(new Map());
@@ -146,7 +161,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
         removeArrayGetKeyFunction(removedPath);
       });
 
-      propsStateUpdaterRef.current.patch({ status: updatedStatus });
+      statusUpdaterRef.current.update(() => updatedStatus);
     },
     [status, removeArrayGetKeyFunction]
   );
@@ -166,9 +181,9 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   const fieldErrorMapping = useMemo<FieldErrorMapping>(
     () =>
       validation
-        ? validateModel({ model, validationDefinition: validation })
+        ? validateModel({ model: value, validationDefinition: validation })
         : {},
-    [model, validation]
+    [value, validation]
   );
 
   useEffect(() => {
@@ -182,7 +197,8 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     getFieldError,
     getFieldValue,
   } = useFormReadApi({
-    state,
+    value,
+    status,
     validationDefinition: validation,
     fieldErrorMapping,
     strict,
@@ -213,32 +229,24 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
       const newStatus = cloneFieldStatus(getFieldStatusRef.current(path), {
         touched: true,
       });
-      propsStateUpdaterRef.current.update(oldState => ({
-        ...oldState,
-        status: {
-          ...oldState.status,
-          [getPathAsString(path)]: newStatus,
-        },
+      statusUpdaterRef.current.update(oldStatus => ({
+        ...oldStatus,
+        [getPathAsString(path)]: newStatus,
       }));
     },
     [getFieldStatusRef]
   );
 
-  const statusRef = useAsRef(status);
   const handleFieldChange: OnFieldChange<Model> = useCallback(
-    (id, path, value) => {
-      propsStateUpdaterRef.current.updateDeep(
-        `model.${getPathAsString(path)}`,
-        value,
-        true
-      );
+    (id, path, fieldValue) => {
+      valueUpdaterRef.current.updateDeep(getPathAsString(path), fieldValue);
 
       const updatedStatus = fieldStatusUpdaterRef.current.markAsDirty(
         statusRef.current,
         id
       );
 
-      propsStateUpdaterRef.current.patch({ status: updatedStatus });
+      statusUpdaterRef.current.update(() => updatedStatus);
     },
     [statusRef]
   );
@@ -248,7 +256,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     const updatedStatus = fieldStatusUpdaterRef.current.markAllAsTouched(
       statusRef.current
     );
-    propsStateUpdaterRef.current.patch({ status: updatedStatus });
+    statusUpdaterRef.current.update(() => updatedStatus);
   }, [statusRef]);
 
   const submit = useCallback(
@@ -298,8 +306,8 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     fieldPath: useMemorizedPath(createFieldPath<Model>()),
     modelPath: useMemorizedPath(createPath<Model>()),
     name: '',
-    value: model,
-    setValue: setModel,
+    value,
+    setValue,
     markAsTouched,
     error,
     valid: !error,

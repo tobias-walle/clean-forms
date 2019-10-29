@@ -1,8 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { FieldPathLike } from '../models/FieldPath';
-import { FormState } from '../models/FormState';
 import { asPath, getPathAsString, PathLike } from '../models/Path';
-import { DEFAULT_FIELD_STATUS, FieldStatus } from '../statusTracking';
+import {
+  DEFAULT_FIELD_STATUS,
+  FieldStatus,
+  FieldStatusMapping,
+} from '../statusTracking';
 import { selectDeep } from '../utils';
 import {
   FieldError,
@@ -11,7 +14,8 @@ import {
 } from '../validation';
 
 export interface UseFormReadApiProps<Model> {
-  state: FormState<Model>;
+  value: Model;
+  status?: FieldStatusMapping;
   validationDefinition?: ValidationDefinition<Model>;
   fieldErrorMapping?: FieldErrorMapping;
   strict?: boolean;
@@ -26,13 +30,12 @@ export interface FormReadApi<Model> {
 }
 
 export function useFormReadApi<Model>({
-  state,
+  value,
+  status = {},
   validationDefinition = {},
   fieldErrorMapping = {},
   strict = true,
 }: UseFormReadApiProps<Model>): FormReadApi<Model> {
-  const { status = {}, model } = state;
-
   const valid = useMemo(() => {
     for (const fieldId in fieldErrorMapping) {
       if (!(fieldId in fieldErrorMapping)) {
@@ -50,9 +53,9 @@ export function useFormReadApi<Model>({
   const getFieldValue = useCallback(
     (path: PathLike<Model> = ''): any => {
       path = asPath(path);
-      return selectDeep({ object: model, path, assert: strict });
+      return selectDeep({ object: value, path, assert: strict });
     },
-    [model, strict]
+    [value, strict]
   );
 
   const getFieldError = useCallback(

@@ -25,7 +25,8 @@ describe('FormApi', () => {
     status = { a: aFieldStatus };
     const { result } = renderHook(() =>
       useFormReadApi({
-        state: { model, status },
+        value: model,
+        status,
         validationDefinition: {},
         fieldErrorMapping: { a: 'Error' },
       })
@@ -61,7 +62,7 @@ describe('FormApi', () => {
   it('should get valid/inValid for an valid form', () => {
     const { result } = renderHook(() =>
       useFormReadApi({
-        state: { model },
+        value: model
       })
     );
     api = result.current;

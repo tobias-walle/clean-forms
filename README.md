@@ -60,7 +60,7 @@ value is mapped to the field.
 
 ```typescript jsx
 // LoginForm.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Form } from 'clean-forms';
 import { InputField } from './InputField';
 
@@ -70,16 +70,14 @@ const initialValue = {
 };
 
 export function LoginForm() {
-  const [formState, setFormState] = useState({
-    model: initialValue,
-  });
+  const [value, setValue] = useState(initialValue);
 
   const handleSubmit = () => {
-    alert(JSON.stringify(formState.model, null, 2));
+    alert(JSON.stringify(value, null, 2));
   };
 
   return (
-    <Form state={formState} onChange={setFormState} onSubmit={handleSubmit}>
+    <Form value={value} onChange={setValue} onSubmit={handleSubmit}>
       <InputField label="Username" name="username" />
       <InputField label="Password" name="password" type="password" />
       <div>
@@ -171,18 +169,16 @@ const validation: ValidationDefinition<typeof initialValue> = {
 };
 
 export function LoginForm() {
-  const [formState, setFormState] = useState({
-    model: initialValue,
-  });
+  const [value, setValue] = useState(value);
 
   const handleSubmit = () => {
-    alert(JSON.stringify(formState.model, null, 2));
+    alert(JSON.stringify(value, null, 2));
   };
 
   return (
     <Form
-      state={formState}
-      onChange={setFormState}
+      state={value}
+      onChange={setValue}
       // and just pass it to our form
       validation={validation}
       // We only want to trigger the submit on a valid form

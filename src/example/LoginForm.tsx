@@ -25,12 +25,10 @@ const validation: ValidationDefinition<typeof initialValue> = {
 };
 
 export function LoginForm() {
-  const [formState, setFormState] = useState({
-    model: initialValue,
-  });
+  const [value, setValue] = useState(initialValue);
 
   const handleSubmit = () => {
-    alert(JSON.stringify(formState.model, null, 2));
+    alert(JSON.stringify(value, null, 2));
   };
 
   const renderFieldArrayItem = useCallback(() => (
@@ -49,8 +47,8 @@ export function LoginForm() {
 
   return (
     <Form
-      state={formState}
-      onChange={setFormState}
+      value={value}
+      onChange={setValue}
       onValidSubmit={handleSubmit}
       validation={validation}
     >

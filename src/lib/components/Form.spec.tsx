@@ -11,8 +11,8 @@ import {
 } from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
-import { useFormState } from '../hooks/useFormState';
-import { fieldPath, FormState, path } from '../models';
+import { fieldPath, path } from '../models';
+import { DEFAULT_FIELD_STATUS, FieldStatus } from '../statusTracking';
 import {
   ArrayValidation,
   ValidationDefinition,
@@ -101,20 +101,14 @@ describe('Form', () => {
     onModelChange: handleModelChange,
     showErrorIfDirty,
   }: TestComponentProps) {
-    const [form, setForm] = useFormState<Model>(initialModel);
-    handleModelChange && handleModelChange(form.model);
+    const [value, setValue] = useState<Model>(initialModel);
+    handleModelChange && handleModelChange(value);
     const inputProps: Partial<InputFieldProps> = {
       showErrorIfDirty,
     };
 
     return (
-      <Form
-        state={form}
-        onChange={newForm => {
-          setForm(newForm);
-        }}
-        {...formProps}
-      >
+      <Form value={value} onChange={setValue} {...formProps}>
         <ModelFields {...inputProps} />
         <button type="submit">Submit</button>
       </Form>
@@ -206,6 +200,78 @@ describe('Form', () => {
     });
   });
 
+  it('should expose status with onStatusChange', () => {
+    const onStatusChange = jest.fn();
+    const { getByLabelText, getAllByLabelText, getByText } = render(
+      <TestComponent
+        initialModel={defaultModel}
+        formProps={{ onStatusChange }}
+      />
+    );
+
+    expect(onStatusChange).toHaveBeenLastCalledWith({
+      name: DEFAULT_FIELD_STATUS,
+      country: DEFAULT_FIELD_STATUS,
+      address: DEFAULT_FIELD_STATUS,
+      'address.street': DEFAULT_FIELD_STATUS,
+      children: DEFAULT_FIELD_STATUS,
+    });
+
+    fireEvent.blur(getByLabelText('Name'));
+
+    expect(onStatusChange).toHaveBeenLastCalledWith({
+      name: new FieldStatus({ touched: true }),
+      country: DEFAULT_FIELD_STATUS,
+      address: DEFAULT_FIELD_STATUS,
+      'address.street': DEFAULT_FIELD_STATUS,
+      children: DEFAULT_FIELD_STATUS,
+    });
+  });
+
+  it('should allow controlled status', () => {
+    const onStatusChange = jest.fn();
+    const { getByLabelText, queryByText, rerender } = render(
+      <TestComponent
+        initialModel={defaultModel}
+        formProps={{
+          status: {
+            name: DEFAULT_FIELD_STATUS,
+          },
+          onStatusChange,
+          validation: {
+            name: () => 'TEST ERROR',
+          },
+        }}
+      />
+    );
+    const isNameErrorVisible = () => {
+      return queryByText('TEST ERROR') != null;
+    };
+
+    expect(isNameErrorVisible()).toBe(false);
+
+    fireEvent.blur(getByLabelText('Name')); // Should have no effect
+    expect(isNameErrorVisible()).toBe(false);
+    expect(onStatusChange).toHaveBeenLastCalledWith({
+      name: new FieldStatus({ touched: true }),
+    });
+
+    rerender(
+      <TestComponent
+        initialModel={defaultModel}
+        formProps={{
+          status: {
+            name: new FieldStatus({ touched: true }),
+          },
+          validation: {
+            name: () => 'TEST ERROR',
+          },
+        }}
+      />
+    );
+    expect(isNameErrorVisible()).toBe(true);
+  });
+
   it('should call submit', () => {
     const props: Partial<FormProps<Model>> = {
       onSubmit: jest.fn(),
@@ -227,14 +293,12 @@ describe('Form', () => {
     }
 
     function MyForm() {
-      const [state, setState] = useState<FormState<InnerModel>>({
-        model: {
-          items: [{ a: 'x' }, { a: 'y' }],
-        },
+      const [value, setValue] = useState<InnerModel>({
+        items: [{ a: 'x' }, { a: 'y' }],
       });
 
       return (
-        <Form state={state} onChange={setState}>
+        <Form value={value} onChange={setValue}>
           <FieldArray
             name={path<InnerModel>().items}
             getKey={i => i.a}
@@ -258,14 +322,12 @@ describe('Form', () => {
     const handleChange = jest.fn();
 
     function MyForm() {
-      const [state, setState] = useState<FormState<any>>({
-        model: {
-          a: 0,
-        },
+      const [value, setValue] = useState<any>({
+        a: 0,
       });
 
       return (
-        <Form state={state} onChange={setState}>
+        <Form value={value} onChange={setValue}>
           <InputField label="A" name="a" onValueChange={handleChange} />
         </Form>
       );
@@ -295,14 +357,12 @@ describe('Form', () => {
 
   it('should throw an error if model does not match', () => {
     function MyForm() {
-      const [state, setState] = useState<FormState<any>>({
-        model: {
-          a: 0,
-        },
+      const [value, setValue] = useState<any>({
+        a: 0,
       });
 
       return (
-        <Form state={state} onChange={setState}>
+        <Form value={value} onChange={setValue}>
           <InputField label="B" name="b" />
         </Form>
       );
@@ -316,14 +376,12 @@ describe('Form', () => {
 
   it('should not throw an error if model does not match and strict mode is disabled', () => {
     function MyForm() {
-      const [state, setState] = useState<FormState<any>>({
-        model: {
-          a: 0,
-        },
+      const [value, setValue] = useState<any>({
+        a: 0,
       });
 
       return (
-        <Form state={state} onChange={setState} strict={false}>
+        <Form value={value} onChange={setValue} strict={false}>
           <InputField label="B" name="b" />
         </Form>
       );
@@ -334,14 +392,12 @@ describe('Form', () => {
 
   it('should not throw an error if model does not match and is updated', () => {
     function MyForm() {
-      const [state, setState] = useState<FormState<any>>({
-        model: {
-          a: 0,
-        },
+      const [value, setValue] = useState<any>({
+        a: 0,
       });
 
       return (
-        <Form state={state} onChange={setState} strict={false}>
+        <Form value={value} onChange={setValue} strict={false}>
           <InputField label="B" name="b" />
         </Form>
       );

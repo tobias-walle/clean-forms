@@ -1,6 +1,6 @@
 export interface FieldStatusArguments {
-  dirty: boolean;
-  touched: boolean;
+  dirty?: boolean;
+  touched?: boolean;
 }
 
 export class FieldStatus {
@@ -10,7 +10,7 @@ export class FieldStatus {
   public readonly untouched: boolean;
 
   constructor(args: FieldStatusArguments) {
-    const { dirty, touched } = args;
+    const { dirty = false, touched = false } = args;
 
     this.dirty = dirty;
     this.pristine = !dirty;
