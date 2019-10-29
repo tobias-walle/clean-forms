@@ -2,6 +2,7 @@ export * from './assertPropertyInObject';
 export * from './createDebouncedFunction';
 export * from './FieldRegister';
 export * from './getByPath';
+export * from './getInputProps';
 export * from './removeItemFromArray';
 export * from './selectDeep';
 export * from './setByPath';
