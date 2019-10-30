@@ -1,8 +1,7 @@
 import * as React from 'react';
 import {
   useCallback,
-  useContext,
-  useLayoutEffect,
+  useContext, useEffect,
   useMemo,
   useRef,
 } from 'react';
@@ -89,7 +88,7 @@ export function useComputedFieldContext<ContextValue, Value>(
   /** Register the field to the form */
   const formContextRef = useRef(formContext);
   formContextRef.current = formContext;
-  useLayoutEffect(() => {
+  useEffect(() => {
     formContextRef.current.onFieldMount(fieldPath);
     return () => formContextRef.current.onFieldUnmount(fieldPath);
     // eslint-disable-next-line

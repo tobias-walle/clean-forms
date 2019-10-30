@@ -200,15 +200,16 @@ describe('Form', () => {
     });
   });
 
-  it('should expose status with onStatusChange', () => {
+  it('should expose status with onStatusChange', async () => {
     const onStatusChange = jest.fn();
-    const { getByLabelText, getAllByLabelText, getByText } = render(
+    const { getByLabelText } = render(
       <TestComponent
         initialModel={defaultModel}
         formProps={{ onStatusChange }}
       />
     );
 
+    await act(() => delay(50));
     expect(onStatusChange).toHaveBeenLastCalledWith({
       name: DEFAULT_FIELD_STATUS,
       country: DEFAULT_FIELD_STATUS,
@@ -228,7 +229,7 @@ describe('Form', () => {
     });
   });
 
-  it('should allow controlled status', () => {
+  it('should allow controlled status', async () => {
     const onStatusChange = jest.fn();
     const { getByLabelText, queryByText, rerender } = render(
       <TestComponent
@@ -248,6 +249,7 @@ describe('Form', () => {
       return queryByText('TEST ERROR') != null;
     };
 
+    await act(() => delay(50));
     expect(isNameErrorVisible()).toBe(false);
 
     fireEvent.blur(getByLabelText('Name')); // Should have no effect

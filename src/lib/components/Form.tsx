@@ -9,7 +9,6 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -79,7 +78,7 @@ export type FormProps<Model> = {
 
 function useIsMounted(): Readonly<MutableRefObject<boolean>> {
   const mounted = useRef(false);
-  useLayoutEffect(() => {
+  useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
@@ -167,7 +166,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   );
 
   const [fieldRegister] = useState(new FieldRegister());
-  useLayoutEffect(() => {
+  useEffect(() => {
     fieldRegister.addListener(handleFieldRegisterChanges);
     return () => fieldRegister.removeListener(handleFieldRegisterChanges);
   }, [fieldRegister, handleFieldRegisterChanges]);
