@@ -34,7 +34,7 @@ export function useFormReadApi<Model>({
   status = {},
   validationDefinition = {},
   fieldErrorMapping = {},
-  strict = true,
+  strict = false,
 }: UseFormReadApiProps<Model>): FormReadApi<Model> {
   const valid = useMemo(() => {
     for (const fieldId in fieldErrorMapping) {

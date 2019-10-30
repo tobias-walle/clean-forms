@@ -70,7 +70,7 @@ export type FormProps<Model> = {
   validation?: ValidationDefinition<Model>;
   formProps?: JSX.IntrinsicElements['form'];
 
-  /** Strictly check if the name structure matches the form model. Default is true. */
+  /** Strictly check if the name structure matches the form model. Default is false. */
   strict?: boolean;
 
   children?: React.ReactNode;
@@ -98,7 +98,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
     onErrorsChange,
     onInValidSubmit,
     onValidSubmit,
-    strict,
+    strict = false,
   } = props;
   const [status, setStatus] = useControllableState<FieldStatusMapping>({
     initialStateIfNotControlled: {},
