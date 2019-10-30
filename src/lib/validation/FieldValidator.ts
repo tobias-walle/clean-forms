@@ -134,7 +134,7 @@ function validateFieldWithYup<Model>({
   path,
 }: ValidateFieldWithYupArguments<Model>): FieldErrors<Model> {
   try {
-    const value = selectDeep({ object: model, path });
+    const value = selectDeep({ object: model, path, assert: false });
     validationDefinition.validateSync(value, {
       abortEarly: false,
       strict: true,

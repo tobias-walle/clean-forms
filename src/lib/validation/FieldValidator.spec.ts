@@ -64,10 +64,12 @@ describe('validateModel', () => {
     const args: ValidateModelArguments<Model> = {
       model,
       validationDefinition: yup.object().shape({
-        a: yup.number()
+        a: yup
+          .number()
           .lessThan(100)
           .required(),
-        b: yup.string()
+        b: yup
+          .string()
           .length(2)
           .required(),
         missing: yup.string().required(),
@@ -115,9 +117,9 @@ describe('validateModel', () => {
       validationDefinition: {
         a: {
           b: required,
-          c: yup.array()
-            .of(yup.number().required()),
-          d: yup.object()
+          c: yup.array().of(yup.number().required()),
+          d: yup
+            .object()
             .shape({ e: yup.number() })
             .required(),
         },
@@ -130,6 +132,26 @@ describe('validateModel', () => {
       'a.b': 'Required',
       'a.c.0': '[0] is a required field',
       'a.d': 'this is a required field',
+    });
+  });
+
+  it('should validate yup schema on missing field', () => {
+    interface Model {
+      a?: number;
+    }
+
+    const model: Model = {};
+    const args: ValidateModelArguments<Model> = {
+      model,
+      validationDefinition: {
+        a: yup.number().required(),
+      },
+    };
+
+    const result = validateModel(args);
+
+    expect(result).toEqual({
+      a: 'this is a required field',
     });
   });
 
