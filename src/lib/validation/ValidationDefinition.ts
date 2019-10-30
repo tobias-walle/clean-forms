@@ -1,19 +1,23 @@
-import { Path, PathLike } from '../models/Path';
+import { PathLike } from '../models/Path';
 
 export type ValidationError = string | null;
-export type ValidationErrors<T = unknown> = Array<[PathLike<T>, ValidationError]>;
+export type ValidationErrors<T = unknown> = Array<
+  [PathLike<T>, ValidationError]
+>;
 
 type ArrayItemType<T> = T extends Array<infer U> ? U : never;
 
-export type ValidationFunction<Value = unknown> =
-  (value: Value) => ValidationError | ValidationErrors;
+export type ValidationFunction<Value = unknown> = (
+  value: Value
+) => ValidationError | ValidationErrors;
 
 export class ArrayValidation<Value = unknown[]> {
   constructor(
-    public readonly itemValidation: ValidationEntry<ArrayItemType<Value>> | null,
-    public readonly arrayValidation?: ValidationFunction<Value>,
-  ) {
-  }
+    public readonly itemValidation: ValidationEntry<
+      ArrayItemType<Value>
+    > | null,
+    public readonly arrayValidation?: ValidationFunction<Value>
+  ) {}
 }
 
 export type ValidationResolver<Value> = Value extends any[]
@@ -22,9 +26,16 @@ export type ValidationResolver<Value> = Value extends any[]
 
 export type ValidationEntry<Value> = Value extends object
   ? Value extends any[]
-    ? ValidationFunction<Value> | ArrayValidationMapping<Value> | ArrayValidation<Value>
-    : ValidationFunction<Value> | ValidationMapping<Value>
-  : ValidationFunction<Value>;
+    ?
+        | ValidationFunction<Value>
+        | ArrayValidationMapping<Value>
+        | ArrayValidation<Value>
+        | import('yup').NullableArraySchema<ArrayItemType<Value>>
+    :
+        | ValidationFunction<Value>
+        | ValidationMapping<Value>
+        | import('yup').ObjectSchema<Value>
+  : ValidationFunction<Value> | import('yup').Schema<Value>;
 
 export type ValidationMapping<Model> = {
   [K in keyof Model]?: ValidationEntry<Model[K]>;
@@ -34,4 +45,7 @@ export type ArrayValidationMapping<Model extends any[]> = {
   [K in number]?: ValidationEntry<Model[K]>;
 };
 
-export type ValidationDefinition<Model> = ValidationResolver<Model> | ValidationMapping<Model>;
+export type ValidationDefinition<Model> =
+  | ValidationResolver<Model>
+  | ValidationMapping<Model>
+  | import('yup').Schema<Model>;

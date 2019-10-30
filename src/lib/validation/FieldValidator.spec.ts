@@ -1,3 +1,5 @@
+import * as yup from 'yup';
+import { required } from '../../example/validators';
 import { path } from '../models/Path';
 import {
   combineValidationDefinitions,
@@ -47,6 +49,88 @@ describe('validateModel', () => {
     const result = validateModel(args);
 
     expect(result).toEqual({ a: undefined });
+  });
+
+  it('should validate yup schema', () => {
+    const model = {
+      a: 123,
+      b: 'test',
+      nested: {
+        c: null,
+      },
+      array: [{ d: 1234 }, { d: null }, { d: 'test' }, { d: undefined }],
+    };
+    type Model = typeof model;
+    const args: ValidateModelArguments<Model> = {
+      model,
+      validationDefinition: yup.object().shape({
+        a: yup.number()
+          .lessThan(100)
+          .required(),
+        b: yup.string()
+          .length(2)
+          .required(),
+        missing: yup.string().required(),
+        nested: yup.object().shape({
+          c: yup.mixed().required(),
+        }),
+        array: yup.array().of(
+          yup.object().shape({
+            d: yup.mixed().required(),
+          })
+        ),
+      }),
+    };
+
+    const result = validateModel(args);
+
+    expect(result).toEqual({
+      a: 'a must be less than 100',
+      b: 'b must be exactly 2 characters',
+      missing: 'missing is a required field',
+      'nested.c': 'nested.c is a required field',
+      'array.1.d': 'array[1].d is a required field',
+      'array.3.d': 'array[3].d is a required field',
+    });
+  });
+
+  it('should validate yup schema on single fields', () => {
+    interface Model {
+      a: {
+        b?: number;
+        c: Array<number | undefined>;
+        d?: { e: number };
+      };
+    }
+
+    const model = {
+      a: {
+        b: undefined,
+        d: undefined,
+        c: [undefined],
+      },
+    };
+    const args: ValidateModelArguments<Model> = {
+      model,
+      validationDefinition: {
+        a: {
+          b: required,
+          c: yup.array()
+            .of(yup.number().required()),
+          d: yup.object()
+            .shape({ e: yup.number() })
+            .required(),
+        },
+      },
+    };
+
+    const result = validateModel(args);
+
+    expect(result).toEqual({
+      'a.b': 'Required',
+      'a.c.0': '[0] is a required field',
+      'a.d': 'this is a required field',
+    });
   });
 
   it('should catch errors in validation function', () => {

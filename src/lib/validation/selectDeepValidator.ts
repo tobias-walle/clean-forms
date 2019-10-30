@@ -7,7 +7,7 @@ type ValidationDefintionValue<V> = V extends ValidationDefinition<infer T> ? T :
 export function selectDeepValidator<V extends ValidationDefinition<any>>({
   object,
   path,
-}: SelectDeepArgs<V, Path<ValidationDefintionValue<V>, any>>): ValidationFunction | undefined {
+}: SelectDeepArgs<V, Path<ValidationDefintionValue<V>, any>>): ValidationFunction | import('yup').Schema<any> | undefined {
   const pathAsArray = getPathSegments(path);
   object = pathAsArray.reduce((item, key) => {
     if (item === undefined) {

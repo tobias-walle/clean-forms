@@ -5,6 +5,7 @@ import {
   Path,
   path as createPath,
 } from '../models/Path';
+import { isYupSchema } from '../utils/isYupSchema';
 import { selectDeep } from '../utils/selectDeep';
 import { getValidationDefinitionPaths } from './getValidationDefinitionPaths';
 import { selectDeepValidator } from './selectDeepValidator';
@@ -18,6 +19,12 @@ import {
 interface ValidateFieldArguments<Model> {
   model: Model;
   validationDefinition: ValidationDefinition<Model>;
+  path: Path<Model>;
+}
+
+interface ValidateFieldWithYupArguments<Model> {
+  model: Model;
+  validationDefinition: import('yup').Schema<Model>;
   path: Path<Model>;
 }
 
@@ -57,26 +64,46 @@ export function validateModel<Model = any>({
   model,
   validationDefinition,
 }: ValidateModelArguments<Model>): FieldErrorMapping {
-  return getValidationDefinitionPaths(validationDefinition, model).reduce(
-    (result, path) => {
-      validateField({ model, validationDefinition, path }).forEach(
-        ([errorPath, error]) => {
-          if (error != null) {
-            result[getPathAsString(combinePaths(path, errorPath))] = error;
-          }
-        }
-      );
-      return result;
-    },
-    {} as FieldErrorMapping
+  let errors: Array<Array<readonly [string, FieldError]>> = [];
+  if (isYupSchema(validationDefinition)) {
+    errors = [
+      validateFieldWithYup({
+        model,
+        validationDefinition,
+        path: createPath(),
+      }).map(([path, error]) => [getPathAsString(path), error] as const),
+    ];
+  } else {
+    errors = getValidationDefinitionPaths(validationDefinition, model).map(
+      path => {
+        const fieldErrors = validateField({
+          model,
+          validationDefinition,
+          path,
+        });
+        return fieldErrors.map(
+          ([errorPath, error]) =>
+            [getPathAsString(combinePaths(path, errorPath)), error] as const
+        );
+      }
+    );
+  }
+
+  const result: FieldErrorMapping = {};
+  errors.forEach(arr =>
+    arr.forEach(([path, error]) => {
+      if (error != null) {
+        result[path] = error;
+      }
+    })
   );
+  return result;
 }
 
-function validateField<Model>({
-  model,
-  validationDefinition,
-  path,
-}: ValidateFieldArguments<Model>): FieldErrors<Model> {
+function validateField<Model>(
+  args: ValidateFieldArguments<Model>
+): FieldErrors<Model> {
+  const { model, validationDefinition, path } = args;
   const value = selectDeep({ object: model, path, assert: false });
   const validation = selectDeepValidator({
     object: validationDefinition,
@@ -85,6 +112,12 @@ function validateField<Model>({
   });
   if (!validation) {
     return [];
+  } else if (isYupSchema(validation)) {
+    return validateFieldWithYup({
+      model,
+      validationDefinition: validation,
+      path,
+    });
   } else {
     return runValidationFunctionInTryCatchAndCheckType(
       path,
@@ -93,6 +126,27 @@ function validateField<Model>({
       validation
     );
   }
+}
+
+function validateFieldWithYup<Model>({
+  model,
+  validationDefinition,
+  path,
+}: ValidateFieldWithYupArguments<Model>): FieldErrors<Model> {
+  try {
+    const value = selectDeep({ object: model, path });
+    validationDefinition.validateSync(value, {
+      abortEarly: false,
+      strict: true,
+    });
+  } catch (err) {
+    const yupError = err as import('yup').ValidationError;
+    return yupError.inner.map(innerError => [
+      asPath(innerError.path || ''),
+      innerError.message,
+    ]);
+  }
+  return [];
 }
 
 function runValidationFunctionInTryCatchAndCheckType<Model>(
@@ -143,12 +197,10 @@ function runValidationFunctionIfDefined<Model>(
   }
   const validationResult = validationFunction(value);
   if (validationResult instanceof Array) {
-    return validationResult.map(
-      ([pathLike, error]): [Path<Model>, FieldError] => [
-        asPath(pathLike) as Path<Model>,
-        validationErrorToFieldError(error),
-      ]
-    );
+    return validationResult.map(([pathLike, error]): [
+      Path<Model>,
+      FieldError
+    ] => [asPath(pathLike) as Path<Model>, validationErrorToFieldError(error)]);
   } else {
     return [[createPath(), validationErrorToFieldError(validationResult)]];
   }

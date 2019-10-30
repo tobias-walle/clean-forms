@@ -82,6 +82,8 @@ export function pathSegmentsAsPath(
   );
 }
 
+const arrayIndexRegex = /\[(\d+)]/;
 export function pathStringAsPath(string: string) {
-  return pathSegmentsAsPath(string.split('.').filter(v => v));
+  const normalizedString = string.replace(arrayIndexRegex, '.$1');
+  return pathSegmentsAsPath(normalizedString.split('.').filter(v => v));
 }

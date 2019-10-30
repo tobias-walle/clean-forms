@@ -53,6 +53,7 @@ describe('Path', () => {
 describe('asPath', () => {
   it('should convert path like types to path', () => {
     expect(getPathSegments(asPath('a.b'))).toEqual(['a', 'b']);
+    expect(getPathSegments(asPath('a[0].b'))).toEqual(['a', '0', 'b']);
     expect(getPathSegments(asPath(['e', 'd']))).toEqual(['e', 'd']);
     expect(getPathSegments(asPath(path<any>().f.g.h))).toEqual(['f', 'g', 'h']);
   });

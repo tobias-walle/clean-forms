@@ -1,18 +1,34 @@
 import { path, Path, Paths } from '../models/Path';
+import { isYupSchema } from '../utils/isYupSchema';
 import { isValidationResolver } from './isValidationResolver';
-import { ArrayValidation, ValidationDefinition, ValidationMapping } from './ValidationDefinition';
+import {
+  ArrayValidation,
+  ValidationDefinition,
+  ValidationMapping,
+} from './ValidationDefinition';
 
 export function getValidationDefinitionPaths<T>(
   validationDefinition: ValidationDefinition<T>,
   value: T,
   parentPath: Path<T> = path()
 ): Paths {
-  if (validationDefinition instanceof Function) {
-    return [path()];
+  if (
+    validationDefinition instanceof Function ||
+    isYupSchema(validationDefinition)
+  ) {
+    return [parentPath];
   } else if (validationDefinition instanceof ArrayValidation) {
-    return getValidationDefinitionPathsForArray(validationDefinition, value as any, parentPath);
+    return getValidationDefinitionPathsForArray(
+      validationDefinition,
+      value as any,
+      parentPath
+    );
   } else {
-    return getValidationDefinitionPathsForObject(validationDefinition as ValidationMapping<any>, value as any, parentPath);
+    return getValidationDefinitionPathsForObject(
+      validationDefinition as ValidationMapping<any>,
+      value as any,
+      parentPath
+    );
   }
 }
 
@@ -30,9 +46,18 @@ export function getValidationDefinitionPathsForObject<T extends object>(
       return [];
     }
     const itemValue = (value as any)[key];
-    const itemDefinition = (validationDefinition as ValidationMapping<any>)[key];
-    if (itemDefinition instanceof ArrayValidation || (!isValidationResolver(itemDefinition) && typeof itemDefinition === 'object')) {
-      return [...paths, ...getValidationDefinitionPaths(itemDefinition, itemValue, currentPath)];
+    const itemDefinition = (validationDefinition as ValidationMapping<any>)[
+      key
+    ];
+    if (
+      itemDefinition instanceof ArrayValidation ||
+      (!isValidationResolver(itemDefinition) &&
+        typeof itemDefinition === 'object')
+    ) {
+      return [
+        ...paths,
+        ...getValidationDefinitionPaths(itemDefinition, itemValue, currentPath),
+      ];
     } else if (isValidationResolver(itemDefinition)) {
       paths.push(currentPath);
     }
@@ -55,10 +80,23 @@ function getValidationDefinitionPathsForArray<T extends any[]>(
   function getKeyPaths(paths: Paths, key: string) {
     const currentPath = (parentPath as any)[key];
     const itemValue = (array as any)[key];
-    const itemDefinition = arrayValidation.itemValidation as ValidationDefinition<any>;
+    const itemDefinition = arrayValidation.itemValidation as ValidationDefinition<
+      any
+    >;
     if (itemDefinition != null) {
-      if (itemDefinition instanceof ArrayValidation || (!isValidationResolver(itemDefinition) && typeof itemDefinition === 'object')) {
-        return [...paths, ...getValidationDefinitionPaths(itemDefinition, itemValue, currentPath)];
+      if (
+        itemDefinition instanceof ArrayValidation ||
+        (!isValidationResolver(itemDefinition) &&
+          typeof itemDefinition === 'object')
+      ) {
+        return [
+          ...paths,
+          ...getValidationDefinitionPaths(
+            itemDefinition,
+            itemValue,
+            currentPath
+          ),
+        ];
       } else if (isValidationResolver(itemDefinition)) {
         paths.push(currentPath);
       }
