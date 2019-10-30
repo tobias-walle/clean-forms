@@ -2,8 +2,8 @@ import React from 'react';
 import { InputProps } from '../hocs';
 import { combineProps } from './combineProps';
 
-export function getInputProps(
-  fieldInputProps: InputProps<number | string | string[]>,
+export function getInputProps<Value extends number | string | string[]>(
+  fieldInputProps: InputProps<Value>,
   customProps: React.PropsWithoutRef<JSX.IntrinsicElements['input']> = {}
 ): JSX.IntrinsicElements['input'] {
   const inputProps: JSX.IntrinsicElements['input'] = {
