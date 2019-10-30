@@ -1,4 +1,3 @@
-import { string } from 'yup';
 import { PathLike } from '../models/Path';
 
 export type ValidationError = string | null;
