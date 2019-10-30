@@ -1,3 +1,4 @@
+import { string } from 'yup';
 import { PathLike } from '../models/Path';
 
 export type ValidationError = string | null;
@@ -24,18 +25,17 @@ export type ValidationResolver<Value> = Value extends any[]
   ? ArrayValidation<Value>
   : ValidationFunction<Value>;
 
-export type ValidationEntry<Value> = Value extends object
-  ? Value extends any[]
-    ?
-        | ValidationFunction<Value>
-        | ArrayValidationMapping<Value>
-        | ArrayValidation<Value>
-        | import('yup').NullableArraySchema<ArrayItemType<Value>>
-    :
-        | ValidationFunction<Value>
-        | ValidationMapping<Value>
-        | import('yup').ObjectSchema<Value>
-  : ValidationFunction<Value> | import('yup').Schema<Value>;
+export type ValidationEntry<Value> =
+  | import('yup').Schema<Value>
+  | (Value extends any[]
+      ? (
+          | ValidationFunction<Value>
+          | ArrayValidationMapping<Value>
+          | ArrayValidation<Value>
+        )
+      : Value extends object
+      ? (ValidationFunction<Value> | ValidationMapping<Value>)
+      : ValidationFunction<Value>);
 
 export type ValidationMapping<Model> = {
   [K in keyof Model]?: ValidationEntry<Model[K]>;
