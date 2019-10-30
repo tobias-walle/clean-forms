@@ -5,7 +5,7 @@ import { combineProps } from './combineProps';
 export function getInputProps<Value extends number | string | string[]>(
   fieldInputProps: InputProps<Value>,
   customProps: React.PropsWithoutRef<JSX.IntrinsicElements['input']> = {}
-): JSX.IntrinsicElements['input'] {
+): React.PropsWithoutRef<JSX.IntrinsicElements['input']> {
   const inputProps: JSX.IntrinsicElements['input'] = {
     name: fieldInputProps.name,
     value: fieldInputProps.value,
