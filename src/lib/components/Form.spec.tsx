@@ -357,21 +357,21 @@ describe('Form', () => {
     expect(props.onSubmit).toHaveBeenCalled();
   });
 
-  it('should throw an error if model does not match', () => {
+  it('should throw an error if model does not match in strict mode', () => {
     function MyForm() {
       const [value, setValue] = useState<any>({
         a: 0,
       });
 
       return (
-        <Form value={value} onChange={setValue}>
+        <Form strict value={value} onChange={setValue}>
           <InputField label="B" name="b" />
         </Form>
       );
     }
 
     console.error = jest.fn();
-    expect(() => render(<MyForm />)).toThrowErrorMatchingInlineSnapshot(
+    expect(() => render(<MyForm/>)).toThrowErrorMatchingInlineSnapshot(
       `"The key \\"b\\" does not exits on item {\\"a\\":0}."`
     );
   });
