@@ -7,7 +7,6 @@ import {
 } from '../contexts/fieldContext';
 import { useMemorizedPath } from '../hooks';
 import { useShallowMemo } from '../hooks/useShallowMemo';
-import { FieldPathLike } from '../models';
 import { PathLike } from '../models/Path';
 import { FieldStatus } from '../statusTracking';
 import { Omit } from '../types';
@@ -48,10 +47,7 @@ export function createField<Value, CustomProps = {}>(
       });
 
       return (
-        <FieldContextProvider<unknown, Value>
-          relativeFieldPath={name}
-          relativeModelPath={name as PathLike<unknown, Value>}
-        >
+        <FieldContextProvider<Value> relativePath={name}>
           <FieldContext.Consumer>
             {context => (
               <Field<Value, CustomProps>
@@ -156,6 +152,6 @@ export type FieldRenderFunction<
 > = React.FunctionComponent<InnerFieldProps<Value, RenderProps>>;
 
 export interface FieldComponentPropsWithoutCustomProps<Value> {
-  name: FieldPathLike<unknown, Value> | null;
+  name: PathLike<unknown, Value> | null;
   onValueChange?: (value: Value) => void;
 }

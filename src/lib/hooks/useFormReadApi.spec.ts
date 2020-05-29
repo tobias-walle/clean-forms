@@ -1,5 +1,4 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { fieldPath } from '../models';
 import { path } from '../models/Path';
 import {
   DEFAULT_FIELD_STATUS,
@@ -44,9 +43,9 @@ describe('FormApi', () => {
   });
 
   it('should get status for a specific field', () => {
-    expect(api.getFieldStatus(fieldPath<Model>().a)).toBe(aFieldStatus);
-    expect(api.getFieldStatus(fieldPath<Model>().b)).toBe(DEFAULT_FIELD_STATUS);
-    expect(api.getFieldStatus(fieldPath<any>().c)).toBe(DEFAULT_FIELD_STATUS);
+    expect(api.getFieldStatus(path<Model>().a)).toBe(aFieldStatus);
+    expect(api.getFieldStatus(path<Model>().b)).toBe(DEFAULT_FIELD_STATUS);
+    expect(api.getFieldStatus(path<any>().c)).toBe(DEFAULT_FIELD_STATUS);
   });
 
   it('should get error for a specific field', () => {

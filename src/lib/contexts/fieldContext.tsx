@@ -1,13 +1,7 @@
 import * as React from 'react';
-import {
-  useCallback,
-  useContext, useEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useMemorizedPath } from '../hooks';
 import { useShallowMemo } from '../hooks/useShallowMemo';
-import { FieldPath, FieldPathLike } from '../models';
 import {
   asPath,
   combinePaths,
@@ -29,11 +23,8 @@ export type SetFieldValue<Value> = SetFieldValueWithValue<Value>;
 export type MarkAsTouched = () => void;
 
 export interface FieldContextValue<Value> extends FieldStatus {
-  /** The path to the field. Used for example for storing the error message */
-  fieldPath: FieldPath<unknown, Value>;
-
-  /** The path on the file model */
-  modelPath: Path<unknown, Value>;
+  /** The path on the property in the model */
+  path: Path<unknown, Value>;
 
   /** The name of the field */
   name: string;
@@ -62,8 +53,7 @@ export const FieldContext = React.createContext<FieldContextValue<any> | null>(
 );
 
 export function useComputedFieldContext<ContextValue, Value>(
-  relativeModelPath: PathLike<ContextValue, Value>,
-  relativeFieldPath: FieldPathLike<ContextValue, Value>
+  relativePath: PathLike<ContextValue, Value>
 ): FieldContextValue<Value> {
   const formContext = useFormContext();
   const {
@@ -75,54 +65,38 @@ export function useComputedFieldContext<ContextValue, Value>(
   } = formContext;
   const parentFieldContext = useFieldContext<ContextValue>();
 
-  const fieldPath = useMemorizedPath(combinePaths(
-    parentFieldContext.fieldPath,
-    asPath(relativeFieldPath)
-  ));
-
-  const modelPath = useMemorizedPath(combinePaths(
-    parentFieldContext.modelPath,
-    asPath(relativeModelPath)
-  ));
+  const path = useMemorizedPath(
+    combinePaths(parentFieldContext.path, asPath(relativePath))
+  );
 
   /** Register the field to the form */
   const formContextRef = useRef(formContext);
   formContextRef.current = formContext;
   useEffect(() => {
-    formContextRef.current.onFieldMount(fieldPath);
-    return () => formContextRef.current.onFieldUnmount(fieldPath);
+    formContextRef.current.onFieldMount(path);
+    return () => formContextRef.current.onFieldUnmount(path);
     // eslint-disable-next-line
   }, []);
 
-  const value = useMemo(() => getFieldValue(modelPath), [
-    getFieldValue,
-    modelPath,
-  ]);
+  const value = useMemo(() => getFieldValue(path), [getFieldValue, path]);
 
-  const error = useMemo(() => getFieldError(modelPath), [
-    getFieldError,
-    modelPath,
-  ]);
+  const error = useMemo(() => getFieldError(path), [getFieldError, path]);
 
-  const fieldStatus = useMemo(() => getFieldStatus(fieldPath), [
-    getFieldStatus,
-    fieldPath,
-  ]);
+  const fieldStatus = useMemo(() => getFieldStatus(path), [getFieldStatus, path]);
 
   const setValue: SetFieldValue<Value | DELETE> = useCallback(
-    valueOrUpdate => onFieldChange(fieldPath, modelPath, valueOrUpdate),
-    [fieldPath, modelPath, onFieldChange]
+    valueOrUpdate => onFieldChange(path, valueOrUpdate),
+    [onFieldChange, path]
   );
 
   const markAsTouched: MarkAsTouched = useCallback(() => {
-    onFieldBlur(fieldPath);
-  }, [fieldPath, onFieldBlur]);
+    onFieldBlur(path);
+  }, [onFieldBlur, path]);
 
   return useShallowMemo({
     ...fieldStatus,
-    name: getPathAsString(fieldPath),
-    fieldPath,
-    modelPath,
+    name: getPathAsString(path),
+    path,
     value,
     error,
     valid: !error,
@@ -132,20 +106,18 @@ export function useComputedFieldContext<ContextValue, Value>(
   });
 }
 
-interface FieldContextProviderProps<ContextValue, Value> {
-  relativeModelPath: PathLike<ContextValue, Value>;
-  relativeFieldPath: FieldPathLike<ContextValue, Value>;
+interface FieldContextProviderProps<Value> {
+  relativePath: PathLike<unknown, Value>;
   children?: React.ReactNode;
 }
 
-export function FieldContextProvider<ContextValue, Value>(
-  props: FieldContextProviderProps<ContextValue, Value>
+export function FieldContextProvider<Value>(
+  props: FieldContextProviderProps<Value>
 ) {
   return (
     <FieldContext.Provider
       value={useComputedFieldContext(
-        props.relativeModelPath,
-        props.relativeFieldPath
+        props.relativePath
       )}
     >
       {props.children}

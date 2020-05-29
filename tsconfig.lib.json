@@ -5,8 +5,10 @@
     "module": "commonjs",
     "declaration": true
   },
+  "files": [
+    "src/lib/index.ts"
+  ],
   "include": [
-    "src/lib/**/*"
   ],
   "exclude": [
     "**/*.spec.*"

@@ -47,4 +47,5 @@ export type ArrayValidationMapping<Model extends any[]> = {
 export type ValidationDefinition<Model> =
   | ValidationResolver<Model>
   | ValidationMapping<Model>
+  | import('yup').MixedSchema<Model>
   | import('yup').Schema<Model>;

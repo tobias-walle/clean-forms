@@ -64,9 +64,7 @@ function _FieldArrayItem<Item>({
   setArray,
   render,
 }: FieldArrayItemProps<Item>) {
-  const { getKey } = useFieldArrayContext();
-  const relativeFieldPath = String(getKey(item, index));
-  const relativeModelPath = String(index);
+  const relativePath = String(index);
   const renderItem = useCallback(
     (fieldContext: FieldContextValue<Item>) =>
       render({
@@ -81,13 +79,12 @@ function _FieldArrayItem<Item>({
   return useMemo(
     () => (
       <FieldContextProvider
-        relativeFieldPath={relativeFieldPath}
-        relativeModelPath={relativeModelPath}
+        relativePath={relativePath}
       >
         <FieldContext.Consumer>{renderItem as any}</FieldContext.Consumer>
       </FieldContextProvider>
     ),
-    [relativeFieldPath, relativeModelPath, renderItem]
+    [relativePath, renderItem]
   );
 }
 

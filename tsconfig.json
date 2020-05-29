@@ -20,11 +20,14 @@
     "types": [
       "jest",
       "node",
-      "@testing-library/jest-dom/extend-expect"
+      "@testing-library/jest-dom"
     ],
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },
+  "exclude": [
+    "out/**/*"
+  ],
   "include": [
     "src/**/*"
   ]

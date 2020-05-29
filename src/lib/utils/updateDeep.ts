@@ -47,15 +47,20 @@ function selectDeepAndCopy<T>({object, path, assert = true, createPropertyIfNotE
   path = path.slice(); // Copy the path
   const copy = copyArrayOrObject(object);
 
+  const currentPath = [];
   let selectedObject: any = copy;
   while (path.length > 0) {
     const key = path.splice(0, 1)[0];
+    currentPath.push(key);
     if (assert) {
       assertPropertyInObject(selectedObject, key);
     } else if (createPropertyIfNotExists) {
       ensurePropertyInObject(selectedObject, key);
     } else if (!(key in selectedObject)) {
       return { copy, selectedObject: {} };
+    }
+    if (typeof selectedObject[key] !== 'object') {
+      throw new Error(`"${currentPath}" is not an object. Got ${selectedObject[key]} (${typeof selectedObject[key]}) instead.`);
     }
 
     const lastObject = selectedObject;

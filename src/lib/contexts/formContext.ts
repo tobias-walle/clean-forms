@@ -2,24 +2,22 @@ import * as React from 'react';
 import { useContext } from 'react';
 import { GetKey } from '../components';
 import { FormReadApi } from '../hooks/useFormReadApi';
-import { FieldPath } from '../models';
 import { Path } from '../models/Path';
 import { assertNotNull } from '../utils';
 
-export type OnFieldMount<Model> = (fieldPath: FieldPath<unknown>) => void;
+export type OnFieldMount<Model> = (path: Path<unknown>) => void;
 
-export type OnFieldUnmount<Model> = (fieldPath: FieldPath<unknown>) => void;
+export type OnFieldUnmount<Model> = (path: Path<unknown>) => void;
 
-export type OnFieldBlur<Model> = (fieldPath: FieldPath<unknown>) => void;
+export type OnFieldBlur<Model> = (path: Path<unknown>) => void;
 
 export type OnFieldChange<Model> = (
-  fieldPath: FieldPath<Model>,
   path: Path<Model>,
   value: any
 ) => void;
 
 export type SetArrayGetKey<Model> = (
-  fieldPath: FieldPath<Model>,
+  path: Path<Model>,
   getKey: GetKey<any>
 ) => void;
 

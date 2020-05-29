@@ -29,10 +29,9 @@ import { useControllableState } from '../hooks/useControllableState';
 import { useFormReadApi } from '../hooks/useFormReadApi';
 import { useShallowMemo } from '../hooks/useShallowMemo';
 import {
-  fieldPath as createFieldPath,
-  getPathAsString,
-  Path,
   path as createPath,
+  getPathAsString,
+  Path
 } from '../models';
 import { cloneFieldStatus, FieldStatusMapping } from '../statusTracking';
 import { FieldStatusUpdater } from '../statusTracking/FieldStatusUpdater';
@@ -237,13 +236,13 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   );
 
   const handleFieldChange: OnFieldChange<Model> = useCallback(
-    (id, path, fieldValue) => {
+    (path, fieldValue) => {
       valueUpdaterRef.current.updateDeep(getPathAsString(path), fieldValue);
 
       const updatedStatus = fieldStatusUpdaterRef.current.markAsDirty(
         statusRef.current,
-        id
-      );
+        path
+    );
 
       statusUpdaterRef.current.update(() => updatedStatus);
     },
@@ -302,8 +301,7 @@ function _Form<Model = any>(props: FormProps<Model>, ref: Ref<FormRef>) {
   ]);
 
   const rootFieldContext: FieldContextValue<Model> = useShallowMemo({
-    fieldPath: useMemorizedPath(createFieldPath<Model>()),
-    modelPath: useMemorizedPath(createPath<Model>()),
+    path: useMemorizedPath(createPath<Model>()),
     name: '',
     value,
     setValue,

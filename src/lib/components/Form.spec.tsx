@@ -11,7 +11,7 @@ import {
 } from '.';
 import { delay } from '../../testUtils/delay';
 import { InputField, InputFieldProps } from '../../testUtils/InputField';
-import { fieldPath, path } from '../models';
+import { path } from '../models';
 import { DEFAULT_FIELD_STATUS, FieldStatus } from '../statusTracking';
 import {
   ArrayValidation,
@@ -306,8 +306,7 @@ describe('Form', () => {
             getKey={i => i.a}
             render={() => (
               <FieldGroup
-                name={fieldPath<InnerModel['items']>().x}
-                accessor={path<InnerModel['items']>()[0]}
+                name={path<InnerModel['items']>()[0]}
               >
                 <InputField name={path<InnerModel['items'][number]>().a} />
               </FieldGroup>

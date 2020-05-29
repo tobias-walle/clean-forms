@@ -7,7 +7,7 @@ import {
 } from '../contexts/fieldArrayContext';
 import { FieldContextProvider } from '../contexts/fieldContext';
 import { useMemorizedPath } from '../hooks';
-import { FieldPathLike } from '../models';
+import { PathLike } from '../models';
 
 export type AddItem<Item> = (item: Item) => void;
 
@@ -21,7 +21,7 @@ export type FieldArrayRender<Item> = (
 ) => React.ReactElement;
 
 export interface FieldArrayProps<Item> {
-  name: FieldPathLike<unknown, Item[]>;
+  name: PathLike<unknown, Item[]>;
   render: FieldArrayRender<Item>;
   getKey?: GetKey<Item>;
 }
@@ -35,7 +35,7 @@ function _FieldArray<Item = any>({
   const getIndexKey: GetKey<Item> = useCallback((_, index) => index, []);
 
   return (
-    <FieldContextProvider relativeFieldPath={name} relativeModelPath={name}>
+    <FieldContextProvider relativePath={name}>
       <FieldArrayContextProvider getKey={getKey || getIndexKey}>
         <FieldArrayContext.Consumer>
           {context => {

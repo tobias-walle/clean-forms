@@ -1,3 +1,4 @@
+import { InferType } from 'yup';
 import * as yup from 'yup';
 import { required } from '../../example/validators';
 import { path } from '../models/Path';
@@ -52,36 +53,32 @@ describe('validateModel', () => {
   });
 
   it('should validate yup schema', () => {
-    const model = {
+    const schema = yup.object().shape({
+      a: yup.number().lessThan(100).required(),
+      b: yup.string().length(2).required(),
+      missing: yup.string().required(),
+      nested: yup.object().shape({
+        c: yup.mixed().required(),
+      }),
+      array: yup.array().of(
+        yup.object().shape({
+          d: yup.mixed().required(),
+        })
+      ),
+    }).required();
+    type Model = InferType<typeof schema>;
+    const model: Model = {
       a: 123,
       b: 'test',
+      missing: undefined!,
       nested: {
-        c: null,
+        c: undefined!,
       },
-      array: [{ d: 1234 }, { d: null }, { d: 'test' }, { d: undefined }],
+      array: [{ d: 1234 }, { d: null }, { d: 'test' }, { d: undefined! }],
     };
-    type Model = typeof model;
     const args: ValidateModelArguments<Model> = {
       model,
-      validationDefinition: yup.object().shape({
-        a: yup
-          .number()
-          .lessThan(100)
-          .required(),
-        b: yup
-          .string()
-          .length(2)
-          .required(),
-        missing: yup.string().required(),
-        nested: yup.object().shape({
-          c: yup.mixed().required(),
-        }),
-        array: yup.array().of(
-          yup.object().shape({
-            d: yup.mixed().required(),
-          })
-        ),
-      }),
+      validationDefinition: schema,
     };
 
     const result = validateModel(args);
@@ -99,17 +96,17 @@ describe('validateModel', () => {
   it('should validate yup schema on single fields', () => {
     interface Model {
       a: {
-        b?: number;
-        c: Array<number | undefined>;
-        d?: { e: number };
+        b: number;
+        c: Array<number>;
+        d: { e: number };
       };
     }
 
     const model = {
       a: {
-        b: undefined,
-        d: undefined,
-        c: [undefined],
+        b: undefined!,
+        d: undefined!,
+        c: [undefined!],
       },
     };
     const args: ValidateModelArguments<Model> = {
@@ -117,11 +114,8 @@ describe('validateModel', () => {
       validationDefinition: {
         a: {
           b: required,
-          c: yup.array().of(yup.number().required()),
-          d: yup
-            .object()
-            .shape({ e: yup.number() })
-            .required(),
+          c: yup.array().of(yup.number().required()).required(),
+          d: yup.object().shape({ e: yup.number().required() }).required(),
         },
       },
     };

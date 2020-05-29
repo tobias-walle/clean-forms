@@ -33,7 +33,8 @@
     "ban-types": false,
     "max-classes-per-file": false,
     "semicolon": [true, "always", "strict-bound-class-methods"],
-    "object-literal-key-quotes": [true, "as-needed"]
+    "object-literal-key-quotes": [true, "as-needed"],
+    "array-type": false
   },
   "rulesDirectory": []
 }

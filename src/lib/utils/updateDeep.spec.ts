@@ -49,6 +49,14 @@ describe('updateDeep', () => {
     expect(result).toEqual({ a: { b: { c: 1 } }, b: { c: 2 } });
   });
 
+  it('should throw an error if the path is invalid and assert is set to false if error can\'t be fixed', () => {
+    const original = { a: { b: { c: 1 } } };
+    const path = 'a.b.c.d';
+    const value = 2;
+
+    expect(() => updateDeep({ object: original, path, value, assert: false })).toThrow(new Error('"a,b,c" is not an object. Got 1 (number) instead.'));
+  });
+
   it('should delete an property if the DELETE symbol is given as a value', () => {
     const original = { a: { b: { c: 1 } } };
     const path = 'a.b';

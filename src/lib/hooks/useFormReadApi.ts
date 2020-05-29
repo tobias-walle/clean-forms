@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { FieldPathLike } from '../models/FieldPath';
 import { asPath, getPathAsString, PathLike } from '../models/Path';
 import {
   DEFAULT_FIELD_STATUS,
@@ -26,7 +25,7 @@ export interface FormReadApi<Model> {
   invalid: boolean;
   getFieldValue: (modelPath?: PathLike<Model>) => any;
   getFieldError: (modelPath?: PathLike<Model>) => FieldError;
-  getFieldStatus: (fieldPath?: FieldPathLike<Model>) => FieldStatus;
+  getFieldStatus: (fieldPath?: PathLike<Model>) => FieldStatus;
 }
 
 export function useFormReadApi<Model>({
@@ -67,7 +66,7 @@ export function useFormReadApi<Model>({
   );
 
   const getFieldStatus = useCallback(
-    (path: FieldPathLike<Model> = ''): FieldStatus => {
+    (path: PathLike<Model> = ''): FieldStatus => {
       path = asPath(path);
       return status[getPathAsString(path)] || DEFAULT_FIELD_STATUS;
     },
