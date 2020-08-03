@@ -77,18 +77,13 @@ interface FieldProps<Value, CustomProps> {
 
 function _Field<Value, CustomProps>({
   context,
-  render,
+  render: FieldInnerComponent,
   customProps,
   ownProps,
 }: FieldProps<Value, CustomProps>) {
   const inputProps = useInputProps(context!, ownProps);
-
-  return useMemo(() => {
-    return render({
-      input: inputProps,
-      custom: customProps,
-    });
-  }, [customProps, inputProps, render]);
+  FieldInnerComponent = useMemo(() => memo(FieldInnerComponent), [FieldInnerComponent]);
+  return <FieldInnerComponent input={inputProps} custom={customProps}/>;
 }
 
 const Field: typeof _Field = memo(_Field) as any;
