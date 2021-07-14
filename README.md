@@ -5,6 +5,10 @@
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![npm version](https://badge.fury.io/js/clean-forms.svg)](https://badge.fury.io/js/clean-forms)
 
+
+**This project is inactive and shouldn't be used anymore. I recommend the use of [Formik](https://formik.org/) instead.**
+
+
 Forms can be complex and React does not provide a build-in solution to solve this
 problem. This library provides components to write readable forms that focus
 on maintainability.
